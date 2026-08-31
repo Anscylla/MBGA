@@ -1,0 +1,9 @@
+﻿l_english:
+ mbga_run_probes_decision: "MBGA: run capability probes"
+ mbga_run_probes_decision_desc: "Writes the results of the province capability probes to the game log."
+ MBGA_PANEL_TITLE: "#BOLD Province demands#!"
+ MBGA_LOAD_BUTTON: "Load provinces of selected state"
+ MBGA_LOADED_COUNT: "Provinces loaded: #v [Country.MakeScope.Var('mbga_loaded_count').GetValue|0]#!"
+ MBGA_TAKEN_COUNT: "Taken so far: #v [Country.MakeScope.Var('mbga_taken_count').GetValue|0]#!"
+ MBGA_PROVINCE_ROW: "[Scope.GetProvince.GetStateRegion.GetName]"
+ MBGA_ROW_MARKER: "row"

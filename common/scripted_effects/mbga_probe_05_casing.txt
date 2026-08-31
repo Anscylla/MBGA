@@ -1,0 +1,21 @@
+﻿# PROBE 05 - does a p: lookup care about the case of the hex id?
+# The game's own map data spells STATE_BALKH's hubs xB7ed78 while the province list
+# says xB7ED78, and vanilla loads it, so this should resolve either way.
+
+mbga_probe_05_casing = {
+	debug_log = "MBGA|05|start"
+
+	if = {
+		limit = { exists = p:xB7ED78 }
+		debug_log = "MBGA|05|upper case id resolves"
+	}
+	else = { debug_log = "MBGA|05|upper case id FAILS" }
+
+	if = {
+		limit = { exists = p:xB7ed78 }
+		debug_log = "MBGA|05|mixed case id resolves too - p: ignores case"
+	}
+	else = { debug_log = "MBGA|05|mixed case id FAILS - casing matters, bake must match exactly" }
+
+	debug_log = "MBGA|05|end"
+}

@@ -1,0 +1,39 @@
+﻿# PROBE 02 - can a province be stored in a variable list?
+# This is the storage mechanism the whole selection UI depends on.
+
+mbga_probe_02_varlist = {
+	debug_log = "MBGA|02|start"
+
+	clear_variable_list = mbga_test_provinces
+
+	add_to_variable_list = {
+		name = mbga_test_provinces
+		target = p:x9686A5
+	}
+	add_to_variable_list = {
+		name = mbga_test_provinces
+		target = p:x93C3BC
+	}
+
+	if = {
+		limit = {
+			is_target_in_variable_list = {
+				name = mbga_test_provinces
+				target = p:x9686A5
+			}
+		}
+		debug_log = "MBGA|02|province IS retrievable from variable list"
+	}
+	else = {
+		debug_log = "MBGA|02|province NOT retrievable from variable list"
+	}
+
+	set_variable = { name = mbga_count value = 0 }
+	every_in_list = {
+		variable = mbga_test_provinces
+		ROOT = { change_variable = { name = mbga_count add = 1 } }
+	}
+	debug_log = "MBGA|02|list size (expect 2)"
+
+	debug_log = "MBGA|02|end"
+}

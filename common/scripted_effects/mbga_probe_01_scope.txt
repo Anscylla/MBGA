@@ -1,0 +1,36 @@
+﻿# PROBE 01 - is a province a usable scope in effects, and what can it reach?
+# Test province: x9686A5 = the city hub of STATE_SVEALAND.
+
+mbga_probe_01_scope = {
+	debug_log = "MBGA|01|start"
+
+	p:x9686A5 = {
+		debug_log = "MBGA|01|province scope entered OK"
+
+		if = {
+			limit = { exists = state }
+			debug_log = "MBGA|01|province.state OK"
+		}
+		else = {
+			debug_log = "MBGA|01|province.state MISSING"
+		}
+
+		if = {
+			limit = { exists = state.owner }
+			debug_log = "MBGA|01|province.state.owner OK"
+		}
+		else = {
+			debug_log = "MBGA|01|province.state.owner MISSING"
+		}
+
+		if = {
+			limit = { exists = state.state_region }
+			debug_log = "MBGA|01|province.state.state_region OK"
+		}
+		else = {
+			debug_log = "MBGA|01|province.state.state_region MISSING"
+		}
+	}
+
+	debug_log = "MBGA|01|end"
+}

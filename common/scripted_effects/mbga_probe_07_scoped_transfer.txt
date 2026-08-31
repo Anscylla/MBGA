@@ -1,0 +1,22 @@
+﻿# PROBE 07 - which form does set_owner_of_provinces accept for the province list?
+# Vanilla only ever passes a literal id through a macro, so a scope may be rejected.
+# Each form lives in its own effect: a PostValidate failure kills only that one.
+
+mbga_probe_07a_literal = {
+	debug_log = "MBGA|07a|literal id form loaded"
+	p:x916574 = { state = { owner = { save_scope_as = mbga_before } } }
+	s:STATE_WALLONIA = {
+		set_owner_of_provinces = {
+			country = ROOT
+			provinces = { x916574 }
+		}
+	}
+	debug_log = "MBGA|07a|literal transfer executed"
+	s:STATE_WALLONIA = {
+		set_owner_of_provinces = {
+			country = scope:mbga_before
+			provinces = { x916574 }
+		}
+	}
+	debug_log = "MBGA|07a|reverted"
+}

@@ -1,0 +1,57 @@
+﻿# PRIVATE. Undoes a sweep that did not finish, handing back anything the probe countries
+# still hold. Country scope. Does nothing when a sweep completes normally.
+
+mbga_repair_probe_country = {
+	save_scope_as = mbga_prober
+
+	if = {
+		limit = {
+			OR = {
+				c:MBG ?= { any_scope_state = { always = yes } }
+				c:MBH ?= { any_scope_state = { always = yes } }
+			}
+		}
+		every_key_in_variable_map = {
+			variable = mbga_probe_owner_of
+			save_scope_as = mbga_repair_province
+			if = {
+				limit = {
+					OR = {
+						scope:mbga_repair_province = { owner ?= c:MBG }
+						scope:mbga_repair_province = { owner ?= c:MBH }
+					}
+				}
+				scope:mbga_prober = {
+					"variable_map(mbga_probe_owner_of|scope:mbga_repair_province)" = {
+						save_scope_as = mbga_taker
+					}
+				}
+				scope:mbga_repair_province = { mbga_transfer_province_to_taker = yes }
+				debug_log = "MBGA|probe|a province was still with MBG and has been returned"
+			}
+		}
+	}
+
+	if = {
+		limit = { c:MBG ?= { any_scope_state = { always = yes } } }
+		c:MBG = { annex = scope:mbga_prober }
+		debug_log = "MBGA|probe|MBG was annexed as a last resort, something did not return"
+	}
+	if = {
+		limit = { c:MBH ?= { any_scope_state = { always = yes } } }
+		c:MBH = { annex = scope:mbga_prober }
+		debug_log = "MBGA|probe|MBH was annexed as a last resort, something did not return"
+	}
+
+	# A country object can outlive its last province, so the question is whether MBG holds
+	# any ground, not whether the object is still around.
+	if = {
+		limit = {
+			OR = {
+				c:MBG ?= { any_scope_state = { always = yes } }
+				c:MBH ?= { any_scope_state = { always = yes } }
+			}
+		}
+		debug_log = "MBGA|probe|a probe country STILL holds land that could not be traced back"
+	}
+}

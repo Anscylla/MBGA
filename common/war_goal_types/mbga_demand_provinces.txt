@@ -1,0 +1,116 @@
+﻿# A war goal that asks for a state and lists its provinces.
+#
+# target_type = state puts the player into the game's own state picker, and the answer
+# arrives as scope:target_state. kind = custom means the game applies no territorial change
+# of its own.
+
+mbga_demand_provinces = {
+	icon = "gfx/interface/icons/diplomatic_action_icons/take_province.dds"
+
+	kind = custom
+
+	# The same guards the base game puts on conquering a state, since this wins the same thing
+	# and only takes less of it. annexes_entire_state is left out on purpose: the whole point
+	# is that it does not.
+	settings = {
+		require_target_be_part_of_war
+		can_add_for_other_country
+		requires_interest
+
+		validate_target_not_treaty_port
+		validate_conflicts_conquer_state
+
+		conflicts_with_country_creation
+		conflicts_with_annex_state
+	}
+
+	execution_priority = 68
+
+	contestion_type = control_target_state
+
+	target_type = state
+
+	# An AI cannot draw a border province by province, so it does not get this goal unless the
+	# rule says otherwise, and then it takes the whole state instead.
+	possible = {
+		OR = {
+			is_ai = no
+			has_game_rule = mbga_ai_demands_allowed
+		}
+	}
+
+	valid = {
+		scope:target_state = {
+			owner = scope:target_country
+			NOT = { has_claim_by = root }
+		}
+	}
+
+	# The base game's own cost for conquering a state, unchanged. The AI weighs a demand by the
+	# manoeuvre cost of the goal attached to it, so matching this is what makes it answer a
+	# demand for provinces exactly as it would answer a demand for the whole state.
+	maneuvers = {
+		value = 0
+
+		add = {
+			desc = "MANEUVERS_BASE_VALUE"
+			value = 10
+		}
+
+		multiply = {
+			desc = "MANEUVERS_TARGET_STATE_POPULATION_FACTOR"
+			value = scope:target_state.state_population
+			divide = define:NDiplomacy|SWAY_OFFER_WARGOAL_MANEUVERS_COST_POPULATION_SCALING_FACTOR
+			multiply = define:NDiplomacy|SWAY_OFFER_WARGOAL_MANEUVERS_COST_POPULATION_SCALING_MULTIPLIER
+			max = define:NDiplomacy|SWAY_OFFER_WARGOAL_MANEUVERS_COST_POPULATION_SCALING_MULTIPLIER_MAX_PER_STATE
+		}
+	}
+
+	# Nothing when the goal is added, because what will be taken is not known until the war is
+	# over and the border has been drawn by hand. The price is paid then, a share of the
+	# state's own price for every province taken, in common/script_values.
+	#
+	# Charging up front and refunding the rest does not work: infamy decays while a war runs,
+	# so by the peace there may be nothing left to give back.
+	infamy = {
+		value = 0
+	}
+
+	# The state is won here; which of its provinces are actually taken is settled afterwards,
+	# in common/scripted_effects/mbga_settlement.txt.
+	on_enforced = {
+		debug_log = "MBGA|war|the goal was enforced"
+
+		# Which of the three ways this was won, for the text the popup shows. A play that
+		# reached a war was fought over; a play that never did was conceded; no play at all
+		# means the demand was granted where it stood. The number rides with the event, so
+		# several states waiting at once each keep their own answer.
+		if = {
+			limit = { scope:diplomatic_play ?= { is_war = yes } }
+			save_scope_value_as = { name = mbga_settle_route value = 1 }
+			debug_log = "MBGA|war|and it was won at the peace"
+		}
+		else_if = {
+			limit = { exists = scope:diplomatic_play }
+			save_scope_value_as = { name = mbga_settle_route value = 2 }
+			debug_log = "MBGA|war|and the play was conceded before the fighting"
+		}
+		else = {
+			save_scope_value_as = { name = mbga_settle_route value = 3 }
+			debug_log = "MBGA|war|and the demand was granted where it stood"
+		}
+
+		scope:target_state = { save_scope_as = mbga_settle_state }
+		root = {
+			# Player or AI, the fork is inside: one gets a popup, the other draws its own
+			# border in script.
+			mbga_open_settlement = yes
+		}
+	}
+
+	# Land changing hands for good, which is what the base game marks significant: every goal
+	# that moves a border or a crown is yes, and the treaty and law goals are no.
+	ai = {
+		is_significant_demand = yes
+	}
+}

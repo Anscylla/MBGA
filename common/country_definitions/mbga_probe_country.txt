@@ -1,0 +1,35 @@
+﻿# Three throwaway countries the province mechanism needs.
+#
+# MBG and MBH each hold a single province while the border question is asked about them.
+# MBT carries a province from one owner to the next and is annexed away at once.
+# None is ever seen: they are raised and removed inside one effect chain.
+
+MBG = {
+	color = { 20 20 20 }
+
+	country_type = unrecognized
+
+	tier = city_state
+
+	cultures = { mbga_probe_culture }
+}
+
+MBH = {
+	color = { 25 25 25 }
+
+	country_type = unrecognized
+
+	tier = city_state
+
+	cultures = { mbga_probe_culture }
+}
+
+MBT = {
+	color = { 30 30 30 }
+
+	country_type = mbga_probe_country_type
+
+	tier = city_state
+
+	cultures = { mbga_probe_culture }
+}

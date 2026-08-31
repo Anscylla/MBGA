@@ -1,0 +1,21 @@
+﻿# PUBLIC. Hand a state in, get its provinces back as containers. The same thing
+# mbga_open_for_state_effect does, reachable from the interface. See README.md.
+
+mbga_open_for_state = {
+	scope = state
+	saved_scopes = { actor }
+	is_shown = { always = yes }
+	is_valid = { always = yes }
+	effect = {
+		scope:actor = {
+			if = {
+				limit = { has_game_rule = mbga_province_access_anywhere }
+				mbga_list_every_province = yes
+			}
+			else = {
+				mbga_list_reachable_only = yes
+			}
+		}
+		mbga_open_for_state_effect = yes
+	}
+}

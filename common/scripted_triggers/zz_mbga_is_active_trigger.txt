@@ -1,0 +1,24 @@
+﻿REPLACE_OR_CREATE:mbga_is_active = {
+	always = yes
+}
+
+mbga_province_index_is_ready = {
+	has_global_variable = mbga_index_built
+	global_var:mbga_index_count > 0
+}
+
+# Nothing is left to index: every state region that holds a state has its provinces filed.
+#
+# Asked of the map rather than of a count, so it needs no total to compare against. A region
+# holding no state is skipped, which is right: a province can only be demanded from somebody.
+# On the base game's map those are the seas, every land province belonging to a state from the
+# first day. A region that gains its first state later is picked up by mbga_enumerate.txt,
+# which rebuilds the index when a state turns out to have nothing filed.
+mbga_province_index_is_complete = {
+	NOT = {
+		any_state_region = {
+			any_scope_state = { always = yes }
+			NOT = { any_in_list = { variable = mbga_region_provinces count >= 1 } }
+		}
+	}
+}

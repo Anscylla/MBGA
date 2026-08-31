@@ -1,0 +1,30 @@
+﻿# PUBLIC. Moves one province without naming it. See README.md.
+#
+# mbga_transfer_province_to_taker
+#                             province scope, scope:mbga_taker is the country that should end
+#                             up with it.
+#
+# set_owner_of_provinces takes literal province ids only, so the province is given to a
+# courier country which the receiver then annexes.
+
+mbga_transfer_province_to_taker = {
+	save_scope_as = mbga_courier_province
+
+	if = {
+		limit = { NOT = { exists = c:MBT } }
+		create_country = {
+			tag = MBT
+			province = scope:mbga_courier_province
+		}
+		if = {
+			limit = { exists = c:MBT }
+			scope:mbga_taker = { annex = c:MBT }
+		}
+		else = {
+			debug_log = "MBGA|courier|the courier could not be raised, the province did not move"
+		}
+	}
+	else = {
+		debug_log = "MBGA|courier|the courier tag is still taken, so the province did not move"
+	}
+}

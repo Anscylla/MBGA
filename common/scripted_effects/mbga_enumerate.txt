@@ -1,0 +1,71 @@
+﻿# PUBLIC. The provinces of a state, which the base game will not answer at all. Read from
+# the index in mbga_province_index.txt. See README.md.
+#
+# mbga_fill_provinces_of_state = { LIST = x }
+#                             state scope, scope:actor receives them in its list x.
+# mbga_fill_selectable_provinces
+#                             the same, into mbga_selectable, cleared first.
+#
+# The filter keeps only the provinces of the state asked about, since a region split between
+# owners answers with all of them.
+
+mbga_fill_provinces_of_state = {
+	save_scope_as = mbga_fill_state
+	mbga_ensure_province_index = yes
+
+	# A state whose region has nothing filed is either standing on ground the index could not
+	# reach, or on ground that was not a state when the index was built - land only becomes a
+	# state when somebody takes it. Building it again settles both.
+	#
+	# A region that comes back empty a second time is remembered, so ground nothing can reach
+	# is asked about once and never again.
+	if = {
+		limit = {
+			state_region ?= {
+				NOT = { any_in_list = { variable = mbga_region_provinces count >= 1 } }
+			}
+			NOT = {
+				is_target_in_global_variable_list = {
+					name = mbga_index_gave_up
+					target = scope:mbga_fill_state.state_region
+				}
+			}
+		}
+		mbga_build_province_index = yes
+		if = {
+			limit = {
+				state_region ?= {
+					NOT = { any_in_list = { variable = mbga_region_provinces count >= 1 } }
+				}
+			}
+			state_region ?= { save_scope_as = mbga_fill_region }
+			add_to_global_variable_list = {
+				name = mbga_index_gave_up
+				target = scope:mbga_fill_region
+			}
+			debug_log = "MBGA|fill|nothing reaches this state region, so it will list no provinces"
+		}
+	}
+
+	state_region ?= {
+		every_in_list = {
+			variable = mbga_region_provinces
+			limit = { state ?= scope:mbga_fill_state }
+			save_scope_as = mbga_current_province
+			scope:actor = {
+				add_to_variable_list = { name = $LIST$ target = scope:mbga_current_province }
+			}
+		}
+
+		if = {
+			limit = { NOT = { has_variable_list = mbga_region_provinces } }
+			debug_log = "MBGA|fill|this state region is not in the province index, so it lists nothing"
+		}
+	}
+}
+
+# The public entry point. State scope, scope:actor is the country asking.
+mbga_fill_selectable_provinces = {
+	scope:actor = { clear_variable_list = mbga_selectable }
+	mbga_fill_provinces_of_state = { LIST = mbga_selectable }
+}

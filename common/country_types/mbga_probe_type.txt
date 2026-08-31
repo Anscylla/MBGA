@@ -1,0 +1,18 @@
+﻿# The country type the courier runs on: everything the engine could act through is off.
+# MBG and MBH cannot use it - adjacency is asked OF a country and answers no once politics
+# are off.
+
+mbga_probe_country_type = {
+	is_colonizable = no
+	is_unrecognized = no
+	uses_prestige = no
+
+	has_events = no
+
+	has_military = no
+	has_economy = no
+	has_politics = no
+	can_research = no
+
+	default_rank = decentralized_power
+}

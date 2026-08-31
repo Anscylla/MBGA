@@ -1,0 +1,31 @@
+﻿# PUBLIC. What an interface asks of the mod before a state is even opened. See README.md.
+#
+# mbga_fill_country_list      country scope. Fills the list mbga_countries with every country
+#                             that exists, is not this one, and holds land.
+# mbga_list_every_province    country scope. The next state opens with everything takeable.
+# mbga_list_reachable_only    country scope. The next state opens with only what borders us.
+#                             This is the default; the two are a pair and either may be set
+#                             at any time, taking effect the next time a state is opened.
+
+mbga_fill_country_list = {
+	save_scope_as = mbga_lister
+	clear_variable_list = mbga_countries
+	every_country = {
+		limit = {
+			NOT = { this = scope:mbga_lister }
+			any_scope_state = { always = yes }
+		}
+		save_scope_as = mbga_country_entry
+		scope:mbga_lister = {
+			add_to_variable_list = { name = mbga_countries target = scope:mbga_country_entry }
+		}
+	}
+}
+
+mbga_list_every_province = {
+	set_variable = mbga_unfiltered
+}
+
+mbga_list_reachable_only = {
+	remove_variable = mbga_unfiltered
+}

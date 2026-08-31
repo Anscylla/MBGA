@@ -1,0 +1,285 @@
+﻿# PRIVATE. Drawing the border once the war goal has been enforced.
+#
+# The goal wins a state; which provinces of it are actually taken is settled afterwards, one
+# state at a time, through the same tool the diplomatic route uses. Every way of winning ends
+# here: a peace, a play conceded before the fighting, and a demand granted outright.
+#
+# The order of events is: the goal is enforced, one popup per state is raised, the player
+# opens one and the tool comes up on that state, and closing the tool charges the infamy for
+# what was taken and lets the next popup be opened.
+#
+# Country scope, scope:mbga_settle_state is the state won.
+
+# Called from the war goal. Remembers what a province of this state costs, since the state may
+# change hands again before the player gets to it, and raises the popup.
+mbga_open_settlement = {
+	save_scope_as = mbga_settle_winner
+
+	# An AI cannot open the popup, so it draws its border here and now instead. This is the
+	# same fork the war goal makes; a demand given in to arrives through this effect alone.
+	if = {
+		limit = { is_ai = yes }
+		mbga_settle_as_ai = yes
+	}
+	else = {
+
+		scope:mbga_settle_state = {
+			save_scope_as = mbga_settle_state_scope
+			scope:mbga_settle_winner = {
+				# The whole state's price, written down now. What share of it is owed is worked
+				# out when the border has been drawn, since only then is it known what was taken.
+				#
+				# Read off the state, not off us. A script value takes its numbers from the scope
+				# it is evaluated in, and state_population means nothing to a country: the whole
+				# formula would collapse to its minimum.
+				add_to_variable_map = {
+					name = mbga_settle_price
+					key = scope:mbga_settle_state_scope
+					value = scope:mbga_settle_state_scope.mbga_state_infamy
+				}
+				add_to_variable_list = { name = mbga_settle_pending target = scope:mbga_settle_state_scope }
+			}
+		}
+
+		# No popup on purpose. A peace can win several states at once, and a popup for each
+		# would bury the screen the moment the war ends. Without it the event waits in the
+		# feed until it is opened, which is where the base game puts anything that can wait.
+		trigger_event = { id = mbga_settlement.1 days = 0 }
+		debug_log = "MBGA|war|a state was won, its border is waiting to be drawn"
+	}
+}
+
+# Called by the popup's one option. Puts the tool up on that state and remembers that what
+# happens next is a settlement rather than a diplomatic demand.
+mbga_begin_settlement = {
+	save_scope_as = actor
+	set_variable = mbga_settling
+	set_variable = { name = mbga_settling_state value = scope:mbga_settle_state }
+
+	scope:mbga_settle_state = { owner ?= { save_scope_as = mbga_settle_loser } }
+	if = {
+		limit = { exists = scope:mbga_settle_loser }
+		# Written down now, because taking provinces splits the state and the scope then
+		# points at the winner's half. Asked afterwards, the state names the wrong country.
+		#
+		# The region goes with it: a state whose every province is taken stops existing, and
+		# its name goes with it, while the region it stood in is part of the map and stays.
+		set_variable = { name = mbga_settle_loser_country value = scope:mbga_settle_loser }
+		scope:mbga_settle_state = { state_region = { save_scope_as = mbga_settle_kept_region } }
+		set_variable = { name = mbga_settle_region value = scope:mbga_settle_kept_region }
+		mbga_fill_country_list = yes
+		set_variable = { name = mbga_target_country value = scope:mbga_settle_loser }
+		scope:mbga_settle_state = { mbga_open_for_state_effect = yes }
+		debug_log = "MBGA|war|the border of a won state is being drawn"
+	}
+}
+
+# Country scope. What the provinces taken so far will cost, for the bar to show while the
+# border is being drawn. Recomputed on every take and hand back, since nothing in the
+# interface can do arithmetic on a variable map.
+mbga_show_settlement_price = {
+	remove_variable = mbga_settle_shown
+	if = {
+		limit = { has_variable = mbga_settling }
+		var:mbga_settling_state = { save_scope_as = mbga_settle_state_scope }
+		mbga_price_settlement = yes
+	}
+}
+
+# Called when the tool is put down. Charges for what was taken and clears the way for the next
+# state waiting to be settled.
+mbga_finish_settlement = {
+	save_scope_as = mbga_settle_winner
+
+	if = {
+		limit = { has_variable = mbga_settling }
+		var:mbga_settling_state = { save_scope_as = mbga_settle_state }
+		mbga_charge_for_taken = yes
+		debug_log = "MBGA|war|the border was drawn and paid for"
+
+		var:mbga_settling_state = { save_scope_as = mbga_settle_state_scope }
+		remove_list_variable = { name = mbga_settle_pending target = scope:mbga_settle_state_scope }
+		remove_variable = mbga_settling
+		remove_variable = mbga_settling_state
+		remove_variable = mbga_settle_loser_country
+		remove_variable = mbga_settle_region
+	}
+}
+
+# An AI drawing its own border.
+#
+# It cannot open the tool, so it does the same thing the tool does and nothing more: it works
+# out which provinces of the state touch ground it already holds, takes those, and repeats for
+# as many rings as its ruler has appetite for. What it never does is reach ground it does not
+# border, which is the same rule a player plays by.
+#
+# Country scope, scope:mbga_settle_state is the state won.
+mbga_settle_as_ai = {
+	save_scope_as = actor
+	save_scope_as = mbga_settle_winner
+	set_variable = { name = mbga_ai_rings_left value = mbga_ai_rings }
+
+	scope:mbga_settle_state = { owner ?= { save_scope_as = mbga_settle_loser } }
+	if = {
+		limit = { exists = scope:mbga_settle_loser }
+
+		set_variable = { name = mbga_settle_loser_country value = scope:mbga_settle_loser }
+		scope:mbga_settle_state = { state_region = { save_scope_as = mbga_settle_kept_region } }
+		set_variable = { name = mbga_settle_region value = scope:mbga_settle_kept_region }
+		set_variable = { name = mbga_target_country value = scope:mbga_settle_loser }
+		mbga_list_reachable_only = yes
+		scope:mbga_settle_state = { mbga_open_for_state_effect = yes }
+
+		# Without a neighbour list nothing is known past the state's own border, so anything
+		# but the border ring would cost a full probe of what is still out of reach. The
+		# shapes all need to see inwards, so on such a map there is only the one ring.
+		if = {
+			limit = { NOT = { has_variable = mbga_adj_reaches_outside } }
+			mbga_ai_take_one_ring = yes
+		}
+		else = {
+			mbga_ai_choose_shape = yes
+		}
+
+		mbga_charge_for_taken = yes
+		mbga_clear_candidates = yes
+		remove_variable = mbga_settle_loser_country
+		remove_variable = mbga_settle_region
+		remove_variable = mbga_target_country
+		remove_variable = mbga_active_state
+		remove_variable = mbga_active_state_region
+		clear_variable_list = mbga_selectable
+		debug_log = "MBGA|war|an AI drew its own border, one ring at a time"
+	}
+	remove_variable = mbga_ai_rings_left
+}
+
+# Country scope. Everything within reach right now, taken at once. What that opens up is the
+# next ring, which the pass after this one will find.
+mbga_ai_take_one_ring = {
+	save_scope_as = mbga_settle_winner
+	set_variable = { name = mbga_ring_took value = 0 }
+
+	every_in_global_list = {
+		variable = mbga_candidates
+		limit = {
+			has_variable = mbga_takeable
+			NOT = { has_variable = mbga_taken }
+			NOT = { has_variable = mbga_own_from_start }
+		}
+		save_scope_as = mbga_ring_container
+		var:mbga_province = { save_scope_as = mbga_ring_province }
+		scope:mbga_settle_winner = { save_scope_as = mbga_taker }
+		scope:mbga_ring_province = { mbga_transfer_province_to_taker = yes }
+		set_variable = mbga_taken
+		scope:mbga_settle_winner = {
+			add_to_variable_list = { name = mbga_taken target = scope:mbga_ring_province }
+			change_variable = { name = mbga_taken_count add = 1 }
+			change_variable = { name = mbga_ring_took add = 1 }
+			set_variable = { name = mbga_last_taken value = scope:mbga_ring_province }
+		}
+	}
+
+	# Only worth working out what opened up if anything did.
+	if = {
+		limit = { var:mbga_ring_took > 0 }
+		mbga_refresh_after_take = yes
+	}
+	set_variable = { name = mbga_ring_last value = var:mbga_ring_took }
+	remove_variable = mbga_ring_took
+}
+
+# Country scope. Counts what is owed: the share of the state that was actually taken.
+#
+# Ground nobody can march through is left out of both halves of the sum. It grows nothing and
+# feeds nobody, so taking it is free, and it does not make the rest any cheaper either - a
+# state that is half mountain still costs its full price for the half that is worth having.
+#
+# Only a map with a generated table knows which provinces those are. On any other map nothing
+# carries the mark, every province counts, and mountains are charged like farmland. That is a
+# limit of the engine, which offers no way to ask.
+mbga_measure_settlement = {
+	save_scope_as = mbga_price_country
+	set_variable = { name = mbga_price_worth value = 0 }
+	set_variable = { name = mbga_price_taken value = 0 }
+
+	every_in_global_list = {
+		variable = mbga_candidates
+		limit = {
+			NOT = { has_variable = mbga_own_from_start }
+			NOT = { has_variable = mbga_impassable }
+		}
+		save_scope_as = mbga_price_container
+		scope:mbga_price_country = {
+			change_variable = { name = mbga_price_worth add = 1 }
+			if = {
+				limit = { scope:mbga_price_container = { has_variable = mbga_taken } }
+				change_variable = { name = mbga_price_taken add = 1 }
+			}
+		}
+	}
+}
+
+# Country scope. What the border drawn so far is worth, into mbga_settle_shown.
+mbga_price_settlement = {
+	save_scope_as = mbga_price_country
+	remove_variable = mbga_settle_shown
+	mbga_measure_settlement = yes
+
+	if = {
+		limit = {
+			has_variable_map = mbga_settle_price
+			var:mbga_price_worth > 0
+			var:mbga_price_taken > 0
+		}
+		set_variable = {
+			name = mbga_settle_shown
+			value = "variable_map(mbga_settle_price|scope:mbga_settle_state_scope)"
+		}
+		change_variable = { name = mbga_settle_shown multiply = var:mbga_price_taken }
+		change_variable = { name = mbga_settle_shown divide = var:mbga_price_worth }
+	}
+
+	remove_variable = mbga_price_worth
+	remove_variable = mbga_price_taken
+}
+
+# Country scope. Charges it, and tells the country it was taken from what it cost them.
+mbga_charge_for_taken = {
+	save_scope_as = mbga_settle_winner
+	scope:mbga_settle_state = { save_scope_as = mbga_settle_state_scope }
+	mbga_price_settlement = yes
+
+	if = {
+		limit = { has_variable = mbga_settle_shown }
+		change_infamy = var:mbga_settle_shown
+		set_variable = { name = mbga_settle_told value = var:mbga_settle_shown }
+	}
+	remove_variable = mbga_settle_shown
+
+	# Left standing on purpose: the event is queued rather than raised on the spot, so the
+	# number has to still be there when its text is drawn. The next settlement overwrites it.
+	mbga_tell_the_loser = yes
+}
+
+# Country scope. Nothing is sent where nothing was taken.
+#
+# The country told is the one written down when the settlement opened, not whoever owns the
+# state now: taking part of a state splits it, and the state then answers with the winner.
+mbga_tell_the_loser = {
+	save_scope_as = mbga_settle_winner
+	if = {
+		limit = {
+			has_variable = mbga_settle_told
+			has_variable = mbga_settle_loser_country
+		}
+		var:mbga_settle_loser_country = { save_scope_as = mbga_settle_told_country }
+		var:mbga_settle_region ?= { save_scope_as = mbga_settle_region_scope }
+		if = {
+			limit = { NOT = { scope:mbga_settle_told_country = scope:mbga_settle_winner } }
+			scope:mbga_settle_told_country = {
+				trigger_event = { id = mbga_settlement.2 days = 0 }
+			}
+		}
+	}
+}

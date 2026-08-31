@@ -1,0 +1,62 @@
+﻿# Mounted through gui/scripted_widgets/mbga_widgets.txt.
+#
+# Structure copied from the State Transfer Tool workshop mod, which is known to render:
+# a full screen widget holding a fixed size window, children placed at absolute
+# positions, textbox rather than text_single, and a background from entry_bg_simple.
+widget = {
+	name = "mbga_probe_panel"
+	layer = layer_ingame_menu
+	size = { 100% 100% }
+	allow_outside = yes
+	alwaystransparent = yes
+	# No scripted gui gate: unlike the State Transfer Tool, this window is meant to be
+	# on screen from the moment a country is being played.
+	visible = "[GetMetaPlayer.GetPlayedOrObservedCountry.IsValid]"
+	datacontext = "[AccessMetaPlayer.AccessPlayedOrObservedCountry]"
+
+	window = {
+		name = "mbga_window"
+		layer = popups
+		allow_outside = yes
+		alwaystransparent = no
+		movable = yes
+		using = clickthrough_blocker
+
+		size = { 300 160 }
+		# Anchored to the right edge rather than to an absolute x, so the window lands in
+		# the same place whatever the resolution. The State Transfer Tool sits at x=1150
+		# because its window slides out from behind the HUD; this one is always on show,
+		# so it is placed clear of the outliner instead.
+		parentanchor = top|right
+		position = { -520 110 }
+
+		background = { using = entry_bg_simple }
+
+		textbox = {
+			text = "MBGA_PANEL_TITLE"
+			default_format = "#header"
+			position = { 10 8 }
+			size = { 280 24 }
+		}
+
+		button = {
+			text = "MBGA_LOAD_BUTTON"
+			using = default_button
+			size = { 280 30 }
+			position = { 10 38 }
+			onclick = "[GetScriptedGui('mbga_open_for_state').Execute(GuiScope.SetRoot(StatesPanel.GetState.MakeScope).AddScope('actor', GetPlayer.MakeScope).End)]"
+		}
+
+		textbox = {
+			text = "MBGA_LOADED_COUNT"
+			position = { 10 76 }
+			size = { 280 20 }
+		}
+
+		textbox = {
+			text = "MBGA_TAKEN_COUNT"
+			position = { 10 100 }
+			size = { 280 20 }
+		}
+	}
+}
