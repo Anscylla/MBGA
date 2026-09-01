@@ -1,9 +1,10 @@
-﻿# Three throwaway countries the province mechanism needs.
+﻿# A country that exists for one purpose: to hold a single province for a fraction of a
+# moment while the engine is asked whether we border it.
 #
-# MBG and MBH each hold a single province while the border question is asked about them.
-# MBT carries a province from one owner to the next and is annexed away at once.
-# None is ever seen: they are raised and removed inside one effect chain.
-
+# It never appears on its own. It is created from one province, questioned, and the
+# province is handed straight back, at which point it holds no land and ceases to exist.
+# Having its own tag rather than borrowing somebody else's keeps every side effect and
+# every log line attributable, and leaves real countries untouched.
 MBG = {
 	color = { 20 20 20 }
 
@@ -11,25 +12,6 @@ MBG = {
 
 	tier = city_state
 
-	cultures = { mbga_probe_culture }
-}
-
-MBH = {
-	color = { 25 25 25 }
-
-	country_type = unrecognized
-
-	tier = city_state
-
-	cultures = { mbga_probe_culture }
-}
-
-MBT = {
-	color = { 30 30 30 }
-
-	country_type = mbga_probe_country_type
-
-	tier = city_state
-
-	cultures = { mbga_probe_culture }
+	cultures = { north_german }
+	capital = STATE_BRANDENBURG
 }

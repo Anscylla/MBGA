@@ -1,18 +1,36 @@
 ﻿# Mounted through gui/scripted_widgets/mbga_widgets.txt.
 #
-# Structure copied from the State Transfer Tool workshop mod, which is known to render:
-# a full screen widget holding a fixed size window, children placed at absolute
-# positions, textbox rather than text_single, and a background from entry_bg_simple.
+# This file is only one possible front end for the script API in
+# common/scripted_effects/mbga_api.txt and common/scripted_guis/mbga_api_sguis.txt.
+# Another mod can drive the same flow from its own interface without touching this.
+#
+# Two things it deliberately never does. It never reads the vanilla state panel: the
+# StatesPanel data context is injected by code into that panel's own subtree and is
+# nullptr anywhere else, and reaching it would mean shipping a copy of a vanilla gui
+# file that any other mod doing the same would break. And it never handles a province:
+# script lays the candidates out over numbered slots, so the interface deals in numbers.
 widget = {
 	name = "mbga_probe_panel"
 	layer = layer_ingame_menu
 	size = { 100% 100% }
 	allow_outside = yes
 	alwaystransparent = yes
-	# No scripted gui gate: unlike the State Transfer Tool, this window is meant to be
-	# on screen from the moment a country is being played.
 	visible = "[GetMetaPlayer.GetPlayedOrObservedCountry.IsValid]"
 	datacontext = "[AccessMetaPlayer.AccessPlayedOrObservedCountry]"
+
+	# Freeze the game while provinces are being picked. TimeKeeper is global rather than
+	# panel bound, so this needs no vanilla file. The widget is invisible and does its
+	# work through the _show animation, the standard hidden trigger idiom.
+	widget = {
+		size = { 0 0 }
+		alpha = 0
+		allow_outside = yes
+		visible = "[And3( GetScriptedGui('mbga_has_target_country').IsShown(GuiScope.SetRoot(GetPlayer.MakeScope).End), Not(TimeKeeper.IsPaused), TimeKeeper.CanTogglePause )]"
+		state = {
+			name = _show
+			on_start = "[TimeKeeper.TogglePause]"
+		}
+	}
 
 	window = {
 		name = "mbga_window"
@@ -22,14 +40,17 @@ widget = {
 		movable = yes
 		using = clickthrough_blocker
 
-		size = { 300 160 }
-		# Anchored to the right edge rather than to an absolute x, so the window lands in
-		# the same place whatever the resolution. The State Transfer Tool sits at x=1150
-		# because its window slides out from behind the HUD; this one is always on show,
-		# so it is placed clear of the outliner instead.
+		size = { 300 620 }
 		parentanchor = top|right
-		position = { -520 110 }
+		position = { -520 80 }
 
+		# entry_bg_simple is a translucent frame, so the map reads straight through it.
+		# A solid plate goes underneath, the way the State Transfer Tool does it.
+		icon = {
+			texture = "gfx/interface/backgrounds/entry_bg_simple_solid.dds"
+			size = { 100% 100% }
+			alwaystransparent = yes
+		}
 		background = { using = entry_bg_simple }
 
 		textbox = {
@@ -39,24 +60,215 @@ widget = {
 			size = { 280 24 }
 		}
 
+		### 1. Who are we demanding from.
 		button = {
-			text = "MBGA_LOAD_BUTTON"
+			text = "MBGA_REFRESH_COUNTRIES"
 			using = default_button
-			size = { 280 30 }
-			position = { 10 38 }
-			onclick = "[GetScriptedGui('mbga_open_for_state').Execute(GuiScope.SetRoot(StatesPanel.GetState.MakeScope).AddScope('actor', GetPlayer.MakeScope).End)]"
+			size = { 280 26 }
+			position = { 10 34 }
+			onclick = "[GetScriptedGui('mbga_refresh_countries').Execute(GuiScope.SetRoot(GetPlayer.MakeScope).End)]"
 		}
 
+		scrollarea = {
+			position = { 10 64 }
+			size = { 280 140 }
+			scrollbarpolicy_horizontal = always_off
+
+			scrollbar_vertical = { using = vertical_scrollbar }
+
+			scrollwidget = {
+				flowcontainer = {
+					direction = vertical
+					spacing = 2
+					datamodel = "[Country.MakeScope.GetList('mbga_countries')]"
+
+					item = {
+						button = {
+							text = "MBGA_COUNTRY_ROW"
+							using = default_button
+							size = { 250 22 }
+							onclick = "[GetScriptedGui('mbga_set_target_country').Execute(GuiScope.SetRoot(Scope.GetCountry.MakeScope).AddScope('actor', GetPlayer.MakeScope).End)]"
+						}
+					}
+				}
+			}
+		}
+
+		### 2. Which of their states. The data context switches to the target country, so
+		### Country.AccessStates below lists their states rather than ours.
 		textbox = {
-			text = "MBGA_LOADED_COUNT"
-			position = { 10 76 }
+			text = "MBGA_PICK_STATE"
+			position = { 10 210 }
 			size = { 280 20 }
 		}
 
+		scrollarea = {
+			position = { 10 232 }
+			size = { 280 140 }
+			scrollbarpolicy_horizontal = always_off
+			visible = "[GetScriptedGui('mbga_has_target_country').IsShown(GuiScope.SetRoot(GetPlayer.MakeScope).End)]"
+			datacontext = "[GetPlayer.MakeScope.Var('mbga_target_country').GetCountry]"
+
+			scrollbar_vertical = { using = vertical_scrollbar }
+
+			scrollwidget = {
+				flowcontainer = {
+					direction = vertical
+					spacing = 2
+					datamodel = "[Country.AccessStates]"
+
+					item = {
+						button = {
+							text = "MBGA_STATE_ROW"
+							using = default_button
+							size = { 250 22 }
+							onclick = "[GetScriptedGui('mbga_open_for_state').Execute(GuiScope.SetRoot(State.MakeScope).AddScope('actor', GetPlayer.MakeScope).End)]"
+						}
+					}
+				}
+			}
+		}
+
+		### 3. Which of that state's provinces. One row per candidate, with no ceiling:
+		### each province travels here wrapped in a container, because a data model item
+		### can be promoted to a container but not to a province.
 		textbox = {
 			text = "MBGA_TAKEN_COUNT"
-			position = { 10 100 }
-			size = { 280 20 }
+			position = { 10 378 }
+			size = { 95 20 }
+		}
+
+		button = {
+			text = "MBGA_GODMODE"
+			using = default_button
+			size = { 100 20 }
+			position = { 110 378 }
+			onclick = "[GetScriptedGui('mbga_toggle_godmode').Execute(GuiScope.SetRoot(GetPlayer.MakeScope).End)]"
+		}
+
+		# The camera cannot be sent to a province: every function in the Zoom family takes
+		# a state, a region, a front or a marker, and none takes a province. This is the
+		# closest the interface can get, and it is what the vanilla state panel uses.
+		button = {
+			text = "MBGA_GOTO_STATE"
+			using = default_button
+			size = { 74 20 }
+			position = { 216 378 }
+			datacontext = "[GetPlayer.MakeScope.Var('mbga_active_state').GetState]"
+			visible = "[GetScriptedGui('mbga_has_target_country').IsShown(GuiScope.SetRoot(GetPlayer.MakeScope).End)]"
+			onclick = "[State.ZoomExtraCloseToCapital]"
+		}
+
+		scrollarea = {
+			position = { 10 402 }
+			size = { 280 208 }
+			scrollbarpolicy_horizontal = always_off
+
+			scrollbar_vertical = { using = vertical_scrollbar }
+
+			scrollwidget = {
+				vbox = {
+					spacing = 2
+					parentanchor = top|left
+					datamodel = "[GetGlobalList('mbga_candidates')]"
+
+					item = {
+						hbox = {
+							datacontext = "[Scope.GetScriptContainer]"
+							spacing = 4
+
+							# The dumped data types settle two things I had wrong. Hub names are
+							# available straight off the state, so a row can say Le Havre rather
+							# than "port of Normandy". And Scope.GetProvince does exist, so an
+							# ordinary province can name its own terrain.
+							icon = {
+								size = { 20 20 }
+								texture = "gfx/interface/icons/building_icons/urban_center.dds"
+								visible = "[GetScriptedGui('mbga_container_is_city').IsShown(GuiScope.SetRoot(ScriptContainer.MakeScope).End)]"
+								alwaystransparent = yes
+							}
+							icon = {
+								size = { 20 20 }
+								texture = "gfx/interface/icons/building_icons/building_port.dds"
+								visible = "[GetScriptedGui('mbga_container_is_port').IsShown(GuiScope.SetRoot(ScriptContainer.MakeScope).End)]"
+								alwaystransparent = yes
+							}
+							icon = {
+								size = { 20 20 }
+								texture = "gfx/interface/icons/building_icons/wheat_farm.dds"
+								visible = "[GetScriptedGui('mbga_container_is_farm').IsShown(GuiScope.SetRoot(ScriptContainer.MakeScope).End)]"
+								alwaystransparent = yes
+							}
+							icon = {
+								size = { 20 20 }
+								texture = "gfx/interface/icons/building_icons/coal_mine.dds"
+								visible = "[GetScriptedGui('mbga_container_is_mine').IsShown(GuiScope.SetRoot(ScriptContainer.MakeScope).End)]"
+								alwaystransparent = yes
+							}
+							icon = {
+								size = { 20 20 }
+								texture = "gfx/interface/icons/building_icons/logging_camp.dds"
+								visible = "[GetScriptedGui('mbga_container_is_wood').IsShown(GuiScope.SetRoot(ScriptContainer.MakeScope).End)]"
+								alwaystransparent = yes
+							}
+							textbox = {
+								text = "MBGA_TAKEN_MARK"
+								size = { 18 22 }
+								visible = "[GetScriptedGui('mbga_container_taken').IsShown(GuiScope.SetRoot(ScriptContainer.MakeScope).End)]"
+								alwaystransparent = yes
+							}
+							textbox = {
+								text = "MBGA_MAP_BLOCKED"
+								size = { 18 22 }
+								visible = "[GetScriptedGui('mbga_container_blocked').IsShown(GuiScope.SetRoot(ScriptContainer.MakeScope).End)]"
+								alwaystransparent = yes
+							}
+							button = {
+								text = "MBGA_ROW_CITY"
+								using = default_button
+								size = { 240 22 }
+								visible = "[GetScriptedGui('mbga_container_is_city').IsShown(GuiScope.SetRoot(ScriptContainer.MakeScope).End)]"
+								onclick = "[GetScriptedGui('mbga_take_container').Execute(GuiScope.SetRoot(ScriptContainer.MakeScope).AddScope('actor', GetPlayer.MakeScope).End)]"
+							}
+							button = {
+								text = "MBGA_ROW_PORT"
+								using = default_button
+								size = { 240 22 }
+								visible = "[GetScriptedGui('mbga_container_is_port').IsShown(GuiScope.SetRoot(ScriptContainer.MakeScope).End)]"
+								onclick = "[GetScriptedGui('mbga_take_container').Execute(GuiScope.SetRoot(ScriptContainer.MakeScope).AddScope('actor', GetPlayer.MakeScope).End)]"
+							}
+							button = {
+								text = "MBGA_ROW_FARM"
+								using = default_button
+								size = { 240 22 }
+								visible = "[GetScriptedGui('mbga_container_is_farm').IsShown(GuiScope.SetRoot(ScriptContainer.MakeScope).End)]"
+								onclick = "[GetScriptedGui('mbga_take_container').Execute(GuiScope.SetRoot(ScriptContainer.MakeScope).AddScope('actor', GetPlayer.MakeScope).End)]"
+							}
+							button = {
+								text = "MBGA_ROW_MINE"
+								using = default_button
+								size = { 240 22 }
+								visible = "[GetScriptedGui('mbga_container_is_mine').IsShown(GuiScope.SetRoot(ScriptContainer.MakeScope).End)]"
+								onclick = "[GetScriptedGui('mbga_take_container').Execute(GuiScope.SetRoot(ScriptContainer.MakeScope).AddScope('actor', GetPlayer.MakeScope).End)]"
+							}
+							button = {
+								text = "MBGA_ROW_WOOD"
+								using = default_button
+								size = { 240 22 }
+								visible = "[GetScriptedGui('mbga_container_is_wood').IsShown(GuiScope.SetRoot(ScriptContainer.MakeScope).End)]"
+								onclick = "[GetScriptedGui('mbga_take_container').Execute(GuiScope.SetRoot(ScriptContainer.MakeScope).AddScope('actor', GetPlayer.MakeScope).End)]"
+							}
+							button = {
+								text = "MBGA_ROW_PLAIN"
+								using = default_button
+								size = { 240 22 }
+								visible = "[GetScriptedGui('mbga_container_is_plain').IsShown(GuiScope.SetRoot(ScriptContainer.MakeScope).End)]"
+								onclick = "[GetScriptedGui('mbga_take_container').Execute(GuiScope.SetRoot(ScriptContainer.MakeScope).AddScope('actor', GetPlayer.MakeScope).End)]"
+							}
+						}
+					}
+				}
+			}
 		}
 	}
 }

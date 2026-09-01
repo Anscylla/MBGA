@@ -1,6 +1,17 @@
-﻿# A marker on every candidate province, placed at Province.GetScreenPosition and hidden
-# when the camera pulls back.
-
+﻿# Buttons drawn over the provinces themselves.
+#
+# Province.GetScreenPosition gives a province its coordinates on screen and position
+# accepts a data expression; neither is used together anywhere in the base game.
+#
+# widgetanchor centres a button on the point it is given rather than measuring from the
+# middle of the screen. The remaining drift grew with the distance from the anchor, which
+# is a scale factor, so the layer carries the inverse of its parent's scale.
+# Multiply_CVector2f will not take a float, hence correcting through scale instead.
+#
+# One button per province, never three stacked. Three overlapping buttons meant the
+# invisible ones still swallowed the pointer, which is why an already taken province
+# could not be clicked again to hand it back. State is shown by icons laid on top of the
+# single button, all of them transparent to the mouse.
 widget = {
 	name = "mbga_map_overlay"
 	layer = layer_map_markers
@@ -8,14 +19,13 @@ widget = {
 	size = { 100% 100% }
 	alwaystransparent = yes
 	datacontext = "[AccessMetaPlayer.AccessPlayedOrObservedCountry]"
-
-	visible = "[GetMetaPlayer.GetPlayedOrObservedCountry.IsValid]"
+	visible = "[GetScriptedGui('mbga_has_target_country').IsShown(GuiScope.SetRoot(GetPlayer.MakeScope).End)]"
 
 	widget = {
 		size = { 100% 100% }
 		scale = "[GetInvParentScale(PdxGuiWidget.Self)]"
 		alwaystransparent = no
-		visible = "[And( IsZoomLevelNear, GetScriptedGui('mbga_has_target_country').IsShown(GuiScope.SetRoot(GetPlayer.MakeScope).End) )]"
+		visible = "[IsZoomLevelNear]"
 		datamodel = "[GetGlobalList('mbga_candidates')]"
 
 		item = {
@@ -28,7 +38,6 @@ widget = {
 				using = clickthrough_blocker
 				alwaystransparent = no
 				enabled = "[Not(GetScriptedGui('mbga_container_blocked').IsShown(GuiScope.SetRoot(ScriptContainer.MakeScope).End))]"
-				visible = "[Not(GetScriptedGui('mbga_container_own_from_start').IsShown(GuiScope.SetRoot(ScriptContainer.MakeScope).End))]"
 				onclick = "[GetScriptedGui('mbga_take_container').Execute(GuiScope.SetRoot(ScriptContainer.MakeScope).AddScope('actor', GetPlayer.MakeScope).End)]"
 
 				textbox = {

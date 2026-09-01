@@ -1,57 +1,79 @@
-﻿# PRIVATE. Undoes a sweep that did not finish, handing back anything the probe countries
-# still hold. Country scope. Does nothing when a sweep completes normally.
+﻿# Province level border detection, at runtime, with no precomputed map data.
+#
+# The engine never answers "do these two provinces touch". It does answer precisely
+# whether a country has a direct land border with a given state, through
+# has_strategic_land_adjacency, whose target may be a state. So instead of measuring
+# anything, the situation is arranged so that the answer concerns a single province:
+#
+#   create_country accepts a bare province, so each candidate in turn becomes the whole
+#   territory of MBG, a country that exists for nothing else. The state MBG then holds
+#   consists of that one province, so asking whether we border that state is asking
+#   whether we border that province. The province goes straight back to its owner, MBG
+#   is left with no land and stops existing.
+#
+# MBG has its own tag rather than borrowing a real country, so nothing that happens here
+# touches anyone's actual diplomacy and every log line is attributable.
 
-mbga_repair_probe_country = {
+# Country scope. Asks the question of every candidate and records the answer on it.
+mbga_mark_takeable_by_probe = {
 	save_scope_as = mbga_prober
 
-	if = {
-		limit = {
-			OR = {
-				c:MBG ?= { any_scope_state = { always = yes } }
-				c:MBH ?= { any_scope_state = { always = yes } }
-			}
+	every_in_global_list = {
+		variable = mbga_candidates
+		remove_variable = mbga_takeable
+		save_scope_as = mbga_probe_container
+		var:mbga_province = { save_scope_as = mbga_probe_province }
+		scope:mbga_probe_province = { state.owner = { save_scope_as = mbga_probe_owner } }
+
+		# the province becomes a country of its own for a moment
+		create_country = {
+			tag = MBG
+			province = scope:mbga_probe_province
 		}
-		every_key_in_variable_map = {
-			variable = mbga_probe_owner_of
-			save_scope_as = mbga_repair_province
+
+		# While the province stands alone as MBG's only holding, the states neighbouring
+		# it are exactly the states that province touches. That is more than the yes or no
+		# originally asked for: it is the province's full neighbourhood, so it is written
+		# onto the province itself and can answer any later question about it without
+		# lending it out again.
+		if = {
+			limit = { exists = c:MBG }
+			scope:mbga_probe_province = { clear_variable_list = mbga_touches }
+			scope:mbga_probe_province.state = {
+				every_neighbouring_state = {
+					save_scope_as = mbga_touched_state
+					scope:mbga_probe_province = {
+						add_to_variable_list = { name = mbga_touches target = scope:mbga_touched_state }
+					}
+				}
+			}
+			scope:mbga_probe_province = {
+				set_variable = { name = mbga_touches_checked value = 1 }
+			}
+
 			if = {
 				limit = {
-					OR = {
-						scope:mbga_repair_province = { owner ?= c:MBG }
-						scope:mbga_repair_province = { owner ?= c:MBH }
+					scope:mbga_probe_province = {
+						any_in_list = {
+							variable = mbga_touches
+							owner ?= scope:mbga_prober
+						}
 					}
 				}
-				scope:mbga_prober = {
-					"variable_map(mbga_probe_owner_of|scope:mbga_repair_province)" = {
-						save_scope_as = mbga_taker
-					}
-				}
-				scope:mbga_repair_province = { mbga_transfer_province_to_taker = yes }
-				debug_log = "MBGA|probe|a province was still with MBG and has been returned"
+				scope:mbga_probe_container = { set_variable = mbga_takeable }
 			}
 		}
+
+		# and straight back, which leaves MBG landless and gone
+		scope:mbga_probe_owner = { save_scope_as = mbga_taker }
+		scope:mbga_probe_province = { mbga_transfer_province_to_taker = yes }
 	}
 
 	if = {
-		limit = { c:MBG ?= { any_scope_state = { always = yes } } }
-		c:MBG = { annex = scope:mbga_prober }
-		debug_log = "MBGA|probe|MBG was annexed as a last resort, something did not return"
+		limit = { exists = c:MBG }
+		debug_log = "MBGA|probe|MBG still exists after the sweep, something was not handed back"
 	}
-	if = {
-		limit = { c:MBH ?= { any_scope_state = { always = yes } } }
-		c:MBH = { annex = scope:mbga_prober }
-		debug_log = "MBGA|probe|MBH was annexed as a last resort, something did not return"
-	}
-
-	# A country object can outlive its last province, so the question is whether MBG holds
-	# any ground, not whether the object is still around.
-	if = {
-		limit = {
-			OR = {
-				c:MBG ?= { any_scope_state = { always = yes } }
-				c:MBH ?= { any_scope_state = { always = yes } }
-			}
-		}
-		debug_log = "MBGA|probe|a probe country STILL holds land that could not be traced back"
+	else = {
+		debug_log = "MBGA|probe|border sweep finished, MBG gone"
 	}
 }

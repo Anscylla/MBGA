@@ -1,1 +1,2 @@
 ﻿gui/mbga_probe_panel.gui = mbga_probe_panel
+gui/mbga_map_overlay.gui = mbga_map_overlay

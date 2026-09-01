@@ -1,15 +1,14 @@
-﻿# PUBLIC. What an interface may ask of the mod: the country list, the target country, the
-# tool's own state and the numbers panel. See README.md.
-#
-# mbga_toggle_stats, mbga_stats_shown and mbga_test_has_run belong to the debug panel and are
-# not part of the contract.
+﻿# MBGA public interface API. An interface calls these; nothing here reaches into a
+# vanilla panel, so any mod can drive the same flow from its own gui.
 
+# Build the list of countries that can be demanded from.
 mbga_refresh_countries = {
 	scope = country
 	is_shown = { always = yes }
 	is_valid = { always = yes }
 	effect = {
 		mbga_fill_country_list = yes
+		debug_log = "MBGA|api|country list rebuilt"
 	}
 }
 
@@ -29,6 +28,7 @@ mbga_set_target_country = {
 			set_variable = { name = mbga_loaded_count value = 0 }
 			mbga_clear_candidates = yes
 		}
+		debug_log = "MBGA|api|target country set"
 	}
 }
 
@@ -40,77 +40,36 @@ mbga_has_target_country = {
 	effect = {}
 }
 
-mbga_tool_enabled = {
-	scope = country
-	is_shown = { has_game_rule = mbga_province_tool_debug }
-	is_valid = { always = yes }
-	effect = {}
-}
-
-# Show or hide the numbers beside the panel.
-mbga_toggle_stats = {
+# Two ways of gathering candidates. Normal keeps only provinces that touch the demander's
+# own territory, which check_area answers per province because it takes a province scope.
+# Godmode drops that filter and offers the whole state.
+mbga_toggle_godmode = {
 	scope = country
 	is_shown = { always = yes }
 	is_valid = { always = yes }
 	effect = {
 		if = {
-			limit = { has_variable = mbga_stats_shown }
-			remove_variable = mbga_stats_shown
+			limit = { has_variable = mbga_godmode }
+			remove_variable = mbga_godmode
+			debug_log = "MBGA|api|godmode off, bordering provinces only"
 		}
 		else = {
-			set_variable = mbga_stats_shown
+			set_variable = mbga_godmode
+			debug_log = "MBGA|api|godmode on, every province of the state"
+		}
+		# takeable is decided as each candidate is made, so the list has to be rebuilt
+		if = {
+			limit = { has_variable = mbga_active_state }
+			save_scope_as = actor
+			var:mbga_active_state = { mbga_open_for_state_effect = yes }
 		}
 	}
 }
 
-mbga_stats_shown = {
+mbga_godmode_on = {
 	scope = country
-	is_shown = { has_variable = mbga_stats_shown }
+	is_shown = { has_variable = mbga_godmode }
 	is_valid = { always = yes }
 	effect = {}
 }
 
-# The iterator bench has been run at least once, so its readout may show.
-mbga_test_has_run = {
-	scope = country
-	is_shown = { has_variable = mbga_test_ran }
-	is_valid = { always = yes }
-	effect = {}
-}
-
-mbga_close_tool = {
-	scope = country
-	is_shown = { has_variable = mbga_target_country }
-	is_valid = { always = yes }
-	effect = {
-		mbga_finish_settlement = yes
-		mbga_clear_candidates = yes
-		remove_variable = mbga_target_country
-		remove_variable = mbga_active_state
-		remove_variable = mbga_active_state_region
-		clear_variable_list = mbga_selectable
-		debug_log = "MBGA|api|the tool was put down"
-	}
-}
-
-# A war is being settled rather than a demand made, so the bar shows what it will cost.
-mbga_is_settling = {
-	scope = country
-	is_shown = { has_variable = mbga_settling }
-	is_valid = { always = yes }
-	effect = {}
-}
-
-# The tool is on at all, whichever way it is reached. The bar that ends a selection belongs
-# to the tool rather than to one of its settings.
-mbga_tool_is_on = {
-	scope = country
-	is_shown = {
-		OR = {
-			has_game_rule = mbga_province_tool_diplomatic
-			has_game_rule = mbga_province_tool_debug
-		}
-	}
-	is_valid = { always = yes }
-	effect = {}
-}

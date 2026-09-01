@@ -1,9 +1,0 @@
-﻿# PROBE 05 - does scripted_lists accept a province base?
-# If this base is invalid the game logs a parse error naming this file.
-
-mbga_province_in_state = {
-	base = province
-	conditions = {
-		always = yes
-	}
-}

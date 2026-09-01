@@ -1,12 +1,29 @@
-﻿# PUBLIC. What an interface asks of the mod before a state is even opened. See README.md.
+﻿# MBGA public script API.
 #
-# mbga_fill_country_list      country scope. Fills the list mbga_countries with every country
-#                             that exists, is not this one, and holds land.
-# mbga_list_every_province    country scope. The next state opens with everything takeable.
-# mbga_list_reachable_only    country scope. The next state opens with only what borders us.
-#                             This is the default; the two are a pair and either may be set
-#                             at any time, taking effect the next time a state is opened.
+# Everything another mod needs in order to drive province level demands. None of it
+# depends on a vanilla gui file, on the state panel, or on being inside a war.
+#
+#   mbga_fill_country_list        country scope. Fills the caller's mbga_countries list.
+#   mbga_fill_selectable_provinces state scope, scope:actor. Fills actor's mbga_selectable
+#                                 with that state's provinces. Generated, see tools/.
+#   mbga_build_candidates         country scope. Wraps every province in mbga_selectable
+#                                 in a container the interface can render, hubs first.
+#   mbga_clear_candidates         country scope. Destroys those containers again.
+#   mbga_transfer_province_to_taker province scope, scope:mbga_taker. Generated, see tools/.
+#
+# Variables an interface can read:
+#   mbga_godmode         present means every province of the state is offered, absent
+#                        means only those bordering the demander
+#   mbga_target_country  country currently being demanded from
+#   mbga_active_state    state whose provinces are listed
+#   mbga_selectable      list of provinces of that state
+#   mbga_candidates      GLOBAL list of containers, one per selectable province
+#   mbga_candidate_count, mbga_loaded_count, mbga_taken_count, mbga_taken
+#
+# Each candidate container holds mbga_province, mbga_owner, mbga_hub and mbga_label,
+# and gains mbga_taken once handed over.
 
+# Every country worth demanding from: it exists, it is not us, and it holds land.
 mbga_fill_country_list = {
 	save_scope_as = mbga_lister
 	clear_variable_list = mbga_countries
@@ -20,12 +37,4 @@ mbga_fill_country_list = {
 			add_to_variable_list = { name = mbga_countries target = scope:mbga_country_entry }
 		}
 	}
-}
-
-mbga_list_every_province = {
-	set_variable = mbga_unfiltered
-}
-
-mbga_list_reachable_only = {
-	remove_variable = mbga_unfiltered
 }

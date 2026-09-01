@@ -1,327 +1,194 @@
-﻿# PRIVATE. One script container per candidate province, and the map from a province back to
-# its container. What the interface may read off a container is in README.md.
+﻿# One container per candidate province.
 #
-# This is how a province reaches the interface: a data model item cannot be promoted to a
-# province, a container can. Each carries mbga_province, mbga_owner and mbga_hub, and
-# gains mbga_taken once handed over.
+# A data model item cannot be promoted to a province, which is why this used to run on a
+# fixed row of numbered slots. A container can be promoted: CMF renders a variable list of
+# containers with datacontext = "[Scope.GetScriptContainer]" and hands one back to a
+# scripted gui declaring scope = container. So each province travels to the interface
+# wrapped in a container, and the list has no ceiling.
 #
-# A container is built once and then kept for the rest of the save. Which province it wraps,
-# which hub it is, and which provinces it touches are facts about the map and do not change,
-# so a state region is worked out at most once however often it is opened. Only what depends
-# on the current borders is set again each time.
-#
-# Country scope. Reads mbga_selectable, writes the global list mbga_candidates.
+# Each container carries:
+#   mbga_province  the province itself
+#   mbga_owner     who held it when the list was built, so a take can be undone
+#   mbga_hub       1 city, 2 port, 3 farm, 4 mine, 5 wood, absent for plain countryside
+#   mbga_label     a flag holding the word the interface prints
+#   mbga_taken     present once it has been handed over
 
-# Ends the current selection. The containers stay: they are the mod's memory of the map.
 mbga_clear_candidates = {
+	every_container = {
+		limit = { has_tag = mbga_candidate }
+		destroy_container = yes
+	}
 	clear_global_variable_list = mbga_candidates
 	set_variable = { name = mbga_candidate_count value = 0 }
 	set_variable = { name = mbga_taken_count value = 0 }
 }
 
-# Country scope, scope:mbga_moved_container is the one that was clicked. Ground nobody can
-# march through is taken and handed back a whole state at a time.
+# Country scope. Wraps every province of mbga_selectable, hubs first.
 #
-# A province that cannot be marched through is worth nothing and holds nothing, so there is no
-# reason to pick and choose among them, and one left behind by accident is a trap: no army can
-# reach it, so no later war can take it. Reach does not travel out of them either, which the
-# lookup table sees to, so taking the lot gives away nothing.
+# Every province of the state gets a candidate, always. Whether it may actually be taken
+# is a flag on the candidate rather than a reason to leave it out, so the interface can
+# show what is off limits instead of silently hiding it, and further filters can be added
+# later without touching this.
 #
-# Only what the table marked. On a map with no table nothing carries mbga_impassable and every
-# province is treated as ordinary ground.
-mbga_take_whole_massif = {
-	save_scope_as = mbga_massif_taker
-	if = {
-		limit = { scope:mbga_moved_container = { has_variable = mbga_impassable } }
-		every_in_global_list = {
-			variable = mbga_candidates
-			limit = {
-				has_variable = mbga_impassable
-				NOT = { this = scope:mbga_moved_container }
-				NOT = { has_variable = mbga_own_from_start }
-				NOT = { has_variable = mbga_taken }
-			}
-			save_scope_as = mbga_massif_container
-			var:mbga_province = { save_scope_as = mbga_massif_province }
-			scope:mbga_massif_taker = { save_scope_as = mbga_taker }
-			scope:mbga_massif_province = { mbga_transfer_province_to_taker = yes }
-			set_variable = mbga_taken
-			set_variable = mbga_takeable
-			scope:mbga_massif_taker = {
-				add_to_variable_list = { name = mbga_taken target = scope:mbga_massif_province }
-				change_variable = { name = mbga_taken_count add = 1 }
-			}
-		}
-		debug_log = "MBGA|massif|the rest of the impassable ground in this state went with it"
-	}
-}
-
-# The same in reverse. One province left in our hands in the middle of a range would be as
-# stranded as one left in theirs.
-mbga_return_whole_massif = {
-	save_scope_as = mbga_massif_taker
-	if = {
-		limit = { scope:mbga_moved_container = { has_variable = mbga_impassable } }
-		every_in_global_list = {
-			variable = mbga_candidates
-			limit = {
-				has_variable = mbga_impassable
-				NOT = { this = scope:mbga_moved_container }
-				NOT = { has_variable = mbga_own_from_start }
-				has_variable = mbga_taken
-			}
-			save_scope_as = mbga_massif_container
-			var:mbga_province = { save_scope_as = mbga_massif_province }
-			var:mbga_owner = { save_scope_as = mbga_taker }
-			scope:mbga_massif_province = { mbga_transfer_province_to_taker = yes }
-			remove_variable = mbga_taken
-			scope:mbga_massif_taker = {
-				remove_list_variable = { name = mbga_taken target = scope:mbga_massif_province }
-				change_variable = { name = mbga_taken_count subtract = 1 }
-			}
-		}
-		debug_log = "MBGA|massif|the rest of the impassable ground in this state came back too"
-	}
-}
-
-# Country scope. Gathers the candidates for the state being opened: the containers already
-# standing for it, plus one for every province that has never been wrapped.
+# It saves its own scope up front rather than leaning on root: this runs from a scripted
+# gui whose root is the state that was clicked, so root here is not the country.
 mbga_build_candidates = {
 	save_scope_as = mbga_builder
 	mbga_clear_candidates = yes
 	mbga_load_hubs_of_state = yes
-	remove_variable = mbga_adj_from_table
 	clear_variable_list = mbga_wrapped
 
-	# Everything already known about which province touches which was learned on this map and
-	# does not expire, so a region worked out once stays worked out. Two things are remembered
-	# apart: that every pair inside the state has been settled, and that the neighbour lists
-	# also name ground beyond it. Probing gives the first, a table gives both.
-	if = {
-		limit = {
-			is_target_in_variable_list = {
-				name = mbga_scanned_regions
-				target = var:mbga_active_state_region
-			}
-		}
-		set_variable = mbga_adj_known
-		debug_log = "MBGA|keep|this region gave up its shape earlier, so no province is probed twice"
-	}
-	else = { remove_variable = mbga_adj_known }
-
-	if = {
-		limit = {
-			is_target_in_variable_list = {
-				name = mbga_mapped_regions
-				target = var:mbga_active_state_region
-			}
-		}
-		set_variable = mbga_adj_reaches_outside
-	}
-	else = { remove_variable = mbga_adj_reaches_outside }
-
-	# A region is only ever new once. Everything after this point either finds its containers
-	# standing or builds them, and the two cases differ in nothing the interface can see.
-	if = {
-		limit = {
-			NOT = {
-				is_target_in_variable_list = {
-					name = mbga_known_regions
-					target = var:mbga_active_state_region
-				}
-			}
-		}
-		set_variable = mbga_region_is_new
-		add_to_variable_list = { name = mbga_known_regions target = var:mbga_active_state_region }
-		debug_log = "MBGA|keep|this region is new, its containers are being built"
-	}
-	else = {
-		remove_variable = mbga_region_is_new
-		debug_log = "MBGA|keep|this region was opened before, its containers are still standing"
-	}
-
-	mbga_gather_standing_containers = yes
-
+	# hubs first, so the named provinces head the list
 	every_in_list = {
 		variable = mbga_selectable
-		save_scope_as = mbga_wrap_province
-		if = {
-			limit = {
-				NOT = {
-					scope:mbga_builder = {
-						is_target_in_variable_list = {
-							name = mbga_wrapped
-							target = scope:mbga_wrap_province
-						}
-					}
+		limit = {
+			# ?= guards the left side of a comparison, not the right. A state with no
+			# port simply has no mbga_hub_port, and comparing against a variable that was
+			# never set is an error, so each one is asked for only once it exists.
+			OR = {
+				AND = {
+					scope:mbga_builder = { has_variable = mbga_hub_city }
+					this ?= scope:mbga_builder.var:mbga_hub_city
+				}
+				AND = {
+					scope:mbga_builder = { has_variable = mbga_hub_port }
+					this ?= scope:mbga_builder.var:mbga_hub_port
+				}
+				AND = {
+					scope:mbga_builder = { has_variable = mbga_hub_farm }
+					this ?= scope:mbga_builder.var:mbga_hub_farm
+				}
+				AND = {
+					scope:mbga_builder = { has_variable = mbga_hub_mine }
+					this ?= scope:mbga_builder.var:mbga_hub_mine
+				}
+				AND = {
+					scope:mbga_builder = { has_variable = mbga_hub_wood }
+					this ?= scope:mbga_builder.var:mbga_hub_wood
 				}
 			}
-			scope:mbga_builder = { mbga_wrap_province = yes }
 		}
+		save_scope_as = mbga_wrap_province
+		scope:mbga_builder = { mbga_wrap_province = yes }
 	}
 
-	# Hubs head the list, and the rest follow. Order is set here rather than by the order the
-	# containers were built, since a container may have been built for a different state of
-	# the same region, in some other war.
-	sort_global_variable_list = { name = mbga_candidates order = var:mbga_order }
+	# then the rest
+	every_in_list = {
+		variable = mbga_selectable
+		limit = {
+			NOT = {
+				scope:mbga_builder = {
+					is_target_in_variable_list = { name = mbga_wrapped target = prev }
+				}
+			}
+		}
+		save_scope_as = mbga_wrap_province
+		scope:mbga_builder = { mbga_wrap_province = yes }
+	}
 
 	clear_variable_list = mbga_wrapped
-}
+	clear_variable_list = mbga_border_provinces_local
 
-# Country scope. Every container this state already has, brought back into the candidate list
-# with what depends on the current borders set again.
-mbga_gather_standing_containers = {
-	# Asked for first. ?= covers the left side of the comparison alone, and the game walks
-	# this effect to build a tooltip, where no state has been chosen.
+	# Outside godmode the border probe decides which of these may actually be taken.
 	if = {
-		limit = { has_variable = mbga_active_state_region }
-		var:mbga_active_state_region = { save_scope_as = mbga_gather_region }
-		mbga_gather_containers_of_region = yes
+		limit = { NOT = { has_variable = mbga_godmode } }
+		mbga_mark_takeable_by_probe = yes
 	}
 }
 
-# Country scope, scope:mbga_gather_region is the state region being opened.
-mbga_gather_containers_of_region = {
-	every_container = {
-		limit = {
-			has_tag = mbga_candidate
-			var:mbga_region ?= scope:mbga_gather_region
-		}
-		save_scope_as = mbga_standing_container
-		var:mbga_province = { save_scope_as = mbga_standing_province }
-
-		scope:mbga_builder = {
-			if = {
-				limit = {
-					is_target_in_variable_list = {
-						name = mbga_selectable
-						target = scope:mbga_standing_province
-					}
-				}
-				scope:mbga_standing_container = { mbga_refresh_container = yes }
-				add_to_global_variable_list = {
-					name = mbga_candidates
-					target = scope:mbga_standing_container
-				}
-				add_to_variable_list = { name = mbga_wrapped target = scope:mbga_standing_province }
-				change_variable = { name = mbga_candidate_count add = 1 }
-			}
-		}
-	}
-}
-
-# Container scope, scope:mbga_builder is the country opening the state. Sets what the current
-# borders decide and clears what belonged to the last time this state was open.
-mbga_refresh_container = {
-	remove_variable = mbga_taken
-	remove_variable = mbga_takeable
-	remove_variable = mbga_touches_home
-	remove_variable = mbga_own_from_start
-	save_scope_as = mbga_refreshed_container
-
-	var:mbga_province = { save_scope_as = mbga_refreshed_province }
-	scope:mbga_refreshed_province = { state.owner ?= { save_scope_as = mbga_refreshed_owner } }
-	set_variable = { name = mbga_owner value = scope:mbga_refreshed_owner }
-
-	# Ours before the state was opened, so there is nothing to demand here. Kept in the list
-	# rather than dropped, so the state still shows its full shape.
-	if = {
-		limit = {
-			scope:mbga_builder = {
-				is_target_in_variable_list = {
-					name = mbga_own_at_start
-					target = scope:mbga_refreshed_province
-				}
-			}
-		}
-		set_variable = mbga_own_from_start
-	}
-
-	# Nothing is takeable until something says so. Under the unfiltered rule that is the whole
-	# state at once, otherwise it is whatever the border scan reaches, so a province never
-	# offers itself by default.
-	if = {
-		limit = { scope:mbga_builder = { has_variable = mbga_unfiltered } }
-		set_variable = mbga_takeable
-	}
-}
-
-# Country scope, scope:mbga_wrap_province is the province. Builds the container that stands
-# for it from now on.
+# Country scope, scope:mbga_wrap_province is the province being wrapped.
 #
-# Everything set here is a fact about the map: which province it is, which region it belongs
-# to, which hub it is and where it sits in the list. What the borders decide is left to
-# mbga_refresh_container, which runs on every opening.
-# Country scope, scope:mbga_new_container is the container being built. Marks it if the
-# province it wraps is the state's hub of this kind. $KIND$ and $ORDER$ are substituted
-# when the game loads.
-#
-# A province can only be one hub, so the first kind to claim it keeps it, and mbga_order is
-# what puts the named provinces at the head of the list.
-mbga_mark_hub = {
-	if = {
-		limit = {
-			scope:mbga_new_container = { NOT = { has_variable = mbga_hub } }
-			has_variable = mbga_hub_$KIND$
-			scope:mbga_wrap_province ?= var:mbga_hub_$KIND$
-		}
-		scope:mbga_new_container = {
-			set_variable = { name = mbga_hub value = $ORDER$ }
-			set_variable = { name = mbga_order value = $ORDER$ }
-		}
-	}
-}
-
+# on_created carries nothing in with it: saved scopes and local variables from the
+# surrounding chain are not visible inside it, which is why the province and the owner
+# silently never landed on the container and the transfer was handed a none scope. So
+# on_created only plants a marker, the container is picked back up by that marker, and
+# everything else is written from the ordinary effect chain where the scopes do exist.
 mbga_wrap_province = {
+	scope:mbga_wrap_province = { state.owner = { save_scope_as = mbga_wrap_owner } }
+
 	create_container = {
 		tags = { mbga_candidate }
 		on_created = {
 			set_variable = mbga_fresh
-			save_scope_as = mbga_new_container
 		}
 	}
 
-	# The scope saved on creation is used where it comes through. Where it does not, the new
-	# container is the one carrying mbga_fresh, and a scope left over from the province before
-	# does not carry it.
-	if = {
-		limit = { NOT = { scope:mbga_new_container ?= { has_variable = mbga_fresh } } }
-		every_container = {
-			limit = {
-				has_tag = mbga_candidate
-				has_variable = mbga_fresh
-			}
-			save_scope_as = mbga_new_container
+	every_container = {
+		limit = {
+			has_tag = mbga_candidate
+			has_variable = mbga_fresh
 		}
+		remove_variable = mbga_fresh
+		save_scope_as = mbga_new_container
 	}
 
 	scope:mbga_new_container = {
-		remove_variable = mbga_fresh
 		set_variable = { name = mbga_province value = scope:mbga_wrap_province }
-		set_variable = { name = mbga_region value = scope:mbga_builder.var:mbga_active_state_region }
-		scope:mbga_builder = {
-			add_to_variable_map = {
-				name = mbga_container_of
-				key = scope:mbga_wrap_province
-				value = scope:mbga_new_container
-			}
-		}
+		set_variable = { name = mbga_owner value = scope:mbga_wrap_owner }
 	}
 
-	mbga_mark_hub = { KIND = city  ORDER = 1 }
-	mbga_mark_hub = { KIND = port  ORDER = 2 }
-	mbga_mark_hub = { KIND = farm  ORDER = 3 }
-	mbga_mark_hub = { KIND = mine  ORDER = 4 }
-	mbga_mark_hub = { KIND = wood  ORDER = 5 }
+	# Every candidate is takeable. The border rule has no working test behind it: the only
+	# adjacency question a province scope accepts is check_area, which compares surface
+	# areas and answers false for any pair, and the interface cannot measure a distance.
+	# The flag and its plumbing stay so a rule can be dropped in here later without
+	# touching anything around it.
+	scope:mbga_new_container = { set_variable = mbga_takeable }
 
 	if = {
-		limit = { scope:mbga_new_container = { NOT = { has_variable = mbga_hub } } }
+		limit = {
+			has_variable = mbga_hub_city
+			scope:mbga_wrap_province ?= var:mbga_hub_city
+		}
 		scope:mbga_new_container = {
-			set_variable = { name = mbga_order value = 6 }
+			set_variable = { name = mbga_hub value = 1 }
+			set_variable = { name = mbga_label value = flag:city }
 		}
 	}
-
-	scope:mbga_new_container = { mbga_refresh_container = yes }
+	else_if = {
+		limit = {
+			has_variable = mbga_hub_port
+			scope:mbga_wrap_province ?= var:mbga_hub_port
+		}
+		scope:mbga_new_container = {
+			set_variable = { name = mbga_hub value = 2 }
+			set_variable = { name = mbga_label value = flag:port }
+		}
+	}
+	else_if = {
+		limit = {
+			has_variable = mbga_hub_farm
+			scope:mbga_wrap_province ?= var:mbga_hub_farm
+		}
+		scope:mbga_new_container = {
+			set_variable = { name = mbga_hub value = 3 }
+			set_variable = { name = mbga_label value = flag:farmland }
+		}
+	}
+	else_if = {
+		limit = {
+			has_variable = mbga_hub_mine
+			scope:mbga_wrap_province ?= var:mbga_hub_mine
+		}
+		scope:mbga_new_container = {
+			set_variable = { name = mbga_hub value = 4 }
+			set_variable = { name = mbga_label value = flag:mines }
+		}
+	}
+	else_if = {
+		limit = {
+			has_variable = mbga_hub_wood
+			scope:mbga_wrap_province ?= var:mbga_hub_wood
+		}
+		scope:mbga_new_container = {
+			set_variable = { name = mbga_hub value = 5 }
+			set_variable = { name = mbga_label value = flag:woodland }
+		}
+	}
+	else = {
+		scope:mbga_new_container = {
+			set_variable = { name = mbga_label value = flag:countryside }
+		}
+	}
 
 	add_to_global_variable_list = { name = mbga_candidates target = scope:mbga_new_container }
 	add_to_variable_list = { name = mbga_wrapped target = scope:mbga_wrap_province }

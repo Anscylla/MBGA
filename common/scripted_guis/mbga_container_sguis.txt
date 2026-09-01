@@ -1,10 +1,9 @@
-﻿# PUBLIC. Everything the interface does to a candidate province. See README.md.
+﻿# The interface talks to containers, never to provinces.
 #
-# The interface talks to containers, never to provinces. scope = container is what makes that
-# possible: the interface hands back the container it rendered and script unwraps the province
-# inside. mbga_take_container takes it, or hands it back if it was already taken; the rest
-# answer questions about a row so it can draw itself.
+# scope = container is what makes this possible: the interface hands back the container
+# it rendered, and script unwraps the province inside it.
 
+# Is this candidate already taken? Asked per row.
 mbga_container_taken = {
 	scope = container
 	is_shown = { has_variable = mbga_taken }
@@ -19,36 +18,16 @@ mbga_take_container = {
 	is_shown = { always = yes }
 	# Something already taken can always be handed back, whatever the filter says about
 	# taking it in the first place.
-	# While a state is worked out as it is used, whether a province is within reach is not
-	# known until it is asked about, so the click is allowed and the effect asks.
 	is_valid = {
 		has_variable = mbga_province
 		OR = {
 			has_variable = mbga_taken
 			has_variable = mbga_takeable
-			scope:actor = { has_variable = mbga_lazy }
 		}
 	}
 	effect = {
-		if = {
-			limit = {
-				NOT = { has_variable = mbga_taken }
-				NOT = { has_variable = mbga_takeable }
-				scope:actor = { has_variable = mbga_lazy }
-			}
-			scope:actor = { save_scope_as = mbga_prober }
-			mbga_verify_one_candidate = yes
-		}
-
 		var:mbga_province = { save_scope_as = mbga_container_province }
 		if = {
-			limit = {
-				NOT = { has_variable = mbga_taken }
-				NOT = { has_variable = mbga_takeable }
-			}
-			debug_log = "MBGA|container|that province does not touch our ground yet"
-		}
-		else_if = {
 			limit = { has_variable = mbga_taken }
 			var:mbga_owner = { save_scope_as = mbga_taker }
 			scope:mbga_container_province = { mbga_transfer_province_to_taker = yes }
@@ -58,9 +37,6 @@ mbga_take_container = {
 				change_variable = { name = mbga_taken_count subtract = 1 }
 			}
 			debug_log = "MBGA|container|province handed back"
-			save_scope_as = mbga_moved_container
-			scope:actor = { mbga_return_whole_massif = yes }
-			scope:actor = { mbga_refresh_after_return = yes }
 		}
 		else = {
 			scope:actor = { save_scope_as = mbga_taker }
@@ -69,12 +45,8 @@ mbga_take_container = {
 			scope:actor = {
 				add_to_variable_list = { name = mbga_taken target = scope:mbga_container_province }
 				change_variable = { name = mbga_taken_count add = 1 }
-				set_variable = { name = mbga_last_taken value = scope:mbga_container_province }
 			}
 			debug_log = "MBGA|container|province taken"
-			save_scope_as = mbga_moved_container
-			scope:actor = { mbga_take_whole_massif = yes }
-			scope:actor = { mbga_refresh_after_take = yes }
 		}
 	}
 }
@@ -128,14 +100,6 @@ mbga_container_is_plain = {
 mbga_container_blocked = {
 	scope = container
 	is_shown = { NOT = { has_variable = mbga_takeable } }
-	is_valid = { always = yes }
-	effect = {}
-}
-
-# Already ours when the state was opened. Nothing is drawn for these.
-mbga_container_own_from_start = {
-	scope = container
-	is_shown = { has_variable = mbga_own_from_start }
 	is_valid = { always = yes }
 	effect = {}
 }

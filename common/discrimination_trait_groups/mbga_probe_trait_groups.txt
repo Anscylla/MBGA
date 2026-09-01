@@ -1,9 +1,0 @@
-﻿# A heritage and a language trait each need a group of their own type.
-
-heritage_group_mbga_probe = {
-	type = heritage
-}
-
-language_group_mbga_probe = {
-	type = language
-}

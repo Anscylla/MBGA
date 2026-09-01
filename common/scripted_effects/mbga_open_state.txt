@@ -1,97 +1,65 @@
-﻿# PUBLIC. The front door: opens a state for demanding. See README.md.
-#
-# mbga_open_for_state_effect  state scope, scope:actor is the demanding country. Records what
-#                             was already ours, builds one container per province into the
-#                             global list mbga_candidates, and works out what may be taken.
-#
-# Called by the debug panel, by the diplomatic action, or by any other interface driving the
-# mod. Everything it needs, it takes from its own scope.
+﻿# The work behind mbga_open_for_state, split out so the filter toggle can redo it
+# without the interface having to hand the state in again.
 
 mbga_open_for_state_effect = {
-	save_scope_as = mbga_opened_state
-	debug_log = "MBGA|dyn|a state was handed in"
-	scope:actor = {
-		set_variable = { name = mbga_active_state value = scope:mbga_opened_state }
-		set_variable = { name = mbga_active_state_region value = scope:mbga_opened_state.state_region }
-		clear_variable_list = mbga_taken
-		set_variable = { name = mbga_taken_count value = 0 }
-	}
-	mbga_fill_selectable_provinces = yes
-
-	scope:actor = {
-		clear_variable_list = mbga_own_at_start
-		every_in_list = {
-			variable = mbga_selectable
-			limit = { owner ?= scope:actor }
-			save_scope_as = mbga_already_ours
-			scope:actor = {
-				add_to_variable_list = { name = mbga_own_at_start target = scope:mbga_already_ours }
+		debug_log = "MBGA|dyn|a state was handed in from the panel"
+		scope:actor = {
+			set_variable = { name = mbga_active_state value = ROOT }
+			set_variable = { name = mbga_active_state_region value = ROOT.state_region }
+			clear_variable_list = mbga_taken
+			set_variable = { name = mbga_taken_count value = 0 }
+		}
+		mbga_fill_selectable_provinces = yes
+		scope:actor = {
+			set_variable = { name = mbga_loaded_count value = 0 }
+			every_in_list = {
+				variable = mbga_selectable
+				scope:actor = { change_variable = { name = mbga_loaded_count add = 1 } }
 			}
+			mbga_build_candidates = yes
 		}
-	}
+		# Say the count out loud. Three probes have now drawn a conclusion from a list
+		# that was silently empty, so the real code reports what it actually found.
+		if = {
+			limit = { scope:actor = { var:mbga_candidate_count > 0 } }
+			debug_log = "MBGA|dyn|candidates built for this state"
+		}
+		else = {
+			debug_log = "MBGA|dyn|NO candidates - the selectable list was empty"
+		}
+}
 
-	scope:actor = {
-		set_variable = { name = mbga_loaded_count value = 0 }
+# A province that changes hands moves the frontier: taking one extends our reach to its
+# own neighbours, handing it back withdraws it. So the candidate list and every takeable
+# flag on it are rebuilt after each change, keeping what is on offer honest as the border
+# moves. The provinces already taken are remembered and marked again.
+mbga_refresh_after_change = {
+	save_scope_as = actor
+	if = {
+		limit = { has_variable = mbga_active_state }
+		clear_variable_list = mbga_previously_taken
 		every_in_list = {
-			variable = mbga_selectable
-			scope:actor = { change_variable = { name = mbga_loaded_count add = 1 } }
+			variable = mbga_taken
+			save_scope_as = mbga_keep
+			scope:actor = { add_to_variable_list = { name = mbga_previously_taken target = scope:mbga_keep } }
 		}
-		set_variable = { name = mbga_orphans_released value = 0 }
+
+		var:mbga_active_state = { mbga_fill_selectable_provinces = yes }
 		mbga_build_candidates = yes
 
-		if = {
-			limit = { NOT = { has_variable = mbga_unfiltered } }
-			mbga_build_adjacency_graph = yes
-		}
-		mbga_recompute_takeable = yes
-		mbga_show_settlement_price = yes
-	}
-	# Only worth saying when the pass actually ran: the game evaluates this effect to
-	# build tooltips as well, and nothing is counted then.
-	if = {
-		limit = { scope:actor = { has_variable = mbga_candidate_count } }
-		if = {
-			limit = {
-				scope:actor = {
-					var:mbga_candidate_count = 0
-					var:mbga_loaded_count = 0
+		every_in_global_list = {
+			variable = mbga_candidates
+			if = {
+				limit = {
+					scope:actor = {
+						is_target_in_variable_list = { name = mbga_previously_taken target = prev.var:mbga_province }
+					}
 				}
+				set_variable = mbga_taken
+				set_variable = mbga_takeable
 			}
-			debug_log = "MBGA|dyn|the state listed no provinces at all, so nothing could be built"
 		}
-		else_if = {
-			limit = { scope:actor = { var:mbga_candidate_count = 0 } }
-			debug_log = "MBGA|dyn|provinces were listed but none of them became a candidate"
-		}
+		clear_variable_list = mbga_previously_taken
 	}
 }
 
-mbga_refresh_after_take = {
-	# A state worked out as it is used has no neighbour lists to reason from, so what the
-	# province just taken opened up has to be asked of the engine. Without this the border on
-	# screen never grows: the provinces beyond it can still be clicked, since a click on such
-	# a state asks about that one province, but nothing shows the player where they are.
-	#
-	# This is the cost the scan budget is choosing between. Every take pays for the ring it
-	# opens, and a pair once settled is never asked about again, so each take leaves less to
-	# do than the last.
-	if = {
-		limit = { has_variable = mbga_lazy }
-		mbga_extend_after_take = yes
-	}
-
-	mbga_recompute_takeable = yes
-	mbga_show_settlement_price = yes
-}
-
-# Handing back is the move that can strand something, so the taken set is checked for a
-# path home before the panel is told what may be taken next.
-mbga_refresh_after_return = {
-	if = {
-		limit = { has_variable = mbga_lazy }
-		mbga_release_orphans_lazily = yes
-	}
-	else = { mbga_enforce_connected_takes = yes }
-	mbga_recompute_takeable = yes
-	mbga_show_settlement_price = yes
-}
