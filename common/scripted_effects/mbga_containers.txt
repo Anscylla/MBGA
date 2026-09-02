@@ -72,28 +72,29 @@ mbga_build_candidates = {
 		scope:mbga_builder = { mbga_wrap_province = yes }
 	}
 
-	# then the rest
+	# then the rest. The province is saved first and named outright in the check, because
+	# prev has resolved to something other than expected every time it has been relied on
+	# in this mod.
 	every_in_list = {
 		variable = mbga_selectable
-		limit = {
-			NOT = {
-				scope:mbga_builder = {
-					is_target_in_variable_list = { name = mbga_wrapped target = prev }
+		save_scope_as = mbga_wrap_province
+		if = {
+			limit = {
+				NOT = {
+					scope:mbga_builder = {
+						is_target_in_variable_list = {
+							name = mbga_wrapped
+							target = scope:mbga_wrap_province
+						}
+					}
 				}
 			}
+			scope:mbga_builder = { mbga_wrap_province = yes }
 		}
-		save_scope_as = mbga_wrap_province
-		scope:mbga_builder = { mbga_wrap_province = yes }
 	}
 
 	clear_variable_list = mbga_wrapped
 	clear_variable_list = mbga_border_provinces_local
-
-	# Outside godmode the border probe decides which of these may actually be taken.
-	if = {
-		limit = { NOT = { has_variable = mbga_godmode } }
-		mbga_mark_takeable_by_probe = yes
-	}
 }
 
 # Country scope, scope:mbga_wrap_province is the province being wrapped.
@@ -125,6 +126,15 @@ mbga_wrap_province = {
 	scope:mbga_new_container = {
 		set_variable = { name = mbga_province value = scope:mbga_wrap_province }
 		set_variable = { name = mbga_owner value = scope:mbga_wrap_owner }
+	}
+
+	# Ours before the session started, so there is nothing to demand here. Kept in the
+	# list rather than dropped, so the state still shows its full shape.
+	if = {
+		limit = {
+			is_target_in_variable_list = { name = mbga_own_at_start target = scope:mbga_wrap_province }
+		}
+		scope:mbga_new_container = { set_variable = mbga_own_from_start }
 	}
 
 	# Every candidate is takeable. The border rule has no working test behind it: the only

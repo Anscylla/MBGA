@@ -1,0 +1,425 @@
+﻿# A bench for the one question the mod still has no good answer to: how to get the
+# provinces of a state without naming a single region of the base game.
+#
+# Nothing here is wired into the mechanism. Its own effects, its own variables, its own
+# list, its own window. It can be deleted whole and nothing else notices.
+#
+# The point of the separate effects is not tidiness. A rejected effect does not quietly do
+# nothing - it takes the whole scripted effect it sits in down with it, silently, and every
+# branch inside stops running. That is how the last attempt at every_province came back as
+# an empty province list with no logging at all, and why it proved nothing about
+# every_province: four new things were tried in one block, and any one of them could have
+# been the invalid one. So each candidate gets an effect to itself here. If the engine
+# throws one out, the others still run and still report.
+#
+# Country scope throughout. The state under test is the country's own capital, which every
+# country has and which needs no click, no war and no map data.
+
+# ---------------------------------------------------------------------------------------
+# Round two. The first round settled that every_province, ordered_province and
+# random_province are all province scope effects - the engine said so itself, "Wrong scope
+# for effect: state, expected province" - and that nothing anywhere in the engine hands out
+# a province scope except every_province_in_<geographic region>. So the question is no
+# longer how to avoid a geographic region, but how few names one has to know.
+#
+# Two of the base game's own regions, old_world and new_world, hold 25 and 11 strategic
+# regions, disjoint, and between them every land strategic region in the game. Two names
+# instead of the thirty six the mod branches over today, and no branching at all.
+#
+# Candidate 4. Both world halves, filtered to the state under test. Should match the truth.
+mbga_test_iter_world = {
+	every_province_in_old_world = {
+		limit = { state ?= scope:mbga_test_state }
+		scope:mbga_test_runner = { change_variable = { name = mbga_test_n_world add = 1 } }
+	}
+	every_province_in_new_world = {
+		limit = { state ?= scope:mbga_test_state }
+		scope:mbga_test_runner = { change_variable = { name = mbga_test_n_world add = 1 } }
+	}
+}
+
+# Candidate 5. Can a state region carry a list? If it can, the whole map is walked once at
+# the start of a game and every province is filed under its own region, after which no
+# iterator is ever needed again and nothing names anything.
+mbga_test_region_store = {
+	state_region ?= {
+		clear_variable_list = mbga_test_stored
+		save_scope_as = mbga_test_region
+	}
+	every_province_in_old_world = {
+		limit = { state ?= scope:mbga_test_state }
+		save_scope_as = mbga_test_province
+		scope:mbga_test_region = {
+			add_to_variable_list = { name = mbga_test_stored target = scope:mbga_test_province }
+		}
+	}
+	every_province_in_new_world = {
+		limit = { state ?= scope:mbga_test_state }
+		save_scope_as = mbga_test_province
+		scope:mbga_test_region = {
+			add_to_variable_list = { name = mbga_test_stored target = scope:mbga_test_province }
+		}
+	}
+	scope:mbga_test_region = {
+		every_in_list = {
+			variable = mbga_test_stored
+			scope:mbga_test_runner = { change_variable = { name = mbga_test_n_stored add = 1 } }
+		}
+	}
+}
+
+# ---------------------------------------------------------------------------------------
+# Round three. Reading the documentation has now been wrong twice in the same direction:
+# every_province is described as targeting a state and the engine answered "expected
+# province", and the generated entries for the region iterators carry somebody else's text
+# entirely. So these ask the engine instead of the file.
+#
+# debug_log_scopes makes the game write out what a scope actually is. Whatever comes back
+# is the truth about the object, not about its paperwork.
+
+# Probe A. What the game thinks a state, a state region and a province are, in its own
+# words. Nothing is counted here; the answer is in debug.log.
+mbga_test_probe_scopes = {
+	debug_log = "MBGA|probe|BELOW THIS LINE: the state under test"
+	debug_log_scopes = yes
+	state_region ?= {
+		debug_log = "MBGA|probe|BELOW THIS LINE: its state region"
+		debug_log_scopes = yes
+	}
+}
+
+# Probe B. every_scope_state is documented as running from a state region and as iterating
+# "all states including provinces", which is either sloppy wording or the whole answer.
+# Counting settles it: a state region holds one state per owner, so a handful, while the
+# capital holds six provinces. The number says which of the two it really hands out.
+mbga_test_scope_states = {
+	state_region ?= {
+		every_scope_state = {
+			scope:mbga_test_runner = { change_variable = { name = mbga_test_n_scopestates add = 1 } }
+		}
+	}
+}
+
+# Probe C. The one that matters. every_province demands a province scope, so it is given
+# one, and then asked what it iterates from there. Six would mean it walks the provinces of
+# that province's state - and then a single seed per state region is enough, and
+# every_state_region is a global iterator that names nothing at all. That is the road to
+# zero names.
+#
+# The seed is taken from the world halves here because this is a bench and they are already
+# proven. If the probe answers, the real thing gets its seed elsewhere.
+mbga_test_seed_province = {
+	every_province_in_old_world = {
+		limit = {
+			state ?= scope:mbga_test_state
+			scope:mbga_test_runner = { NOT = { has_variable = mbga_test_seed } }
+		}
+		save_scope_as = mbga_test_seed_prov
+		scope:mbga_test_runner = { set_variable = { name = mbga_test_seed value = scope:mbga_test_seed_prov } }
+	}
+	every_province_in_new_world = {
+		limit = {
+			state ?= scope:mbga_test_state
+			scope:mbga_test_runner = { NOT = { has_variable = mbga_test_seed } }
+		}
+		save_scope_as = mbga_test_seed_prov
+		scope:mbga_test_runner = { set_variable = { name = mbga_test_seed value = scope:mbga_test_seed_prov } }
+	}
+}
+
+# Kept apart from the seeding so that a rejection here costs only this.
+mbga_test_from_province = {
+	scope:mbga_test_runner = {
+		if = {
+			limit = { has_variable = mbga_test_seed }
+			var:mbga_test_seed = {
+				debug_log = "MBGA|probe|BELOW THIS LINE: one province of that state"
+				debug_log_scopes = yes
+				every_province = {
+					scope:mbga_test_runner = {
+						change_variable = { name = mbga_test_n_fromprov add = 1 }
+					}
+				}
+			}
+		}
+	}
+}
+
+# ---------------------------------------------------------------------------------------
+# Round four. The descent from the top works: every_strategic_region, every_state_region and
+# every_state are all global iterators that name nothing. Exactly one link is missing, the
+# last one, from a state down to a province.
+#
+# The base game is no help - it never makes that step itself. every_province appears three
+# times in the whole game, all of them inside script values counting terrain, and the
+# province scope link is only ever entered from a battle. So there is no vanilla pattern to
+# copy, and the documentation has already been wrong twice about this exact effect.
+#
+# So these guess. Each candidate link gets an effect to itself, because an effect the engine
+# refuses is thrown away whole and takes nothing else with it, and a guess that misses
+# should cost one line in the log rather than the run. If any of them answers, a seed can be
+# had from any state at all, and with every_state being global the whole map follows without
+# a single name anywhere.
+
+mbga_test_link_province = {
+	province ?= {
+		scope:mbga_test_runner = { change_variable = { name = mbga_test_n_link add = 1 } }
+	}
+}
+
+mbga_test_link_capital_province = {
+	capital_province ?= {
+		scope:mbga_test_runner = { change_variable = { name = mbga_test_n_link add = 1 } }
+	}
+}
+
+# A strait is a crossing between two provinces, so if one can be reached from a state it
+# carries provinces with it.
+mbga_test_link_strait = {
+	every_scope_strait = {
+		scope:mbga_test_runner = { change_variable = { name = mbga_test_n_strait add = 1 } }
+	}
+}
+
+# A building sits in a state. If it knows which province it is in, every state with a
+# building has a seed.
+mbga_test_link_building = {
+	every_scope_building = {
+		province ?= {
+			scope:mbga_test_runner = { change_variable = { name = mbga_test_n_building add = 1 } }
+		}
+	}
+}
+
+# ---------------------------------------------------------------------------------------
+# The first half of the problem, asked on its own: can the whole map be walked from the top
+# without naming anything? every_strategic_region, every_state_region and every_state are
+# all declared as global. If they answer, then every state in any total conversion is
+# already reachable, and the only thing left to solve is the single step from a state down
+# to a province - which is what every other probe here is about.
+mbga_test_descent = {
+	every_strategic_region = {
+		scope:mbga_test_runner = { change_variable = { name = mbga_test_n_sr add = 1 } }
+	}
+	every_state_region = {
+		scope:mbga_test_runner = { change_variable = { name = mbga_test_n_stateregions add = 1 } }
+	}
+	every_state = {
+		scope:mbga_test_runner = { change_variable = { name = mbga_test_n_states add = 1 } }
+	}
+}
+
+# ---------------------------------------------------------------------------------------
+# Round five. Two of the last round proved nothing and it was the bench's fault, not the
+# engine's. The capital under test is landlocked, so counting straits there was never going
+# to answer anything, and ?= swallows the error that says whether a link exists at all, so
+# capital_province came back quiet and empty and told us neither.
+#
+# There is also a new lead, and it comes from the map data rather than from any
+# documentation: a strategic region is declared with capital_province = xA0A0C0. The engine
+# therefore knows one province per strategic region, and every_strategic_region is global.
+# If that link is readable, every map in existence hands over a seed without being named.
+
+# Lead. One province per strategic region, if the link is real. No ?= here on purpose: an
+# error naming this effect is itself the answer.
+mbga_test_sr_capital = {
+	every_strategic_region = {
+		capital_province = {
+			scope:mbga_test_runner = { change_variable = { name = mbga_test_n_srcap add = 1 } }
+		}
+	}
+}
+
+# The same question of a state, without ?= hiding the verdict.
+mbga_test_state_capital_province = {
+	capital_province = {
+		scope:mbga_test_runner = { change_variable = { name = mbga_test_n_statecap add = 1 } }
+	}
+}
+
+# Straits, asked of every state the country holds rather than of one landlocked capital.
+mbga_test_strait_all = {
+	every_scope_state = {
+		every_scope_strait = {
+			scope:mbga_test_runner = { change_variable = { name = mbga_test_n_strait add = 1 } }
+		}
+	}
+}
+
+# Whether the seed was ever taken. Without this the previous round could not tell an empty
+# every_province from a probe that never had a province to stand on.
+mbga_test_seed_check = {
+	if = {
+		limit = { has_variable = mbga_test_seed }
+		change_variable = { name = mbga_test_n_seed add = 1 }
+	}
+}
+
+# Candidate 1. The plain iterator the documentation describes as taking a state.
+mbga_test_iter_every = {
+	every_province = {
+		save_scope_as = mbga_test_province
+		scope:mbga_test_runner = {
+			change_variable = { name = mbga_test_n_every add = 1 }
+		}
+	}
+}
+
+# Candidate 2. Same thing, ordered rather than unordered.
+mbga_test_iter_ordered = {
+	ordered_province = {
+		save_scope_as = mbga_test_province
+		scope:mbga_test_runner = {
+			change_variable = { name = mbga_test_n_ordered add = 1 }
+		}
+	}
+}
+
+# Candidate 3. Picks one rather than all, so one is the right answer, not zero.
+mbga_test_iter_random = {
+	random_province = {
+		save_scope_as = mbga_test_province
+		scope:mbga_test_runner = {
+			change_variable = { name = mbga_test_n_random add = 1 }
+		}
+	}
+}
+
+# The method in use today, run against the same state so the numbers sit side by side.
+mbga_test_iter_regions = {
+	mbga_fill_provinces_of_state = { LIST = mbga_test_list }
+}
+
+# Country scope. Runs every candidate against the capital and leaves the counts behind.
+mbga_test_run_iterators = {
+	save_scope_as = mbga_test_runner
+	save_scope_as = actor
+
+	set_variable = { name = mbga_test_n_every value = 0 }
+	set_variable = { name = mbga_test_n_ordered value = 0 }
+	set_variable = { name = mbga_test_n_random value = 0 }
+	set_variable = { name = mbga_test_n_regions value = 0 }
+	set_variable = { name = mbga_test_n_world value = 0 }
+	set_variable = { name = mbga_test_n_stored value = 0 }
+	set_variable = { name = mbga_test_n_scopestates value = 0 }
+	set_variable = { name = mbga_test_n_fromprov value = 0 }
+	remove_variable = mbga_test_seed
+	set_variable = { name = mbga_test_n_link value = 0 }
+	set_variable = { name = mbga_test_n_strait value = 0 }
+	set_variable = { name = mbga_test_n_building value = 0 }
+	set_variable = { name = mbga_test_n_sr value = 0 }
+	set_variable = { name = mbga_test_n_stateregions value = 0 }
+	set_variable = { name = mbga_test_n_states value = 0 }
+	set_variable = { name = mbga_test_n_srcap value = 0 }
+	set_variable = { name = mbga_test_n_statecap value = 0 }
+	set_variable = { name = mbga_test_n_seed value = 0 }
+	clear_variable_list = mbga_test_list
+	set_variable = mbga_test_ran
+
+	mbga_test_descent = yes
+	mbga_test_sr_capital = yes
+	mbga_test_strait_all = yes
+
+	if = {
+		limit = { exists = capital }
+		capital = {
+			save_scope_as = mbga_test_state
+			mbga_test_iter_every = yes
+			mbga_test_iter_ordered = yes
+			mbga_test_iter_random = yes
+			mbga_test_iter_regions = yes
+			mbga_test_iter_world = yes
+			mbga_test_region_store = yes
+			mbga_test_probe_scopes = yes
+			mbga_test_scope_states = yes
+			mbga_test_seed_province = yes
+			mbga_test_link_province = yes
+			mbga_test_link_capital_province = yes
+			mbga_test_link_strait = yes
+			mbga_test_state_capital_province = yes
+			mbga_test_link_building = yes
+		}
+		mbga_test_seed_check = yes
+		mbga_test_from_province = yes
+		set_variable = { name = mbga_test_state value = scope:mbga_test_state }
+
+		every_in_list = {
+			variable = mbga_test_list
+			scope:mbga_test_runner = { change_variable = { name = mbga_test_n_regions add = 1 } }
+		}
+
+		debug_log = "MBGA|test|iterators run against the capital, see the panel for counts"
+		if = {
+			limit = { var:mbga_test_n_every > 0 }
+			debug_log = "MBGA|test|every_province RETURNED PROVINCES"
+		}
+		else = {
+			debug_log = "MBGA|test|every_province returned nothing, or was thrown out"
+		}
+		if = {
+			limit = { var:mbga_test_n_ordered > 0 }
+			debug_log = "MBGA|test|ordered_province RETURNED PROVINCES"
+		}
+		else = {
+			debug_log = "MBGA|test|ordered_province returned nothing, or was thrown out"
+		}
+		if = {
+			limit = { var:mbga_test_n_random > 0 }
+			debug_log = "MBGA|test|random_province RETURNED A PROVINCE"
+		}
+		else = {
+			debug_log = "MBGA|test|random_province returned nothing, or was thrown out"
+		}
+		if = {
+			limit = { var:mbga_test_n_world = var:mbga_test_n_regions }
+			debug_log = "MBGA|test|the two world halves AGREE with the thirty six branches"
+		}
+		else = {
+			debug_log = "MBGA|test|the two world halves disagree with the thirty six branches"
+		}
+		if = {
+			limit = { var:mbga_test_n_states > 0 }
+			debug_log = "MBGA|test|the descent works: strategic regions, state regions and states are all reachable globally"
+		}
+		else = {
+			debug_log = "MBGA|test|the global iterators gave nothing, the descent itself is broken"
+		}
+		if = {
+			limit = { var:mbga_test_n_srcap > 0 }
+			debug_log = "MBGA|test|A STRATEGIC REGION HANDS OVER ITS CAPITAL PROVINCE - a seed per region, from nothing"
+		}
+		if = {
+			limit = { var:mbga_test_n_seed = 0 }
+			debug_log = "MBGA|test|no seed was ever taken, so the province side probes proved nothing"
+		}
+		if = {
+			limit = { var:mbga_test_n_link > 0 }
+			debug_log = "MBGA|test|A STATE HAS A DIRECT PROVINCE LINK - zero names is possible"
+		}
+		if = {
+			limit = { var:mbga_test_n_building > 0 }
+			debug_log = "MBGA|test|A BUILDING KNOWS ITS PROVINCE - zero names is possible"
+		}
+		if = {
+			limit = { var:mbga_test_n_fromprov = var:mbga_test_n_regions }
+			debug_log = "MBGA|test|every_province FROM A PROVINCE walks the whole state - zero names is possible"
+		}
+		else_if = {
+			limit = { var:mbga_test_n_fromprov > 0 }
+			debug_log = "MBGA|test|every_province from a province answered, but with a different count"
+		}
+		else = {
+			debug_log = "MBGA|test|every_province from a province gave nothing either"
+		}
+		if = {
+			limit = { var:mbga_test_n_stored = var:mbga_test_n_regions }
+			debug_log = "MBGA|test|a state region CAN hold the list, the index is possible"
+		}
+		else = {
+			debug_log = "MBGA|test|a state region did not hold the list"
+		}
+	}
+	else = {
+		debug_log = "MBGA|test|this country has no capital, nothing was tested"
+	}
+}

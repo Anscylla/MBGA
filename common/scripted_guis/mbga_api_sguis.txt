@@ -40,36 +40,74 @@ mbga_has_target_country = {
 	effect = {}
 }
 
-# Two ways of gathering candidates. Normal keeps only provinces that touch the demander's
-# own territory, which check_area answers per province because it takes a province scope.
-# Godmode drops that filter and offers the whole state.
-mbga_toggle_godmode = {
+# Whether this mod's own province tool is on screen, which is one game rule and nothing
+# else. The panel hangs off this.
+#
+# It says nothing about which provinces may be demanded. That is a rule of its own, and it
+# reaches the mechanism as the API's own choice of list through mbga_list_every_province and
+# mbga_list_reachable_only, made in mbga_state_sgui.txt where this mod's interface meets the
+# mechanism. The two are deliberately independent: the tool can be open while demands are
+# still restricted, and demands can be unrestricted with no tool in sight.
+mbga_tool_enabled = {
+	scope = country
+	is_shown = { has_game_rule = mbga_province_tool_debug }
+	is_valid = { always = yes }
+	effect = {}
+}
+
+# Show or hide the numbers beside the panel.
+mbga_toggle_stats = {
 	scope = country
 	is_shown = { always = yes }
 	is_valid = { always = yes }
 	effect = {
 		if = {
-			limit = { has_variable = mbga_godmode }
-			remove_variable = mbga_godmode
-			debug_log = "MBGA|api|godmode off, bordering provinces only"
+			limit = { has_variable = mbga_stats_shown }
+			remove_variable = mbga_stats_shown
 		}
 		else = {
-			set_variable = mbga_godmode
-			debug_log = "MBGA|api|godmode on, every province of the state"
-		}
-		# takeable is decided as each candidate is made, so the list has to be rebuilt
-		if = {
-			limit = { has_variable = mbga_active_state }
-			save_scope_as = actor
-			var:mbga_active_state = { mbga_open_for_state_effect = yes }
+			set_variable = mbga_stats_shown
 		}
 	}
 }
 
-mbga_godmode_on = {
+mbga_stats_shown = {
 	scope = country
-	is_shown = { has_variable = mbga_godmode }
+	is_shown = { has_variable = mbga_stats_shown }
 	is_valid = { always = yes }
 	effect = {}
 }
 
+# The iterator bench has been run at least once, so its readout may show.
+mbga_test_has_run = {
+	scope = country
+	is_shown = { has_variable = mbga_test_ran }
+	is_valid = { always = yes }
+	effect = {}
+}
+
+# Done picking. Clears the target and the candidates, which takes the markers off the map.
+#
+# The debug panel has a whole window to close; the diplomatic route has nothing but markers,
+# so it needs somewhere to say it is finished.
+mbga_close_tool = {
+	scope = country
+	is_shown = { has_variable = mbga_target_country }
+	is_valid = { always = yes }
+	effect = {
+		mbga_clear_candidates = yes
+		remove_variable = mbga_target_country
+		remove_variable = mbga_active_state
+		remove_variable = mbga_active_state_region
+		clear_variable_list = mbga_selectable
+		debug_log = "MBGA|api|the tool was put down"
+	}
+}
+
+# The diplomatic route is in use, so the little bar that ends it should show.
+mbga_tool_is_diplomatic = {
+	scope = country
+	is_shown = { has_game_rule = mbga_province_tool_diplomatic }
+	is_valid = { always = yes }
+	effect = {}
+}

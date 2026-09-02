@@ -1,0 +1,355 @@
+﻿# The adjacency graph between the candidates of one state, worked out once when the state
+# is opened, after which every question about what may be taken is pure set arithmetic.
+#
+# A province is reachable when it touches ground we already held, or when it touches
+# something we have taken. The engine will not say whether two provinces touch, but it
+# will say whether one country borders another, so each province is stood up as the whole
+# territory of a country of its own and the question is asked about those.
+#
+# create_country only does anything while no country holds that tag, and a country
+# survives losing its last province as an object, so every call after the first is
+# silently ignored. That is why the probe countries are raised once and every lending
+# after that is an ordinary transfer. Getting this wrong is what made every pair come
+# back not adjacent: the questions were being asked about countries standing on nothing.
+
+# scope:mbga_lend_province is handed to the country named by TAG.
+mbga_lend_province_to = {
+	if = {
+		limit = { exists = c:$TAG$ }
+		c:$TAG$ = { save_scope_as = mbga_taker }
+		scope:mbga_lend_province = { mbga_transfer_province_to_taker = yes }
+	}
+	else = {
+		create_country = { tag = $TAG$ province = scope:mbga_lend_province }
+	}
+}
+
+# Country scope. Fills every candidate's mbga_adj with the candidates it touches, and
+# marks mbga_touches_home on those that touch what we already held.
+mbga_build_adjacency_graph = {
+	save_scope_as = mbga_prober
+	set_variable = { name = mbga_pairs_tried value = 0 }
+	set_variable = { name = mbga_pairs_found value = 0 }
+	set_variable = { name = mbga_holds_right value = 0 }
+
+	# What the graph cost to build. Counted so the effect of any later tightening can be
+	# seen rather than guessed at: a transfer is a province changing hands, and every
+	# lending out and handing back is one each.
+	set_variable = { name = mbga_ops_transfers value = 0 }
+	set_variable = { name = mbga_ops_candidates value = 0 }
+	set_variable = { name = mbga_touch_home_count value = 0 }
+
+	# The country question, kept as a measurement only. See where it is asked.
+	set_variable = { name = mbga_q_country value = 0 }
+
+
+
+	every_in_global_list = {
+		variable = mbga_candidates
+		limit = { NOT = { has_variable = mbga_own_from_start } }
+		clear_variable_list = mbga_adj
+		remove_variable = mbga_touches_home
+		remove_variable = mbga_pair_seen
+	}
+
+	# what touches our own ground
+	every_in_global_list = {
+		variable = mbga_candidates
+		limit = { NOT = { has_variable = mbga_own_from_start } }
+		save_scope_as = mbga_outer_container
+		var:mbga_province = { save_scope_as = mbga_outer_province }
+		scope:mbga_outer_province = { state.owner = { save_scope_as = mbga_outer_owner } }
+		scope:mbga_prober = {
+			add_to_variable_map = {
+				name = mbga_probe_owner_of
+				key = scope:mbga_outer_province
+				value = scope:mbga_outer_owner
+			}
+		}
+
+		scope:mbga_outer_province = { save_scope_as = mbga_lend_province }
+		mbga_lend_province_to = { TAG = MBG }
+		scope:mbga_prober = {
+			change_variable = { name = mbga_ops_candidates add = 1 }
+			change_variable = { name = mbga_ops_transfers add = 2 }
+		}
+
+		if = {
+			limit = {
+				scope:mbga_outer_province.state = {
+					any_neighbouring_state = { owner ?= scope:mbga_prober }
+				}
+			}
+			scope:mbga_outer_container = { set_variable = mbga_touches_home }
+			scope:mbga_prober = { change_variable = { name = mbga_touch_home_count add = 1 } }
+		}
+
+		scope:mbga_outer_owner = { save_scope_as = mbga_taker }
+		scope:mbga_outer_province = { mbga_transfer_province_to_taker = yes }
+	}
+
+	# and what touches what, each unordered pair visited once
+	every_in_global_list = {
+		variable = mbga_candidates
+		limit = { NOT = { has_variable = mbga_own_from_start } }
+		save_scope_as = mbga_outer_container
+		var:mbga_province = { save_scope_as = mbga_outer_province }
+		scope:mbga_outer_province = { state.owner = { save_scope_as = mbga_outer_owner } }
+		scope:mbga_outer_province = { save_scope_as = mbga_lend_province }
+		mbga_lend_province_to = { TAG = MBG }
+		scope:mbga_prober = { change_variable = { name = mbga_ops_transfers add = 2 } }
+
+		every_in_global_list = {
+			variable = mbga_candidates
+			limit = {
+				NOT = { has_variable = mbga_own_from_start }
+				NOT = { has_variable = mbga_pair_seen }
+			}
+			save_scope_as = mbga_inner_container
+			var:mbga_province = { save_scope_as = mbga_inner_province }
+
+			if = {
+				limit = {
+					NOT = { scope:mbga_inner_province = scope:mbga_outer_province }
+				}
+				scope:mbga_inner_province = { state.owner = { save_scope_as = mbga_inner_owner } }
+				scope:mbga_prober = {
+					add_to_variable_map = {
+						name = mbga_probe_owner_of
+						key = scope:mbga_inner_province
+						value = scope:mbga_inner_owner
+					}
+				}
+				scope:mbga_inner_province = { save_scope_as = mbga_lend_province }
+				mbga_lend_province_to = { TAG = MBH }
+
+				scope:mbga_prober = {
+					change_variable = { name = mbga_pairs_tried add = 1 }
+					change_variable = { name = mbga_ops_transfers add = 2 }
+				}
+				if = {
+					limit = {
+						scope:mbga_outer_province = { owner ?= c:MBG }
+						scope:mbga_inner_province = { owner ?= c:MBH }
+					}
+					scope:mbga_prober = { change_variable = { name = mbga_holds_right add = 1 } }
+				}
+
+				# The question that builds the graph is the one the home pass uses: about the
+				# piece of state MBG is standing on, which is a single province.
+				#
+				# The country question sits beside it, measured but not acted on, and it
+				# cannot be the border. Ten candidates make forty five pairs and it called
+				# thirty nine of them adjacent. Provinces on a map form a planar graph, and
+				# a planar graph on ten vertices holds at most 3n-6 = twenty four edges, so
+				# thirty nine is not a border relation: both probes simply stood in the
+				# same state region. The state question answered eighteen, which fits under
+				# that ceiling.
+				if = {
+					limit = { c:MBG ?= { is_adjacent_to_country = c:MBH } }
+					scope:mbga_prober = { change_variable = { name = mbga_q_country add = 1 } }
+				}
+
+				if = {
+					limit = {
+						scope:mbga_outer_province.state ?= {
+							any_neighbouring_state = { owner ?= c:MBH }
+						}
+					}
+					scope:mbga_prober = { change_variable = { name = mbga_pairs_found add = 1 } }
+					scope:mbga_outer_container = {
+						add_to_variable_list = { name = mbga_adj target = scope:mbga_inner_province }
+					}
+					scope:mbga_inner_container = {
+						add_to_variable_list = { name = mbga_adj target = scope:mbga_outer_province }
+					}
+				}
+
+				scope:mbga_inner_owner = { save_scope_as = mbga_taker }
+				scope:mbga_inner_province = { mbga_transfer_province_to_taker = yes }
+			}
+		}
+
+		scope:mbga_outer_owner = { save_scope_as = mbga_taker }
+		scope:mbga_outer_province = { mbga_transfer_province_to_taker = yes }
+		scope:mbga_outer_container = { set_variable = mbga_pair_seen }
+	}
+
+	every_in_global_list = {
+		variable = mbga_candidates
+		remove_variable = mbga_pair_seen
+	}
+
+	mbga_repair_probe_country = yes
+
+	if = {
+		limit = { var:mbga_pairs_tried = 0 }
+		debug_log = "MBGA|graph|no pairs were tried at all"
+	}
+	else_if = {
+		limit = { var:mbga_holds_right = 0 }
+		debug_log = "MBGA|graph|the probe countries never held the pair being asked about"
+	}
+	else_if = {
+		limit = { var:mbga_holds_right < var:mbga_pairs_tried }
+		debug_log = "MBGA|graph|the probe countries held the right ground only some of the time"
+	}
+	else_if = {
+		limit = { var:mbga_pairs_found = 0 }
+		debug_log = "MBGA|graph|both countries held the right ground, yet no pair came back adjacent"
+	}
+	else = {
+		debug_log = "MBGA|graph|adjacency found between candidates"
+	}
+}
+
+# Country scope. Works out what may be taken from the graph alone. No countries are
+# raised, nothing changes hands, so this is free and runs on every click.
+mbga_recompute_takeable = {
+	save_scope_as = mbga_prober
+
+	every_in_global_list = {
+		variable = mbga_candidates
+		limit = { NOT = { has_variable = mbga_own_from_start } }
+		remove_variable = mbga_takeable
+		save_scope_as = mbga_reach_container
+
+		# An unfiltered list offers the whole state, so reachability never enters into it.
+		if = {
+			limit = { scope:mbga_prober = { has_variable = mbga_unfiltered } }
+			set_variable = mbga_takeable
+		}
+		else_if = {
+			limit = { has_variable = mbga_touches_home }
+			set_variable = mbga_takeable
+		}
+		else = {
+			every_in_list = {
+				variable = mbga_adj
+				save_scope_as = mbga_adj_province
+				if = {
+					limit = {
+						scope:mbga_prober = {
+							is_target_in_variable_list = {
+								name = mbga_taken
+								target = scope:mbga_adj_province
+							}
+						}
+					}
+					scope:mbga_reach_container = { set_variable = mbga_takeable }
+				}
+			}
+		}
+	}
+
+	# Counted in a pass of its own rather than inside the branches above, where anything
+	# takeable for touching home went uncounted and the panel read zero while the map
+	# showed nine.
+	set_variable = { name = mbga_takeable_count value = 0 }
+	every_in_global_list = {
+		variable = mbga_candidates
+		limit = { has_variable = mbga_takeable }
+		scope:mbga_prober = { change_variable = { name = mbga_takeable_count add = 1 } }
+	}
+}
+
+# Keeping the taken provinces joined to our own ground.
+#
+# Taking could only ever widen the reachable set, so nothing had to be checked afterwards.
+# Handing back does the opposite: give up a province in the middle of a chain and
+# everything beyond it is still marked taken while nothing connects it to us any more,
+# which is how a province ended up sitting alone on the far side of the state.
+#
+# So the taken set is flooded from the provinces that touch home, along the same graph the
+# panel already uses, and whatever the flood does not reach is handed back to its owner.
+# Releasing them cannot strand anything further: the unreached provinces are exactly the
+# ones with no path home, and they all go at once.
+#
+# Country scope.
+mbga_enforce_connected_takes = {
+	save_scope_as = mbga_prober
+	set_variable = { name = mbga_orphans_released value = 0 }
+
+	# Nothing is joined to anything in an unfiltered list, so nothing can be cut off from
+	# it either.
+	if = {
+		limit = { NOT = { has_variable = mbga_unfiltered } }
+
+
+		every_in_global_list = {
+			variable = mbga_candidates
+			remove_variable = mbga_supported
+		}
+
+		# the provinces that stand on our own border need nothing else to hold them
+		every_in_global_list = {
+			variable = mbga_candidates
+			limit = {
+				has_variable = mbga_taken
+				has_variable = mbga_touches_home
+			}
+			set_variable = mbga_supported
+		}
+
+		# and support spreads from those, one ring at a time, until it stops spreading
+		set_variable = { name = mbga_support_added value = 1 }
+		while = {
+			limit = { var:mbga_support_added > 0 }
+			set_variable = { name = mbga_support_added value = 0 }
+
+			every_in_global_list = {
+				variable = mbga_candidates
+				limit = {
+					has_variable = mbga_taken
+					NOT = { has_variable = mbga_supported }
+				}
+				save_scope_as = mbga_support_container
+
+				# mbga_adj holds provinces, so the supported containers are walked and each is
+				# asked whether the province it wraps is in this one's adjacency list.
+				every_in_global_list = {
+					variable = mbga_candidates
+					limit = { has_variable = mbga_supported }
+					var:mbga_province = { save_scope_as = mbga_support_neighbour }
+					if = {
+						limit = {
+							scope:mbga_support_container = {
+								NOT = { has_variable = mbga_supported }
+								is_target_in_variable_list = {
+									name = mbga_adj
+									target = scope:mbga_support_neighbour
+								}
+							}
+						}
+						scope:mbga_support_container = { set_variable = mbga_supported }
+						scope:mbga_prober = { change_variable = { name = mbga_support_added add = 1 } }
+					}
+				}
+			}
+		}
+
+		# whatever the flood never reached has no way home
+		every_in_global_list = {
+			variable = mbga_candidates
+			limit = {
+				has_variable = mbga_taken
+				NOT = { has_variable = mbga_supported }
+			}
+			save_scope_as = mbga_orphan_container
+			var:mbga_province = { save_scope_as = mbga_orphan_province }
+			var:mbga_owner = { save_scope_as = mbga_taker }
+			scope:mbga_orphan_province = { mbga_transfer_province_to_taker = yes }
+			scope:mbga_orphan_container = { remove_variable = mbga_taken }
+			scope:mbga_prober = {
+				remove_list_variable = { name = mbga_taken target = scope:mbga_orphan_province }
+				change_variable = { name = mbga_taken_count subtract = 1 }
+				change_variable = { name = mbga_orphans_released add = 1 }
+			}
+		}
+
+		if = {
+			limit = { var:mbga_orphans_released > 0 }
+			debug_log = "MBGA|graph|provinces were cut off from home and handed back"
+		}
+	}
+}

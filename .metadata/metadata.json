@@ -1,25 +1,28 @@
 {
-	"name" : "[1.13] Make Borders Great Again",
-	"id" : "mbga.province.demands",
-	"version" : "0.1.0",
-	"game_id" : "victoria3",
-	"supported_game_version" : "1.13.*",
-	"short_description" : "Demand individual provinces instead of whole states.",
-	"tags" : [
+	"name": "[1.14] Make Borders Great Again",
+	"id": "mbga.province.demands",
+	"version": "0.1.0",
+	"game_id": "victoria3",
+	"supported_game_version": "1.14.*",
+	"short_description": "Demand individual provinces instead of whole states.",
+	"tags": [
 		"Gameplay",
 		"Diplomacy",
-		"1.13"
+		"Warfare",
+		"Map",
+		"Utilities",
+		"1.14"
 	],
-	"relationships" : [
+	"relationships": [
 		{
-			"rel_type" : "dependency",
-			"id" : "com.github.Victoria-3-Modding-Co-op.Community-Mod-Framework",
-			"display_name" : "Community Mod Framework",
-			"resource_type" : "mod",
-			"version" : "1.*"
+			"rel_type": "dependency",
+			"id": "com.github.Victoria-3-Modding-Co-op.Community-Mod-Framework",
+			"display_name": "Community Mod Framework",
+			"resource_type": "mod",
+			"version": "1.*"
 		}
 	],
-	"game_custom_data" : {
-		"multiplayer_synchronized" : true
+	"game_custom_data": {
+		"multiplayer_synchronized": true
 	}
 }

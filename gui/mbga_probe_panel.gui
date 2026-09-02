@@ -15,6 +15,11 @@ widget = {
 	size = { 100% 100% }
 	allow_outside = yes
 	alwaystransparent = yes
+	# Only that there is a player. The game rule is asked further in, on the windows
+	# themselves: And evaluates both of its arguments whatever the first one answers, so
+	# asking a scripted gui here meant asking it about GetPlayer on the main menu and in
+	# every loading screen, which is four hundred errors a session and no window either
+	# way.
 	visible = "[GetMetaPlayer.GetPlayedOrObservedCountry.IsValid]"
 	datacontext = "[AccessMetaPlayer.AccessPlayedOrObservedCountry]"
 
@@ -43,6 +48,11 @@ widget = {
 		size = { 300 620 }
 		parentanchor = top|right
 		position = { -520 80 }
+
+		# The whole tool is behind the god mode game rule. It hands provinces over outside
+		# a war, so a normal game should not see it at all. This gates the interface only:
+		# the mechanism underneath works in any game, rule or no rule.
+		visible = "[GetScriptedGui('mbga_tool_enabled').IsShown(GuiScope.SetRoot(GetPlayer.MakeScope).End)]"
 
 		# entry_bg_simple is a translucent frame, so the map reads straight through it.
 		# A solid plate goes underneath, the way the State Transfer Tool does it.
@@ -139,11 +149,11 @@ widget = {
 		}
 
 		button = {
-			text = "MBGA_GODMODE"
+			text = "MBGA_STATS_TOGGLE"
 			using = default_button
 			size = { 100 20 }
 			position = { 110 378 }
-			onclick = "[GetScriptedGui('mbga_toggle_godmode').Execute(GuiScope.SetRoot(GetPlayer.MakeScope).End)]"
+			onclick = "[GetScriptedGui('mbga_toggle_stats').Execute(GuiScope.SetRoot(GetPlayer.MakeScope).End)]"
 		}
 
 		# The camera cannot be sent to a province: every function in the Zoom family takes
@@ -176,6 +186,7 @@ widget = {
 						hbox = {
 							datacontext = "[Scope.GetScriptContainer]"
 							spacing = 4
+							visible = "[Not(GetScriptedGui('mbga_container_own_from_start').IsShown(GuiScope.SetRoot(ScriptContainer.MakeScope).End))]"
 
 							# The dumped data types settle two things I had wrong. Hub names are
 							# available straight off the state, so a row can say Le Havre rather
@@ -269,6 +280,86 @@ widget = {
 					}
 				}
 			}
+		}
+	}
+
+	# Numbers live in their own window to the side. Putting them in the main one meant
+	# they sat on top of the province rows, which is where the eye actually needs to be.
+	window = {
+		name = "mbga_stats"
+		layer = popups
+		allow_outside = yes
+		alwaystransparent = no
+		movable = yes
+		using = clickthrough_blocker
+
+		size = { 250 176 }
+		parentanchor = top|right
+		position = { -790 80 }
+		visible = "[And( GetScriptedGui('mbga_tool_enabled').IsShown(GuiScope.SetRoot(GetPlayer.MakeScope).End), GetScriptedGui('mbga_stats_shown').IsShown(GuiScope.SetRoot(GetPlayer.MakeScope).End) )]"
+
+		icon = {
+			texture = "gfx/interface/backgrounds/entry_bg_simple_solid.dds"
+			size = { 100% 100% }
+			alwaystransparent = yes
+		}
+		background = { using = entry_bg_simple }
+
+		textbox = {
+			text = "MBGA_STATS_TITLE"
+			default_format = "#header"
+			position = { 10 8 }
+			size = { 230 22 }
+		}
+		textbox = {
+			text = "MBGA_STATS_CAND"
+			position = { 10 34 }
+			size = { 230 18 }
+			alwaystransparent = yes
+		}
+		textbox = {
+			text = "MBGA_STATS_PAIRS"
+			position = { 10 53 }
+			size = { 230 18 }
+			alwaystransparent = yes
+		}
+		textbox = {
+			text = "MBGA_STATS_TRANSFERS"
+			position = { 10 72 }
+			size = { 230 18 }
+			alwaystransparent = yes
+		}
+		textbox = {
+			text = "MBGA_STATS_TOUCH"
+			position = { 10 91 }
+			size = { 230 18 }
+			alwaystransparent = yes
+		}
+		textbox = {
+			text = "MBGA_STATS_NEIGHBOUR"
+			position = { 10 110 }
+			size = { 230 18 }
+			alwaystransparent = yes
+		}
+		textbox = {
+			text = "MBGA_STATS_HOME"
+			position = { 10 129 }
+			size = { 230 18 }
+			alwaystransparent = yes
+		}
+		textbox = {
+			text = "MBGA_STATS_TAKEABLE"
+			position = { 10 148 }
+			size = { 230 18 }
+			alwaystransparent = yes
+		}
+
+		# The two answers that were known before they were asked. Both must read no.
+		textbox = {
+			text = "MBGA_STATS_ORPHANS"
+			position = { 10 167 }
+			size = { 230 18 }
+			alwaystransparent = yes
 		}
 	}
 }

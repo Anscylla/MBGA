@@ -1,0 +1,84 @@
+﻿# Every province in the game, filed under the state region it belongs to, built once and
+# then read for the rest of the save.
+#
+# Why an index at all. There is no province iterator on a state scope - every_province,
+# ordered_province and random_province are all province scope effects, and the engine says
+# so itself: "Wrong scope for effect: state, expected province". Nor is there any way to
+# reach a province from anywhere else. Of the three hundred and fifty odd scope links in
+# the game exactly two hand out a province: the one on a battle side, which needs a battle
+# to be happening on the spot, and the literal p:xRRGGBB, which is map data written into
+# the script. Nothing has "Supported Targets: province" at all.
+#
+# So the only door is every_province_in_<geographic region>, and a geographic region is
+# static data that has to name something. The question was never how to avoid it but how
+# few names to know, and the answer is two: the base game declares old_world over 25
+# strategic regions and new_world over 11, they do not overlap, and between them they hold
+# every land strategic region in the game. The other 106 regions it does not cover are all
+# sea. Two names, in one effect that runs once, and not another name anywhere in the mod.
+#
+# Why the state region and not the state. A state region is the map itself and never
+# changes. A state is one owner's share of a region, so it comes and goes as borders move,
+# and an index kept there would evaporate the first time somebody was partitioned.
+#
+# When it runs. At the start of a game, from common/on_actions, where a mod may add to the
+# base game's on_actions list without replacing it.
+#
+# The check below is what makes that enough. A save begun before this mod was installed
+# never saw that on action, so the first thing that wants the index builds it instead, and
+# the mod can be added to a game in progress and taken away again without ceremony. Nothing
+# else it leaves behind matters either: variables on state regions that nobody reads.
+
+# Files one province under its own state region. Province scope.
+mbga_index_one_province = {
+	save_scope_as = mbga_index_province
+	state.state_region ?= {
+		add_to_variable_list = { name = mbga_region_provinces target = scope:mbga_index_province }
+		set_global_variable = { name = mbga_index_count add = 1 }
+	}
+}
+
+# Walks the whole map. Safe to call again: every region is emptied first, so a rebuild
+# replaces the index rather than doubling it.
+mbga_build_province_index = {
+	every_state_region = {
+		clear_variable_list = mbga_region_provinces
+	}
+	set_global_variable = { name = mbga_index_count value = 0 }
+
+	every_province_in_old_world = { mbga_index_one_province = yes }
+	every_province_in_new_world = { mbga_index_one_province = yes }
+
+	set_global_variable = mbga_index_built
+	set_global_variable = { name = mbga_index_version value = 1 }
+
+	if = {
+		limit = { global_var:mbga_index_count > 0 }
+		debug_log = "MBGA|index|the province index was built"
+	}
+	else = {
+		debug_log = "MBGA|index|the province index came back EMPTY, nothing will list"
+	}
+}
+
+# Called before anything reads the index, and the reason the mod can be switched on and off
+# at will. Three things send it back to work, and all three are ordinary variable checks:
+#
+#   never built     a save begun before this mod was installed never saw the on action
+#   built empty     the walk found nothing, so there is nothing to lose by trying again
+#   older version   the shape of what is stored changed between mod versions
+#
+# Anything already correct costs one comparison and nothing else.
+mbga_ensure_province_index = {
+	if = {
+		limit = {
+			OR = {
+				NOT = { has_global_variable = mbga_index_built }
+				NOT = { has_global_variable = mbga_index_version }
+				global_var:mbga_index_version < 1
+				global_var:mbga_index_count = 0
+			}
+		}
+		debug_log = "MBGA|index|no usable index found, building one now"
+		mbga_build_province_index = yes
+	}
+}

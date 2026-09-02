@@ -1,0 +1,39 @@
+﻿# Moving a single province, without naming it.
+#
+# set_owner_of_provinces takes literal province ids and nothing else, which is why this
+# used to be a table of all 40823 of them, generated from the base game map and worthless
+# against any mod that changes it.
+#
+# create_country is the one effect that accepts a province as a scope. So the province is
+# given to a courier country that owns nothing else, and the courier is annexed away by
+# whoever should receive it. The province moves, the courier disappears, and not one
+# province id is written down anywhere.
+#
+# It only works while the courier tag is free. A country that merely loses its last
+# province lingers as an object and burns its tag, which is exactly what broke the pair
+# probe earlier; annexation is the game's own way of removing a country, so the tag is
+# expected to come back each time. If it ever does not, the log says so rather than
+# silently doing nothing.
+
+# province scope in, scope:mbga_taker is the country that should end up with it
+mbga_transfer_province_to_taker = {
+	save_scope_as = mbga_courier_province
+
+	if = {
+		limit = { NOT = { exists = c:MBT } }
+		create_country = {
+			tag = MBT
+			province = scope:mbga_courier_province
+		}
+		if = {
+			limit = { exists = c:MBT }
+			scope:mbga_taker = { annex = c:MBT }
+		}
+		else = {
+			debug_log = "MBGA|courier|the courier could not be raised, the province did not move"
+		}
+	}
+	else = {
+		debug_log = "MBGA|courier|the courier tag is still taken, so the province did not move"
+	}
+}

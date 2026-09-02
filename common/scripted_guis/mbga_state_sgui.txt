@@ -6,5 +6,20 @@ mbga_open_for_state = {
 	saved_scopes = { actor }
 	is_shown = { always = yes }
 	is_valid = { always = yes }
-	effect = { mbga_open_for_state_effect = yes }
+	effect = {
+		# This is the seam between the tool and this mod's use of it. The game rule is
+		# read here, once, and turned into the API's own choice of list. Nothing further
+		# in knows the rule exists, so another mod can drive the same mechanism however it
+		# likes whatever the rules in that game say.
+		scope:actor = {
+			if = {
+				limit = { has_game_rule = mbga_province_access_anywhere }
+				mbga_list_every_province = yes
+			}
+			else = {
+				mbga_list_reachable_only = yes
+			}
+		}
+		mbga_open_for_state_effect = yes
+	}
 }

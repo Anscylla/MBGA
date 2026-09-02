@@ -1,0 +1,40 @@
+﻿# A culture that exists so the probe countries can name one.
+#
+# A country definition needs a culture. Leaving it out left the game raising a country it
+# could not finish building, and every province transfer then filled the error log with
+# interest groups being asked about a country that had already been annexed away. Pointing
+# at a base game culture worked, but it tied a mechanic to content: a total conversion that
+# drops north_german would take the mod with it.
+#
+# So the mod brings its own. Nothing here is ever seen. No pop has this culture, no state
+# holds it, and the three countries that name it live for a fraction of a moment each. It
+# takes the promethean culture's shape, which is the base game's own throwaway, and the
+# only things it borrows are the ones every map keeps: a religion, a graphical set and an
+# ethnicity. Its heritage and language are its own, declared in common/discrimination_traits
+# and common/discrimination_trait_groups - they are key references, not free identifiers,
+# and a culture naming ones that do not exist fails to load without saying so out loud.
+mbga_probe_culture = {
+	color = { 20 20 20 }
+
+	religion = atheist
+
+	heritage = heritage_mbga_probe
+	language = language_mbga_probe
+
+	traditions = { }
+
+	graphics = european
+	ethnicities = {
+		1 = neutral
+	}
+
+	male_common_first_names = {
+		Courier
+	}
+	female_common_first_names = {
+		Courier
+	}
+	common_last_names = {
+		Probe
+	}
+}

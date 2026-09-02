@@ -1,13 +1,18 @@
 #!/usr/bin/env python3
-"""Bake per-state province data into script.
+"""Generate the one piece of data the game will not give back at runtime.
 
-Two things the engine cannot do at runtime, so they are generated here from map_data:
+Which province is a state's city, port, farm, mine or wood hub exists only in
+map_data/state_regions. Script can set a hub's name but has no trigger or scope link that
+reads one back, and no GUI function returns it either, so this mapping has to be written
+out ahead of time. Everything else the mod once generated is gone: provinces are now
+enumerated through the base game's own geographic regions and moved by handing them to a
+courier country, neither of which names a single province or state region of its own.
 
-1. Enumerating the provinces of a state. There is no state-scoped province iterator,
-   but declaring a geographic region over a state region makes the game generate
-   `every_province_in_<short_key>`, so this file only has to declare those regions.
-2. Transferring a province held in a scope. `set_owner_of_provinces` only accepts
-   literal ids; PostValidate rejects `provinces = { scope:x }`.
+What comes out is one flat table rather than a lookup per state plus a dispatcher to
+choose between them, and every entry is guarded with ?= so a changed map skips it.
+
+Re-run this after a game update, or against a mod that changes the map, and only the hub
+lookup changes.
 
 Run: python tools/bake_provinces.py
 """
@@ -39,119 +44,39 @@ def short_key(name):
     return 'mbga_' + name[len('STATE_'):].lower() if name.startswith('STATE_')         else 'mbga_' + name.lower()
 
 
-def bake_geographic_regions(regions):
-    """One geographic region per state region.
-
-    Declaring a geographic region makes the game generate
-    <any|every|ordered|random>_province_in_<short_key> iterators for it, which is the
-    only way to walk a state's provinces at runtime.
-    """
-    out = [HEADER]
-    for name in sorted(regions):
-        out.append('mbga_geo_' + name + ' = {' + NL)
-        out.append('	short_key = "' + short_key(name) + '"' + NL + NL)
-        out.append('	state_regions = { ' + name + ' }' + NL)
-        out.append('}' + NL + NL)
-    return ''.join(out)
 
 
-def bake_list_dispatch(regions):
-    """State scope in, scope:actor's $LIST$ comes out holding that state's provinces.
+def bake_hub_map(regions):
+    """One flat table: state region -> hub province, as variable maps on the caller.
 
-    No filtering happens here. Which of those provinces are actually wanted is decided by
-    the caller, so the same enumeration serves both the candidate list and the list of
-    the demander's own bordering provinces.
+    There used to be two files: an effect per state region setting five variables, and a
+    dispatcher of 781 if/else_if branches picking which of those effects to call. The
+    dispatcher is gone: a variable map is keyed by the state region itself, so the state
+    that was clicked looks its own hubs up instead of being compared against 781 names.
+
+    Every block is entered with ?=, which is the base game's own idiom for "if this still
+    exists". A map that renames or drops a state region simply skips it, so no error is
+    raised and that state quietly falls back to terrain names.
     """
     out = [HEADER,
-           '# state scope in, scope:actor receives the provinces in its $LIST$ variable list' + NL,
-           'mbga_fill_provinces_of_state = {' + NL]
-    first = True
+           '# Filled once, into the caller. Key is the state region, value is the province' + NL +
+           '# that is its hub. Country scope, and scope:mbga_hub_owner is that country.' + NL + NL,
+           'mbga_fill_hub_maps = {' + NL,
+           '	save_scope_as = mbga_hub_owner' + NL]
     for name in sorted(regions):
-        kw = 'if' if first else 'else_if'
-        first = False
-        out.append('	' + kw + ' = {' + NL)
-        out.append('		limit = { state_region = s:' + name + ' }' + NL)
-        out.append('		every_province_in_' + short_key(name) + ' = {' + NL)
-        out.append('			save_scope_as = mbga_current_province' + NL)
-        out.append('			scope:actor = { add_to_variable_list = { name = $LIST$'
-                   ' target = scope:mbga_current_province } }' + NL)
+        hubs = regions[name]['hubs']
+        if not hubs:
+            continue
+        out.append('	s:' + name + ' ?= {' + NL)
+        out.append('		save_scope_as = mbga_hub_state' + NL)
+        out.append('		scope:mbga_hub_owner = {' + NL)
+        for kind in HUB_ORDER:
+            pid = hubs.get(kind)
+            if pid:
+                out.append('			add_to_variable_map = { name = mbga_hubmap_' + kind
+                           + ' key = scope:mbga_hub_state value = p:' + pid + ' }' + NL)
         out.append('		}' + NL)
         out.append('	}' + NL)
-    out.append('}' + NL + NL)
-    out.append('mbga_fill_selectable_provinces = {' + NL)
-    out.append('	scope:actor = { clear_variable_list = mbga_selectable }' + NL)
-    out.append('	mbga_fill_provinces_of_state = { LIST = mbga_selectable }' + NL)
-    out.append('}' + NL)
-    return ''.join(out)
-
-
-def bake_hub_lookup(regions):
-    """Per state region, record which province is which hub.
-
-    A hub is a single province, not a group, and the same province can be two hubs at
-    once. Which province that is exists only in map_data/state_regions, so it is the one
-    thing here that cannot be answered at runtime: script can set a hub's name but has no
-    trigger or scope link that reads one back.
-    """
-    out = [HEADER, '# hub order: 1 city, 2 port, 3 farm, 4 mine, 5 wood' + NL + NL]
-    for name in sorted(regions):
-        out.append('mbga_hubs_' + name + ' = {' + NL)
-        for kind in HUB_ORDER:
-            pid = regions[name]['hubs'].get(kind)
-            if pid:
-                out.append('	set_variable = { name = mbga_hub_' + kind
-                           + ' value = p:' + pid + ' }' + NL)
-        out.append('}' + NL + NL)
-    return ''.join(out)
-
-
-def bake_hub_dispatch(regions):
-    """State scope in, the caller's mbga_hub_* variables come out."""
-    out = [HEADER, 'mbga_load_hubs_of_state = {' + NL]
-    for kind in HUB_ORDER:
-        out.append('	remove_variable = mbga_hub_' + kind + NL)
-    first = True
-    for name in sorted(regions):
-        if not regions[name]['hubs']:
-            continue
-        kw = 'if' if first else 'else_if'
-        first = False
-        out.append('	' + kw + ' = {' + NL)
-        out.append('		limit = { var:mbga_active_state_region ?= s:' + name + ' }' + NL)
-        out.append('		mbga_hubs_' + name + ' = yes' + NL)
-        out.append('	}' + NL)
-    out.append('}' + NL)
-    return ''.join(out)
-
-
-def bake_transfers(regions):
-    """Per region: match the province scope against literal ids and transfer."""
-    out = [HEADER]
-    for name in sorted(regions):
-        out.append('mbga_transfer_in_' + name + ' = {' + NL)
-        first = True
-        for pid in regions[name]['provinces']:
-            kw = 'if' if first else 'else_if'
-            first = False
-            out.append('\t' + kw + ' = { limit = { this = p:' + pid + ' } s:' + name
-                       + ' = { set_owner_of_provinces = { country = scope:mbga_taker'
-                       + ' provinces = { ' + pid + ' } } } }' + NL)
-        out.append('}' + NL + NL)
-    return ''.join(out)
-
-
-def bake_transfer_dispatch(regions):
-    """Province scope in, scope:mbga_taker receives it."""
-    out = [HEADER, '# province scope in, scope:mbga_taker = receiving country' + NL,
-           'mbga_transfer_province_to_taker = {' + NL]
-    first = True
-    for name in sorted(regions):
-        kw = 'if' if first else 'else_if'
-        first = False
-        out.append('\t' + kw + ' = {' + NL)
-        out.append('\t\tlimit = { state.state_region = s:' + name + ' }' + NL)
-        out.append('\t\tmbga_transfer_in_' + name + ' = yes' + NL)
-        out.append('\t}' + NL)
     out.append('}' + NL)
     return ''.join(out)
 
@@ -165,14 +90,7 @@ def main():
     terrains = parse_terrains(game)
 
     written = [
-        write('common/geographic_regions/mbga_state_regions.txt',
-              bake_geographic_regions(regions)),
-        write('common/scripted_effects/mbga_baked_dispatch.txt', bake_list_dispatch(regions)),
-        write('common/scripted_effects/mbga_baked_hubs.txt', bake_hub_lookup(regions)),
-        write('common/scripted_effects/mbga_baked_hub_dispatch.txt', bake_hub_dispatch(regions)),
-        write('common/scripted_effects/mbga_baked_transfers.txt', bake_transfers(regions)),
-        write('common/scripted_effects/mbga_baked_transfer_dispatch.txt',
-              bake_transfer_dispatch(regions)),
+        write('common/scripted_effects/mbga_baked_hubs.txt', bake_hub_map(regions)),
     ]
 
     hub_lines = [HEADER]

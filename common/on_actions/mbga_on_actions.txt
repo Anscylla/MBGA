@@ -1,0 +1,18 @@
+﻿# Building the province index once, when a game starts.
+#
+# This declares on_game_started again, which sounds like overriding it and is not. Only the
+# on_actions and events blocks of an existing on action may be added to, and they are
+# merged rather than replaced - so the base game's own list keeps everything it had and
+# gains one entry. Writing an effect block here instead would be the mistake, and that is
+# the thing the wiki warns about.
+on_game_started = {
+	on_actions = {
+		mbga_on_game_started
+	}
+}
+
+mbga_on_game_started = {
+	effect = {
+		mbga_build_province_index = yes
+	}
+}

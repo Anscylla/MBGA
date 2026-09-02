@@ -19,13 +19,18 @@ widget = {
 	size = { 100% 100% }
 	alwaystransparent = yes
 	datacontext = "[AccessMetaPlayer.AccessPlayedOrObservedCountry]"
-	visible = "[GetScriptedGui('mbga_has_target_country').IsShown(GuiScope.SetRoot(GetPlayer.MakeScope).End)]"
+
+	# Only that there is a player. Asking a scripted gui about GetPlayer up here means
+	# asking it on the main menu and through every loading screen, which was two hundred
+	# errors before a single province had been looked at. The real question is one level
+	# in, where it is asked only once this widget is showing.
+	visible = "[GetMetaPlayer.GetPlayedOrObservedCountry.IsValid]"
 
 	widget = {
 		size = { 100% 100% }
 		scale = "[GetInvParentScale(PdxGuiWidget.Self)]"
 		alwaystransparent = no
-		visible = "[IsZoomLevelNear]"
+		visible = "[And( IsZoomLevelNear, GetScriptedGui('mbga_has_target_country').IsShown(GuiScope.SetRoot(GetPlayer.MakeScope).End) )]"
 		datamodel = "[GetGlobalList('mbga_candidates')]"
 
 		item = {
@@ -38,6 +43,7 @@ widget = {
 				using = clickthrough_blocker
 				alwaystransparent = no
 				enabled = "[Not(GetScriptedGui('mbga_container_blocked').IsShown(GuiScope.SetRoot(ScriptContainer.MakeScope).End))]"
+				visible = "[Not(GetScriptedGui('mbga_container_own_from_start').IsShown(GuiScope.SetRoot(ScriptContainer.MakeScope).End))]"
 				onclick = "[GetScriptedGui('mbga_take_container').Execute(GuiScope.SetRoot(ScriptContainer.MakeScope).AddScope('actor', GetPlayer.MakeScope).End)]"
 
 				textbox = {

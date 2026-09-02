@@ -5,15 +5,21 @@
 #
 #   mbga_fill_country_list        country scope. Fills the caller's mbga_countries list.
 #   mbga_fill_selectable_provinces state scope, scope:actor. Fills actor's mbga_selectable
-#                                 with that state's provinces. Generated, see tools/.
+#                                 with that state's provinces, walking the base game's own
+#                                 geographic regions.
 #   mbga_build_candidates         country scope. Wraps every province in mbga_selectable
 #                                 in a container the interface can render, hubs first.
 #   mbga_clear_candidates         country scope. Destroys those containers again.
-#   mbga_transfer_province_to_taker province scope, scope:mbga_taker. Generated, see tools/.
+#   mbga_list_every_province      country scope. Offer the whole state from now on.
+#   mbga_list_reachable_only      country scope. Offer only what borders our own ground.
+#   mbga_transfer_province_to_taker province scope, scope:mbga_taker. Moves one province
+#                                 by way of a courier country, naming no province id.
 #
 # Variables an interface can read:
-#   mbga_godmode         present means every province of the state is offered, absent
-#                        means only those bordering the demander
+#   mbga_unfiltered      present means every province of a state is offered, absent means
+#                        only those the demander can reach from its own border. Set it
+#                        through mbga_list_every_province / mbga_list_reachable_only
+#                        rather than by hand.
 #   mbga_target_country  country currently being demanded from
 #   mbga_active_state    state whose provinces are listed
 #   mbga_selectable      list of provinces of that state
@@ -37,4 +43,22 @@ mbga_fill_country_list = {
 			add_to_variable_list = { name = mbga_countries target = scope:mbga_country_entry }
 		}
 	}
+}
+
+# Which of the two lists a caller wants.
+#
+# Unfiltered is the plain one: a state's provinces, all of them, which is what the
+# mechanism produces before anything is imposed on it. Reachability is a rule laid on top,
+# and it is the expensive one - it stands every candidate up as a country of its own to
+# ask what touches what - so a caller that does not need it should not pay for it.
+#
+# This is deliberately a variable on the demanding country rather than a game rule. The
+# rule belongs to this mod's own interface and decides what our panel does; another mod
+# driving the API must be able to choose per caller, in a game where that rule is off.
+mbga_list_every_province = {
+	set_variable = mbga_unfiltered
+}
+
+mbga_list_reachable_only = {
+	remove_variable = mbga_unfiltered
 }

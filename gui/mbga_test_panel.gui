@@ -1,0 +1,155 @@
+﻿# The readout for the iterator bench in common/scripted_effects/mbga_iterator_test.txt.
+#
+# Logging alone cannot settle this. debug_log prints no values, so a log line can say
+# "something came back" but never "seventeen came back", and seventeen against a state that
+# holds ten is a different answer entirely - a wrong iterator that returns the whole region
+# looks exactly like a right one until the numbers are put side by side.
+#
+# So the engine is asked for the truth as well. State.GetNumProvinces is the game's own
+# count for the state being tested, and every candidate is shown against it. Equal is a
+# pass; zero means thrown out or empty; anything else means the iterator answered a
+# different question than the one asked.
+#
+# The window appears only once the decision has been taken, and never in a normal game.
+widget = {
+	name = "mbga_test_panel"
+	layer = layer_ingame_menu
+	size = { 100% 100% }
+	allow_outside = yes
+	alwaystransparent = yes
+	visible = "[GetMetaPlayer.GetPlayedOrObservedCountry.IsValid]"
+	datacontext = "[AccessMetaPlayer.AccessPlayedOrObservedCountry]"
+
+	window = {
+		name = "mbga_test_window"
+		layer = popups
+		allow_outside = yes
+		alwaystransparent = no
+		movable = yes
+		using = clickthrough_blocker
+
+		size = { 270 423 }
+		parentanchor = top|left
+		position = { 40 80 }
+		visible = "[GetScriptedGui('mbga_test_has_run').IsShown(GuiScope.SetRoot(GetPlayer.MakeScope).End)]"
+
+		icon = {
+			texture = "gfx/interface/backgrounds/entry_bg_simple_solid.dds"
+			size = { 100% 100% }
+			alwaystransparent = yes
+		}
+		background = { using = entry_bg_simple }
+
+		textbox = {
+			text = "MBGA_TEST_TITLE"
+			default_format = "#header"
+			position = { 10 8 }
+			size = { 250 22 }
+		}
+		# Problem one on its own: the walk down from the top, which needs no names at all.
+		textbox = {
+			text = "MBGA_TEST_DESCENT"
+			position = { 10 34 }
+			size = { 250 18 }
+			alwaystransparent = yes
+		}
+		textbox = {
+			text = "MBGA_TEST_TRUTH"
+			position = { 10 53 }
+			size = { 250 18 }
+			alwaystransparent = yes
+			datacontext = "[GetPlayer.MakeScope.Var('mbga_test_state').GetState]"
+		}
+		textbox = {
+			text = "MBGA_TEST_REGIONS"
+			position = { 10 79 }
+			size = { 250 18 }
+			alwaystransparent = yes
+		}
+		textbox = {
+			text = "MBGA_TEST_EVERY"
+			position = { 10 98 }
+			size = { 250 18 }
+			alwaystransparent = yes
+		}
+		textbox = {
+			text = "MBGA_TEST_ORDERED"
+			position = { 10 117 }
+			size = { 250 18 }
+			alwaystransparent = yes
+		}
+		textbox = {
+			text = "MBGA_TEST_RANDOM"
+			position = { 10 136 }
+			size = { 250 18 }
+			alwaystransparent = yes
+		}
+		textbox = {
+			text = "MBGA_TEST_WORLD"
+			position = { 10 155 }
+			size = { 250 18 }
+			alwaystransparent = yes
+		}
+		textbox = {
+			text = "MBGA_TEST_STORED"
+			position = { 10 174 }
+			size = { 250 18 }
+			alwaystransparent = yes
+		}
+		textbox = {
+			text = "MBGA_TEST_SCOPESTATES"
+			position = { 10 193 }
+			size = { 250 18 }
+			alwaystransparent = yes
+		}
+		textbox = {
+			text = "MBGA_TEST_FROMPROV"
+			position = { 10 212 }
+			size = { 250 18 }
+			alwaystransparent = yes
+		}
+		textbox = {
+			text = "MBGA_TEST_LINK"
+			position = { 10 231 }
+			size = { 250 18 }
+			alwaystransparent = yes
+		}
+		textbox = {
+			text = "MBGA_TEST_STRAIT"
+			position = { 10 250 }
+			size = { 250 18 }
+			alwaystransparent = yes
+		}
+		textbox = {
+			text = "MBGA_TEST_BUILDING"
+			position = { 10 269 }
+			size = { 250 18 }
+			alwaystransparent = yes
+		}
+		textbox = {
+			text = "MBGA_TEST_SRCAP"
+			position = { 10 288 }
+			size = { 250 18 }
+			alwaystransparent = yes
+		}
+		textbox = {
+			text = "MBGA_TEST_STATECAP"
+			position = { 10 307 }
+			size = { 250 18 }
+			alwaystransparent = yes
+		}
+		textbox = {
+			text = "MBGA_TEST_SEED"
+			position = { 10 326 }
+			size = { 250 18 }
+			alwaystransparent = yes
+		}
+		textbox = {
+			text = "MBGA_TEST_HINT"
+			position = { 10 352 }
+			size = { 250 26 }
+			alwaystransparent = yes
+			multiline = yes
+		}
+	}
+}

@@ -1,0 +1,68 @@
+﻿# Taking provinces without wading through a list of anything.
+#
+# The diplomacy screen already knows how to ask which country and which of its states, so it
+# is asked to do both: state_selection puts a state picker in front of the player and hands
+# the answer back as scope:second_state. From there the province markers appear on the map
+# and provinces are clicked directly. No country list, no state list, no rows.
+#
+# One file, additive. Diplomatic actions need no gui of their own and overwrite nothing,
+# which is why this is the route rather than a button hung off the state panel: that would
+# mean replacing a base game gui file, and any other mod touching the same file would then
+# be at war with this one.
+mbga_take_provinces_action = {
+	groups = { general }
+
+	requires_approval = no
+	should_notify_third_parties = no
+	show_effect_in_tooltip = yes
+	show_confirmation_box = no
+
+	state_selection = second_required
+	second_state_list = second_country
+
+	# Only under the rule that asks for it. The rule is read here and nowhere deeper: what
+	# happens afterwards is the API's business and knows nothing about game rules.
+	selectable = {
+		has_game_rule = mbga_province_tool_diplomatic
+	}
+
+	potential = {
+		scope:target_country = {
+			any_scope_state = { always = yes }
+		}
+	}
+
+	possible = {
+		NOT = { this = scope:target_country }
+	}
+
+	# Any state the other country actually holds.
+	second_state_trigger = {
+		owner ?= scope:target_country
+	}
+
+	effect = {
+		save_scope_as = actor
+		scope:target_country = { save_scope_as = mbga_action_target }
+		save_temporary_scope_as = mbga_action_actor
+
+		scope:mbga_action_actor = {
+			set_variable = { name = mbga_target_country value = scope:mbga_action_target }
+			mbga_list_reachable_only = yes
+			if = {
+				limit = { has_game_rule = mbga_province_access_anywhere }
+				mbga_list_every_province = yes
+			}
+		}
+
+		scope:second_state = { mbga_open_for_state_effect = yes }
+		debug_log = "MBGA|action|a state was handed in from the diplomacy screen"
+	}
+
+	# Never on its own. This moves borders without a war, which is a tool, not a policy, and
+	# an AI reaching for it would be a bug rather than a feature.
+	ai = {
+		evaluation_chance = { value = 0 }
+		will_propose = { always = no }
+	}
+}

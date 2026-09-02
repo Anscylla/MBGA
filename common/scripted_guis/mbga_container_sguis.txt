@@ -37,6 +37,7 @@ mbga_take_container = {
 				change_variable = { name = mbga_taken_count subtract = 1 }
 			}
 			debug_log = "MBGA|container|province handed back"
+			scope:actor = { mbga_refresh_after_return = yes }
 		}
 		else = {
 			scope:actor = { save_scope_as = mbga_taker }
@@ -47,6 +48,7 @@ mbga_take_container = {
 				change_variable = { name = mbga_taken_count add = 1 }
 			}
 			debug_log = "MBGA|container|province taken"
+			scope:actor = { mbga_refresh_after_take = yes }
 		}
 	}
 }
@@ -103,3 +105,12 @@ mbga_container_blocked = {
 	is_valid = { always = yes }
 	effect = {}
 }
+
+# Already ours when the state was opened. Nothing is drawn for these.
+mbga_container_own_from_start = {
+	scope = container
+	is_shown = { has_variable = mbga_own_from_start }
+	is_valid = { always = yes }
+	effect = {}
+}
+

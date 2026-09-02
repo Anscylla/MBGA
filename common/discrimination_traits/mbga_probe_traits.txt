@@ -1,0 +1,18 @@
+﻿# The heritage and the language the probe culture names.
+#
+# These are not free identifiers. Writing heritage = heritage_mbga_probe in a culture and
+# leaving it at that got "Failed to read key reference: heritage_mbga_probe" at load, the
+# culture never finished loading, and the countries built on it came out invalid - which
+# showed up as several hundred interest groups being asked about a country that was not
+# valid, every time a province changed hands.
+#
+# Both are declared here instead, additively, overwriting nothing.
+heritage_mbga_probe = {
+	type = heritage
+	trait_group = heritage_group_mbga_probe
+}
+
+language_mbga_probe = {
+	type = language
+	trait_group = language_group_mbga_probe
+}
