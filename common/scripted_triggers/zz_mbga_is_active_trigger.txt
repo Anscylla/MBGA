@@ -1,26 +1,7 @@
-﻿# How another mod asks whether Make Borders Great Again is running.
-#
-# This is the Community Mod Framework convention. Every mod owns the trigger that announces
-# itself, declares it with REPLACE_OR_CREATE, and puts it in a file named so that it loads
-# late - hence the zz_ - so that it wins over the placeholder somebody else declared.
-#
-# To use it, put a file starting with 00_ in your own mod's common/scripted_triggers with:
-#
-#   mbga_is_active = {
-#       always = no
-#   }
-#
-# Then ask "mbga_is_active = yes" anywhere. If this mod is in the playset the declaration
-# below takes priority and answers yes; if it is not, yours stands and answers no. Either
-# way nothing errors, which is the whole point of the arrangement.
-REPLACE_OR_CREATE:mbga_is_active = {
+﻿REPLACE_OR_CREATE:mbga_is_active = {
 	always = yes
 }
 
-# The province index exists and holds something, which is the only thing about this mod
-# another one is likely to care about: it means the API can list the provinces of a state.
-# Worth asking separately from the one above, because a map this mod cannot walk leaves it
-# loaded and unable to answer.
 mbga_province_index_is_ready = {
 	has_global_variable = mbga_index_built
 	global_var:mbga_index_count > 0

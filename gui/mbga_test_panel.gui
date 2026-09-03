@@ -1,16 +1,8 @@
-﻿# The readout for the iterator bench in common/scripted_effects/mbga_iterator_test.txt.
+﻿# The readout for the iterator bench. Shows each candidate against State.GetNumProvinces,
+# which is the engine's own count for the state under test.
 #
-# Logging alone cannot settle this. debug_log prints no values, so a log line can say
-# "something came back" but never "seventeen came back", and seventeen against a state that
-# holds ten is a different answer entirely - a wrong iterator that returns the whole region
-# looks exactly like a right one until the numbers are put side by side.
-#
-# So the engine is asked for the truth as well. State.GetNumProvinces is the game's own
-# count for the state being tested, and every candidate is shown against it. Equal is a
-# pass; zero means thrown out or empty; anything else means the iterator answered a
-# different question than the one asked.
-#
-# The window appears only once the decision has been taken, and never in a normal game.
+# Test scaffolding: delete with the bench before release.
+
 widget = {
 	name = "mbga_test_panel"
 	layer = layer_ingame_menu
@@ -28,7 +20,7 @@ widget = {
 		movable = yes
 		using = clickthrough_blocker
 
-		size = { 270 423 }
+		size = { 270 480 }
 		parentanchor = top|left
 		position = { 40 80 }
 		visible = "[GetScriptedGui('mbga_test_has_run').IsShown(GuiScope.SetRoot(GetPlayer.MakeScope).End)]"
@@ -141,6 +133,24 @@ widget = {
 		textbox = {
 			text = "MBGA_TEST_SEED"
 			position = { 10 326 }
+			size = { 250 18 }
+			alwaystransparent = yes
+		}
+		textbox = {
+			text = "MBGA_TEST_SETORACLE"
+			position = { 10 345 }
+			size = { 250 18 }
+			alwaystransparent = yes
+		}
+		textbox = {
+			text = "MBGA_TEST_SETCOST"
+			position = { 10 364 }
+			size = { 250 18 }
+			alwaystransparent = yes
+		}
+		textbox = {
+			text = "MBGA_TEST_SETHOLDS"
+			position = { 10 383 }
 			size = { 250 18 }
 			alwaystransparent = yes
 		}

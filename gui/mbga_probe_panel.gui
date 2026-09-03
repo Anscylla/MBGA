@@ -1,31 +1,17 @@
-﻿# Mounted through gui/scripted_widgets/mbga_widgets.txt.
+﻿# The debug panel: country list, state list, province rows and a window of numbers.
 #
-# This file is only one possible front end for the script API in
-# common/scripted_effects/mbga_api.txt and common/scripted_guis/mbga_api_sguis.txt.
-# Another mod can drive the same flow from its own interface without touching this.
-#
-# Two things it deliberately never does. It never reads the vanilla state panel: the
-# StatesPanel data context is injected by code into that panel's own subtree and is
-# nullptr anywhere else, and reaching it would mean shipping a copy of a vanilla gui
-# file that any other mod doing the same would break. And it never handles a province:
-# script lays the candidates out over numbered slots, so the interface deals in numbers.
+# Shown under the mbga_province_tool_debug game rule. Mounted through
+# gui/scripted_widgets, so no base game file is touched.
+
 widget = {
 	name = "mbga_probe_panel"
 	layer = layer_ingame_menu
 	size = { 100% 100% }
 	allow_outside = yes
 	alwaystransparent = yes
-	# Only that there is a player. The game rule is asked further in, on the windows
-	# themselves: And evaluates both of its arguments whatever the first one answers, so
-	# asking a scripted gui here meant asking it about GetPlayer on the main menu and in
-	# every loading screen, which is four hundred errors a session and no window either
-	# way.
 	visible = "[GetMetaPlayer.GetPlayedOrObservedCountry.IsValid]"
 	datacontext = "[AccessMetaPlayer.AccessPlayedOrObservedCountry]"
 
-	# Freeze the game while provinces are being picked. TimeKeeper is global rather than
-	# panel bound, so this needs no vanilla file. The widget is invisible and does its
-	# work through the _show animation, the standard hidden trigger idiom.
 	widget = {
 		size = { 0 0 }
 		alpha = 0
@@ -49,9 +35,6 @@ widget = {
 		parentanchor = top|right
 		position = { -520 80 }
 
-		# The whole tool is behind the god mode game rule. It hands provinces over outside
-		# a war, so a normal game should not see it at all. This gates the interface only:
-		# the mechanism underneath works in any game, rule or no rule.
 		visible = "[GetScriptedGui('mbga_tool_enabled').IsShown(GuiScope.SetRoot(GetPlayer.MakeScope).End)]"
 
 		# entry_bg_simple is a translucent frame, so the map reads straight through it.
@@ -139,9 +122,6 @@ widget = {
 			}
 		}
 
-		### 3. Which of that state's provinces. One row per candidate, with no ceiling:
-		### each province travels here wrapped in a container, because a data model item
-		### can be promoted to a container but not to a province.
 		textbox = {
 			text = "MBGA_TAKEN_COUNT"
 			position = { 10 378 }
@@ -156,9 +136,6 @@ widget = {
 			onclick = "[GetScriptedGui('mbga_toggle_stats').Execute(GuiScope.SetRoot(GetPlayer.MakeScope).End)]"
 		}
 
-		# The camera cannot be sent to a province: every function in the Zoom family takes
-		# a state, a region, a front or a marker, and none takes a province. This is the
-		# closest the interface can get, and it is what the vanilla state panel uses.
 		button = {
 			text = "MBGA_GOTO_STATE"
 			using = default_button
@@ -188,10 +165,6 @@ widget = {
 							spacing = 4
 							visible = "[Not(GetScriptedGui('mbga_container_own_from_start').IsShown(GuiScope.SetRoot(ScriptContainer.MakeScope).End))]"
 
-							# The dumped data types settle two things I had wrong. Hub names are
-							# available straight off the state, so a row can say Le Havre rather
-							# than "port of Normandy". And Scope.GetProvince does exist, so an
-							# ordinary province can name its own terrain.
 							icon = {
 								size = { 20 20 }
 								texture = "gfx/interface/icons/building_icons/urban_center.dds"
@@ -293,7 +266,7 @@ widget = {
 		movable = yes
 		using = clickthrough_blocker
 
-		size = { 250 176 }
+		size = { 250 157 }
 		parentanchor = top|right
 		position = { -790 80 }
 		visible = "[And( GetScriptedGui('mbga_tool_enabled').IsShown(GuiScope.SetRoot(GetPlayer.MakeScope).End), GetScriptedGui('mbga_stats_shown').IsShown(GuiScope.SetRoot(GetPlayer.MakeScope).End) )]"
@@ -336,20 +309,14 @@ widget = {
 			alwaystransparent = yes
 		}
 		textbox = {
-			text = "MBGA_STATS_NEIGHBOUR"
+			text = "MBGA_STATS_HOME"
 			position = { 10 110 }
 			size = { 230 18 }
 			alwaystransparent = yes
 		}
 		textbox = {
-			text = "MBGA_STATS_HOME"
-			position = { 10 129 }
-			size = { 230 18 }
-			alwaystransparent = yes
-		}
-		textbox = {
 			text = "MBGA_STATS_TAKEABLE"
-			position = { 10 148 }
+			position = { 10 129 }
 			size = { 230 18 }
 			alwaystransparent = yes
 		}
@@ -357,7 +324,7 @@ widget = {
 		# The two answers that were known before they were asked. Both must read no.
 		textbox = {
 			text = "MBGA_STATS_ORPHANS"
-			position = { 10 167 }
+			position = { 10 148 }
 			size = { 230 18 }
 			alwaystransparent = yes
 		}

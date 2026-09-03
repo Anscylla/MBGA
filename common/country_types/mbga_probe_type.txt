@@ -1,20 +1,7 @@
-﻿# The country type the courier runs on. Everything the engine could act through is switched off,
-# so even if the sweep were somehow interrupted mid way, what is left behind is inert:
-# it cannot hold politics, run an economy, raise troops, research, or receive events.
-#
-# uses_prestige = no also keeps it out of the rank listings, which is where a stray
-# country would otherwise show up.
-#
-# MBT uses this, MBG and MBH do not. Adjacency is asked OF a country and answers no to
-# everything once politics are off, which is what kept this type unused; the courier is
-# never asked anything, it only receives a province and is annexed away, so it can be as
-# inert as the engine allows. That is also the point: with no politics there are no
-# interest groups to set up, and setting them up on a country that had already been
-# annexed away was filling the error log eight lines at a time, once per transfer.
-#
-# In practice it never gets the chance to act at all: the whole sweep runs inside a
-# single effect chain, so no game tick passes between the courier gaining a province and
-# losing it again, and the AI is never given a turn with it.
+﻿# The country type the courier runs on: everything the engine could act through is off.
+# MBG and MBH cannot use it - adjacency is asked OF a country and answers no once politics
+# are off.
+
 mbga_probe_country_type = {
 	is_colonizable = no
 	is_unrecognized = no

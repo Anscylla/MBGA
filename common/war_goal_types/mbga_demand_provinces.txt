@@ -1,13 +1,8 @@
-﻿# The clicked state, without touching a single vanilla file.
+﻿# A war goal that asks for a state and lists its provinces.
 #
-# target_type = state puts the player into the game's own state picker on the map
-# (mm_diplomatic_play_state_interaction). Whatever they click arrives as scope:target_state
-# in this war goal's own triggers, script values and effects. That scope reaches nowhere
-# else: a diplomatic play exposes only .initiator and .target, on_wargoal_added carries no
-# state, and the StatesPanel data context exists only inside the vanilla state panel.
-#
-# kind = custom means the game applies no territorial change of its own, leaving the
-# per province transfer entirely to on_enforced.
+# target_type = state puts the player into the game's own state picker, and the answer
+# arrives as scope:target_state. kind = custom means the game applies no territorial change
+# of its own.
 
 mbga_demand_provinces = {
 	icon = "gfx/interface/icons/war_goals/conquer_state.dds"
@@ -39,9 +34,6 @@ mbga_demand_provinces = {
 		value = 10
 	}
 
-	# Scaled by the target state's population, exactly as conquer_state does. Beyond
-	# being reasonable, a number that visibly changes from one state to the next is the
-	# proof that scope:target_state really resolves while the player is choosing.
 	infamy = {
 		value = 0
 

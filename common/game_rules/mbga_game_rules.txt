@@ -1,11 +1,7 @@
-﻿# Two rules, because they were one and should not have been.
+﻿# Which provinces may be demanded, and how the transfer tool is reached.
 #
-# What may be demanded is a question about the game: whether a border has to be worked for,
-# or whether any province of a state is fair game. How the tool is reached is a question
-# about the interface. Somebody building a scenario wants both; somebody who simply prefers
-# unrestricted demands wants the first and not the second; a normal game wants neither.
+# Read only in common/scripted_guis. The mechanism itself knows nothing about game rules.
 
-# Which provinces of a state may be demanded at all.
 mbga_province_access = {
 	default = mbga_province_access_bordering
 
@@ -16,14 +12,6 @@ mbga_province_access = {
 	}
 }
 
-# How provinces are moved outside a war, if at all.
-#
-# The middle setting is the one to use. It adds an entry to the diplomacy screen, so the
-# game's own interface asks who and where - pick a country, pick one of its states - and the
-# only thing left to do by hand is click the provinces on the map. Nothing to browse.
-#
-# The last setting is the panel this was all built and tested through: country list, state
-# list, province rows, counters. Useful for working on the mod, clumsy for using it.
 mbga_province_tool = {
 	default = mbga_province_tool_off
 

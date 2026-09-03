@@ -5,6 +5,7 @@
 	"game_id": "victoria3",
 	"supported_game_version": "1.14.*",
 	"short_description": "Demand individual provinces instead of whole states.",
+	"picture": "thumbnail.png",
 	"tags": [
 		"Gameplay",
 		"Diplomacy",

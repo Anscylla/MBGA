@@ -1,17 +1,6 @@
-﻿# Buttons drawn over the provinces themselves.
-#
-# Province.GetScreenPosition gives a province its coordinates on screen and position
-# accepts a data expression; neither is used together anywhere in the base game.
-#
-# widgetanchor centres a button on the point it is given rather than measuring from the
-# middle of the screen. The remaining drift grew with the distance from the anchor, which
-# is a scale factor, so the layer carries the inverse of its parent's scale.
-# Multiply_CVector2f will not take a float, hence correcting through scale instead.
-#
-# One button per province, never three stacked. Three overlapping buttons meant the
-# invisible ones still swallowed the pointer, which is why an already taken province
-# could not be clicked again to hand it back. State is shown by icons laid on top of the
-# single button, all of them transparent to the mouse.
+﻿# A marker on every candidate province, placed at Province.GetScreenPosition and hidden
+# when the camera pulls back.
+
 widget = {
 	name = "mbga_map_overlay"
 	layer = layer_map_markers
@@ -20,10 +9,6 @@ widget = {
 	alwaystransparent = yes
 	datacontext = "[AccessMetaPlayer.AccessPlayedOrObservedCountry]"
 
-	# Only that there is a player. Asking a scripted gui about GetPlayer up here means
-	# asking it on the main menu and through every loading screen, which was two hundred
-	# errors before a single province had been looked at. The real question is one level
-	# in, where it is asked only once this widget is showing.
 	visible = "[GetMetaPlayer.GetPlayedOrObservedCountry.IsValid]"
 
 	widget = {

@@ -1,9 +1,12 @@
-﻿# Runs the iterator bench. A decision rather than a button because it needs no interface of
-# its own to exist, works in any game, and leaves a mark in the decisions list that says
-# plainly this is a test.
+﻿# Runs the iterator bench in common/scripted_effects/mbga_iterator_test.txt.
+# Test scaffolding: delete with the bench before release.
+
 mbga_test_iterators_decision = {
 	is_shown = {
-		has_game_rule = mbga_province_tool_debug
+		OR = {
+			has_game_rule = mbga_province_tool_debug
+			has_game_rule = mbga_province_tool_diplomatic
+		}
 	}
 
 	possible = {

@@ -1,19 +1,20 @@
-﻿# The work behind mbga_open_for_state, split out so the filter toggle can redo it
-# without the interface having to hand the state in again.
+﻿# Opens a state for demanding: records what was already ours, builds the candidates and
+# works out what may be taken.
+#
+# State scope, scope:actor is the demanding country. Called by the debug panel, by the
+# diplomatic action, or by any other interface driving the API.
 
 mbga_open_for_state_effect = {
-	debug_log = "MBGA|dyn|a state was handed in from the panel"
+	save_scope_as = mbga_opened_state
+	debug_log = "MBGA|dyn|a state was handed in"
 	scope:actor = {
-		set_variable = { name = mbga_active_state value = ROOT }
-		set_variable = { name = mbga_active_state_region value = ROOT.state_region }
+		set_variable = { name = mbga_active_state value = scope:mbga_opened_state }
+		set_variable = { name = mbga_active_state_region value = scope:mbga_opened_state.state_region }
 		clear_variable_list = mbga_taken
 		set_variable = { name = mbga_taken_count value = 0 }
 	}
 	mbga_fill_selectable_provinces = yes
 
-	# What was already ours before any of this began. Recorded only when a state is
-	# freshly opened, never on a refresh, so a province taken during the session keeps
-	# counting as the target's rather than quietly becoming ours from the start.
 	scope:actor = {
 		clear_variable_list = mbga_own_at_start
 		every_in_list = {
@@ -35,20 +36,12 @@ mbga_open_for_state_effect = {
 		set_variable = { name = mbga_orphans_released value = 0 }
 		mbga_build_candidates = yes
 
-		# The graph answers one question: what can be reached from our own border. An
-		# unfiltered list does not ask it, so none of it is built and not one province
-		# changes hands to find out.
 		if = {
 			limit = { NOT = { has_variable = mbga_unfiltered } }
 			mbga_build_adjacency_graph = yes
 		}
 		mbga_recompute_takeable = yes
 	}
-	# Say the count out loud. Three probes have now drawn a conclusion from a list
-	# that was silently empty, so the real code reports what it actually found.
-	# Two different failures used to read the same. An empty province list means the walk
-	# over the strategic regions found nothing; a full list with no candidates means the
-	# provinces were found and the wrapping went wrong, which is a different bug entirely.
 	if = {
 		limit = { scope:actor = { var:mbga_candidate_count > 0 } }
 		debug_log = "MBGA|dyn|candidates built for this state"
@@ -62,18 +55,21 @@ mbga_open_for_state_effect = {
 	}
 }
 
-# A province changing hands moves the frontier, but the graph worked out when the state
-# was opened already describes every arrangement, so nothing is rebuilt and nothing is
-# probed. The candidate list is left exactly as it is and only the flags are worked out
-# again, which is why clicking, undoing and clicking again now cost nothing.
 mbga_refresh_after_take = {
-	mbga_enforce_connected_takes = yes
+	if = {
+		limit = { has_variable = mbga_lazy }
+		mbga_extend_after_take = yes
+	}
 	mbga_recompute_takeable = yes
 }
 
 # Handing back is the move that can strand something, so the taken set is checked for a
 # path home before the panel is told what may be taken next.
 mbga_refresh_after_return = {
-	mbga_enforce_connected_takes = yes
+	if = {
+		limit = { has_variable = mbga_lazy }
+		mbga_release_orphans_lazily = yes
+	}
+	else = { mbga_enforce_connected_takes = yes }
 	mbga_recompute_takeable = yes
 }

@@ -1,6 +1,5 @@
-﻿# A heritage trait and a language trait each need a group of their own type, so the probe
-# culture's two get one each. Nothing else is ever in them: no pop has this culture, and
-# the three countries that name it live for a fraction of a moment each.
+﻿# A heritage and a language trait each need a group of their own type.
+
 heritage_group_mbga_probe = {
 	type = heritage
 }

@@ -26,13 +26,13 @@
  MBGA_STATS_SHOW: "Numbers"
  MBGA_STATS_HIDE: "Hide numbers"
 
- rule_mbga_province_access: "Province Demands"
+ rule_mbga_province_access: "#tooltip:[GetRawTextTooltipTag('mbga_tt')] @mbga_icon! #! Province Demands"
  setting_mbga_province_access_bordering: "#tooltippable #tooltip:[GetPlayer.GetTooltipTag],setting_mbga_province_access_bordering_desc Bordering only#!#!"
  setting_mbga_province_access_bordering_desc: "A province can only be demanded where it touches land you already hold, so taking a state apart means working inwards from its edge."
  setting_mbga_province_access_anywhere: "#tooltippable #tooltip:[GetPlayer.GetTooltipTag],setting_mbga_province_access_anywhere_desc #high Anywhere in the state#!#!#!"
  setting_mbga_province_access_anywhere_desc: "Any province of a state can be demanded regardless of where it lies. Faster, and it skips the work of finding out what borders what."
 
- rule_mbga_province_tool: "Province Transfer Tool"
+ rule_mbga_province_tool: "#tooltip:[GetRawTextTooltipTag('mbga_tt')] @mbga_icon! #! Province Transfer Tool"
  setting_mbga_province_tool_off: "#tooltippable #tooltip:[GetPlayer.GetTooltipTag],setting_mbga_province_tool_off_desc Off#!#!"
  setting_mbga_province_tool_off_desc: "No tool. Provinces change hands through war, as intended."
  setting_mbga_province_tool_diplomatic: "#tooltippable #tooltip:[GetPlayer.GetTooltipTag],setting_mbga_province_tool_diplomatic_desc #high Diplomatic action#!#!#!"
@@ -40,6 +40,7 @@
  setting_mbga_province_tool_debug: "#tooltippable #tooltip:[GetPlayer.GetTooltipTag],setting_mbga_province_tool_debug_desc #high Debug panel#!#!#!"
  setting_mbga_province_tool_debug_desc: "The panel this mod was built through: country list, state list, province rows and counters. For working on the mod rather than playing with it."
 
+ mbga_tt: "Added by Make Borders Great Again"
  mbga_take_provinces_action: "Take Provinces"
  mbga_take_provinces_action_desc: "Choose one of their states, then take the provinces you want from it directly on the map."
  MBGA_MAP_BLOCKED: "@red_cross!"
@@ -48,7 +49,6 @@
  MBGA_STATS_PAIRS: "pairs asked #v [Country.MakeScope.Var('mbga_pairs_tried').GetValue|0]#!"
  MBGA_STATS_TRANSFERS: "transfers #v [Country.MakeScope.Var('mbga_ops_transfers').GetValue|0]#!"
  MBGA_STATS_TOUCH: "touching pairs #v [Country.MakeScope.Var('mbga_pairs_found').GetValue|0]#!"
- MBGA_STATS_NEIGHBOUR: "same pairs, country question #v [Country.MakeScope.Var('mbga_q_country').GetValue|0]#!"
  MBGA_STATS_HOME: "touch home #v [Country.MakeScope.Var('mbga_touch_home_count').GetValue|0]#!"
  MBGA_STATS_TAKEABLE: "takeable now #v [Country.MakeScope.Var('mbga_takeable_count').GetValue|0]#!"
  MBGA_STATS_ORPHANS: "cut off, released #v [Country.MakeScope.Var('mbga_orphans_released').GetValue|0]#!"
@@ -73,7 +73,11 @@
  MBGA_TEST_SRCAP: "sr.capital_province #v [Country.MakeScope.Var('mbga_test_n_srcap').GetValue|0]#!"
  MBGA_TEST_STATECAP: "state.capital_province #v [Country.MakeScope.Var('mbga_test_n_statecap').GetValue|0]#!"
  MBGA_TEST_SEED: "seed was taken #v [Country.MakeScope.Var('mbga_test_n_seed').GetValue|0]#!"
+ MBGA_TEST_SETORACLE: "set #v [Country.MakeScope.Var('mbga_test_setgroup').GetValue|0]#! vs singles #v [Country.MakeScope.Var('mbga_test_setsingles').GetValue|0]#!"
+ MBGA_TEST_SETCOST: "set test transfers #v [Country.MakeScope.Var('mbga_test_setcost').GetValue|0]#!"
+ MBGA_TEST_SETHOLDS: "probes held all four #v [Country.MakeScope.Var('mbga_test_holds').GetValue|0]#!"
  MBGA_TEST_HINT: "Matching the first line is a pass. Zero means thrown out."
 
  MBGA_BAR_TAKEN: "Taken #v [Country.MakeScope.Var('mbga_taken_count').GetValue|0]#! of #v [Country.MakeScope.Var('mbga_candidate_count').GetValue|0]#!"
  MBGA_BAR_DONE: "Done"
+ MBGA_ALREADY_OPEN: "A state is already open. Finish with it first."

@@ -1,10 +1,11 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 """Everything that can be checked without starting the game.
 
-Written after two bugs got through in a row that a five second check would have caught: a
-scripted effect deleted by a bad slice, and a $PARAM$ used inside a quoted event target
-link, where the game silently reads a different name. Run all of it, every time, rather
-than the one check that seems relevant.
+Braces, encoding and indentation; effects, scripted guis, localization keys and game rule
+settings that are used but never declared; $PARAM$ inside quoted event target links, where
+the game silently resolves a different name; references to base game content that does not
+exist; and the rule that the mechanism must not read game rules, which belong to the
+interface layer.
 
 Run: python tools/validate.py
 """
@@ -83,6 +84,24 @@ def main():
                 if '$' in quoted.group(0):
                     problems.append(f'{rel(path)}:{n}: $PARAM$ inside quotes, '
                                     f'the game reads a different name: {quoted.group(0)[:50]}')
+
+    # set_variable assigns, change_variable does arithmetic. Writing add = on a set_ effect
+    # is accepted quietly and simply does not happen.
+    for path in script_files('common'):
+        for n, line in enumerate(read(path).split(chr(10)), 1):
+            m = re.search(r'(set_(?:global_|local_)?variable) = \{[^}]* (add|subtract|multiply|divide) =', line)
+            if m:
+                problems.append(f'{rel(path)}:{n}: {m.group(1)} takes value =, not {m.group(2)} =; use change_variable for arithmetic')
+
+    # a diplomatic action's effect block is accept_effect; a plain effect block parses and
+    # is never run
+    for path in script_files('common'):
+        if 'diplomatic_actions' not in path:
+            continue
+        for n, line in enumerate(read(path).split(chr(10)), 1):
+            if re.match(r'	?effect = ' + chr(123) + '$', line):
+                problems.append(f'{rel(path)}:{n}: a diplomatic action runs accept_effect, '
+                                f'never effect')
 
     defined = set()
     for path in script_files('common'):
@@ -170,6 +189,16 @@ def main():
                 for name in set(re.findall(pattern, read(path))):
                     if name not in known:
                         problems.append(f'{rel(path)}: {label} {name} is named but never declared')
+
+    # a texture that is not there shows as a missing icon rather than an error anybody sees
+    for path in script_files('common', 'gui'):
+        for tex in set(re.findall(r'texture = "(gfx/[^"]+)"', read(path))):
+            here = os.path.join(MOD, *tex.split('/'))
+            if os.path.exists(here):
+                continue
+            if game and os.path.exists(os.path.join(game, *tex.split('/'))):
+                continue
+            problems.append(f'{rel(path)}: texture {tex} is referenced but not present')
 
     for p in problems:
         print('  ' + p)

@@ -1,17 +1,6 @@
-﻿# Cleaning up after the adjacency sweep.
-#
-# Working out the graph in mbga_adjacency.txt hands provinces to MBG and MBH one at a
-# time and takes them straight back. Before a province is lent out its owner is written
-# into mbga_probe_owner_of on the demanding country, so a sweep that breaks half way can
-# still be undone from that record rather than leaving a probe country holding land.
-#
-# Never seen to run: the log has said "sweep finished cleanly" every time since the courier
-# replaced the baked transfer table. It is kept because the day it is needed is the day
-# something has already gone wrong.
+﻿# Undoes a sweep that did not finish, handing back anything the probe countries still hold.
+# Country scope. Does nothing when a sweep completes normally.
 
-# Country scope. Hands back anything MBG is still holding, using the owner recorded
-# before the sweep touched it. Runs after every sweep, and can be run on its own if a
-# game was left in a bad state.
 mbga_repair_probe_country = {
 	save_scope_as = mbga_prober
 
@@ -32,9 +21,6 @@ mbga_repair_probe_country = {
 						scope:mbga_repair_province = { owner ?= c:MBH }
 					}
 				}
-				# Back inside the country before reading its map. Every key handed out by
-				# every_key_in_variable_map arrives as the scope, so asking here would ask
-				# the province for a map the country holds, and get nothing.
 				scope:mbga_prober = {
 					"variable_map(mbga_probe_owner_of|scope:mbga_repair_province)" = {
 						save_scope_as = mbga_taker
@@ -46,10 +32,6 @@ mbga_repair_probe_country = {
 		}
 	}
 
-	# Belt and braces: if anything is still with MBG after the repair pass, hand the whole
-	# lot to the demander rather than leave a stray country on the map. It cannot act on
-	# what it holds, its type has politics, economy, military and events switched off, but
-	# a country sitting on land it should not have is still wrong.
 	if = {
 		limit = { c:MBG ?= { any_scope_state = { always = yes } } }
 		c:MBG = { annex = scope:mbga_prober }

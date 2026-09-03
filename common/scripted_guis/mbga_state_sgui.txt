@@ -1,5 +1,5 @@
-﻿# Hand a state in, get its provinces back as containers the interface can render.
-# Part of the public API, see common/scripted_effects/mbga_api.txt.
+﻿# Hand a state in, get its provinces back as containers. Part of the public API, see
+# common/scripted_effects/mbga_api.txt.
 
 mbga_open_for_state = {
 	scope = state
@@ -7,10 +7,6 @@ mbga_open_for_state = {
 	is_shown = { always = yes }
 	is_valid = { always = yes }
 	effect = {
-		# This is the seam between the tool and this mod's use of it. The game rule is
-		# read here, once, and turned into the API's own choice of list. Nothing further
-		# in knows the rule exists, so another mod can drive the same mechanism however it
-		# likes whatever the rules in that game say.
 		scope:actor = {
 			if = {
 				limit = { has_game_rule = mbga_province_access_anywhere }

@@ -1,59 +1,9 @@
-﻿# Countries that exist for one purpose: to hold a single province for a fraction of a
-# moment while the engine is asked whether we border it.
+﻿# Three throwaway countries the province mechanism needs.
 #
-# They never appear on their own. One is created from a province, questioned, and the
-# province is handed straight back, at which point it holds no land and ceases to exist.
-# Having their own tags rather than borrowing somebody else's keeps every side effect and
-# every log line attributable, and leaves real countries untouched.
-#
-# Plain unrecognized countries rather than the inert country type written for this, and
-# that is forced. Two provinces of one state region are never each other's neighbours as
-# far as any_neighbouring_state is concerned, because that walks whole regions; the
-# triggers that answer inside a region are asked OF a country and need it to have politics
-# and interests. Switch those off and they answer no to everything.
-#
-# The culture is the mod's own, declared in common/cultures, so no total conversion can
-# take the mechanism down by dropping a culture it never knew about.
-#
-# Eight interest groups get asked about a country that is not valid, once per transfer, and
-# it is worth writing down what that is not. It is not the culture: swapped back to the
-# base game's north_german for a run and the count did not move. It is not the capital:
-# put back on all three, same. It is not the courier's country type either.
-#
-# There never was a run without it. The one that looked clean was read out of a log that
-# had already rotated - the base game's own city_data scripts put nearly three thousand
-# errors into every 512 KB file, which pushes anything of ours out within minutes - so the
-# zero was an artefact of looking too late, and four runs went into chasing it. Read the
-# log while the game is still on the same session, and count transfers before counting
-# errors.
-#
-# What the errors actually are: a country raised and annexed away inside one effect chain,
-# with the interest group system asking about it after it is gone. Nothing acts on the
-# answer, nothing is left behind, and the transfer itself is correct.
-# All three have a capital, and it is not decoration. A country definition does not require
-# the field - 101 of the base game's have none - but those are never raised by
-# create_country during a game. These are, and without a capital the game does not finish
-# building them: interest groups are then asked about a country that is not valid, eight
-# lines every time anything anywhere changes hands.
-#
-# It cost two wrong readings to pin down. The first blamed the culture, which was wrong;
-# the second put the capital back on the courier alone and called the log clean, when that
-# run had simply not moved a single province. The probe countries linger as objects after
-# the border sweep, so a half built one keeps answering questions long after its own work
-# is done, which is why all three need it and not just the one doing the carrying.
-#
-# STATE_BRANDENBURG is the last thing in the mod outside the hub table that names a state
-# region. It does not have to be that one - any state region in the game would do - and if
-# a mod ever drops it, these three lines are what to change.
-#
-# dynamic_country_definition, which is how the base game declares its own throwaway
-# countries and the only kind that needs neither field, is deliberately not used: that
-# puts a tag into the pool create_dynamic_country draws from, and a real country could be
-# raised as one of these mid-game.
-#
-# The protection that remains is the one that always mattered most: the whole sweep runs
-# inside a single effect chain, so no tick passes between a province being lent out and
-# handed back, and the AI is never given a turn with any of them.
+# MBG and MBH each hold a single province while the border question is asked about them.
+# MBT carries a province from one owner to the next and is annexed away at once.
+# None is ever seen: they are raised and removed inside one effect chain.
+
 MBG = {
 	color = { 20 20 20 }
 
@@ -62,12 +12,8 @@ MBG = {
 	tier = city_state
 
 	cultures = { mbga_probe_culture }
-	capital = STATE_BRANDENBURG
 }
 
-# The second one. Working out whether two provinces touch each other needs both of them
-# standing alone at the same time, one in each of these, so that the question can be put
-# as "does MBG border MBH".
 MBH = {
 	color = { 25 25 25 }
 
@@ -76,15 +22,8 @@ MBH = {
 	tier = city_state
 
 	cultures = { mbga_probe_culture }
-	capital = STATE_BRANDENBURG
 }
 
-# The courier. A province is handed to it and it is annexed away immediately, which moves
-# that province without naming it, which is what let the transfer table go.
-#
-# This one runs on the inert type, unlike the two above. Nothing is ever asked of it, so
-# it needs no politics.
-#
 MBT = {
 	color = { 30 30 30 }
 
@@ -93,5 +32,4 @@ MBT = {
 	tier = city_state
 
 	cultures = { mbga_probe_culture }
-	capital = STATE_BRANDENBURG
 }

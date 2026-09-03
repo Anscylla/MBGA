@@ -1,9 +1,7 @@
-﻿# The interface talks to containers, never to provinces.
-#
-# scope = container is what makes this possible: the interface hands back the container
-# it rendered, and script unwraps the province inside it.
+﻿# The interface talks to containers, never to provinces. scope = container is what makes
+# that possible: the interface hands back the container it rendered and script unwraps the
+# province inside.
 
-# Is this candidate already taken? Asked per row.
 mbga_container_taken = {
 	scope = container
 	is_shown = { has_variable = mbga_taken }
@@ -46,6 +44,7 @@ mbga_take_container = {
 			scope:actor = {
 				add_to_variable_list = { name = mbga_taken target = scope:mbga_container_province }
 				change_variable = { name = mbga_taken_count add = 1 }
+				set_variable = { name = mbga_last_taken value = scope:mbga_container_province }
 			}
 			debug_log = "MBGA|container|province taken"
 			scope:actor = { mbga_refresh_after_take = yes }
@@ -113,4 +112,3 @@ mbga_container_own_from_start = {
 	is_valid = { always = yes }
 	effect = {}
 }
-

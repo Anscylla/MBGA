@@ -1,9 +1,6 @@
-﻿# The whole interface of the diplomatic route: a line saying which state is open, and a
-# button to stop. Everything else happens on the map, where the province markers are.
-#
-# Deliberately not a panel. The point of this route is that the game's own diplomacy screen
-# already asked who and where, so there is nothing left to browse and nothing worth
-# repeating in a window.
+﻿# The whole interface of the diplomatic route: which state is open, and a button to stop.
+# Everything else happens on the map.
+
 widget = {
 	name = "mbga_action_bar"
 	layer = layer_ingame_menu
@@ -24,7 +21,7 @@ widget = {
 		size = { 280 62 }
 		parentanchor = top|hcenter
 		position = { 0 90 }
-		visible = "[And( GetScriptedGui('mbga_tool_is_diplomatic').IsShown(GuiScope.SetRoot(GetPlayer.MakeScope).End), GetScriptedGui('mbga_has_target_country').IsShown(GuiScope.SetRoot(GetPlayer.MakeScope).End) )]"
+		visible = "[And( GetScriptedGui('mbga_tool_is_on').IsShown(GuiScope.SetRoot(GetPlayer.MakeScope).End), GetScriptedGui('mbga_has_target_country').IsShown(GuiScope.SetRoot(GetPlayer.MakeScope).End) )]"
 
 		icon = {
 			texture = "gfx/interface/backgrounds/entry_bg_simple_solid.dds"

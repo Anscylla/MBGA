@@ -1,0 +1,9 @@
+﻿# Above this many candidates a state is worked out as it is used rather than all at once.
+#
+# Below it the whole reachability graph is built when the state opens: one wait, then every
+# click is free. Above it that wait grows with the square of the province count and becomes
+# unbearable, so only the border is worked out up front and each click pays for the ring it
+# opens, which grows with the province count instead.
+#
+# Where the line falls depends on the machine, so it lives here on its own.
+mbga_lazy_threshold = 25

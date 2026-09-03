@@ -1,7 +1,6 @@
-﻿# MBGA public interface API. An interface calls these; nothing here reaches into a
-# vanilla panel, so any mod can drive the same flow from its own gui.
+﻿# What an interface may ask of the mod: the country list, the target country, the tool's
+# own state and the numbers panel.
 
-# Build the list of countries that can be demanded from.
 mbga_refresh_countries = {
 	scope = country
 	is_shown = { always = yes }
@@ -40,14 +39,6 @@ mbga_has_target_country = {
 	effect = {}
 }
 
-# Whether this mod's own province tool is on screen, which is one game rule and nothing
-# else. The panel hangs off this.
-#
-# It says nothing about which provinces may be demanded. That is a rule of its own, and it
-# reaches the mechanism as the API's own choice of list through mbga_list_every_province and
-# mbga_list_reachable_only, made in mbga_state_sgui.txt where this mod's interface meets the
-# mechanism. The two are deliberately independent: the tool can be open while demands are
-# still restricted, and demands can be unrestricted with no tool in sight.
 mbga_tool_enabled = {
 	scope = country
 	is_shown = { has_game_rule = mbga_province_tool_debug }
@@ -86,10 +77,6 @@ mbga_test_has_run = {
 	effect = {}
 }
 
-# Done picking. Clears the target and the candidates, which takes the markers off the map.
-#
-# The debug panel has a whole window to close; the diplomatic route has nothing but markers,
-# so it needs somewhere to say it is finished.
 mbga_close_tool = {
 	scope = country
 	is_shown = { has_variable = mbga_target_country }
@@ -104,10 +91,16 @@ mbga_close_tool = {
 	}
 }
 
-# The diplomatic route is in use, so the little bar that ends it should show.
-mbga_tool_is_diplomatic = {
+# The tool is on at all, whichever way it is reached. The bar that ends a selection belongs
+# to the tool rather than to one of its settings.
+mbga_tool_is_on = {
 	scope = country
-	is_shown = { has_game_rule = mbga_province_tool_diplomatic }
+	is_shown = {
+		OR = {
+			has_game_rule = mbga_province_tool_diplomatic
+			has_game_rule = mbga_province_tool_debug
+		}
+	}
 	is_valid = { always = yes }
 	effect = {}
 }

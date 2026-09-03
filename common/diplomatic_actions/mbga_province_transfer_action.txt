@@ -1,16 +1,12 @@
-﻿# Taking provinces without wading through a list of anything.
+﻿# Take Provinces: pick a country, pick one of its states, then take provinces on the map.
 #
-# The diplomacy screen already knows how to ask which country and which of its states, so it
-# is asked to do both: state_selection puts a state picker in front of the player and hands
-# the answer back as scope:second_state. From there the province markers appear on the map
-# and provinces are clicked directly. No country list, no state list, no rows.
-#
-# One file, additive. Diplomatic actions need no gui of their own and overwrite nothing,
-# which is why this is the route rather than a button hung off the state panel: that would
-# mean replacing a base game gui file, and any other mod touching the same file would then
-# be at war with this one.
+# Shown under the mbga_province_tool_diplomatic game rule. The chosen state arrives as
+# scope:second_state and is handed to mbga_open_for_state_effect.
+
 mbga_take_provinces_action = {
 	groups = { general }
+
+	texture = "gfx/interface/icons/diplomatic_action_icons/take_province.dds"
 
 	requires_approval = no
 	should_notify_third_parties = no
@@ -22,8 +18,12 @@ mbga_take_provinces_action = {
 
 	# Only under the rule that asks for it. The rule is read here and nowhere deeper: what
 	# happens afterwards is the API's business and knows nothing about game rules.
+	# The panel setting adds to this one rather than replacing it.
 	selectable = {
-		has_game_rule = mbga_province_tool_diplomatic
+		OR = {
+			has_game_rule = mbga_province_tool_diplomatic
+			has_game_rule = mbga_province_tool_debug
+		}
 	}
 
 	potential = {
@@ -32,8 +32,14 @@ mbga_take_provinces_action = {
 		}
 	}
 
+	# One state at a time. Opening a second while the first is still being picked over would
+	# rebuild the candidate list under the player's hands and strand whatever was taken.
 	possible = {
 		NOT = { this = scope:target_country }
+		custom_tooltip = {
+			text = "MBGA_ALREADY_OPEN"
+			NOT = { has_variable = mbga_target_country }
+		}
 	}
 
 	# Any state the other country actually holds.
@@ -41,12 +47,15 @@ mbga_take_provinces_action = {
 		owner ?= scope:target_country
 	}
 
-	effect = {
+	accept_effect = {
 		save_scope_as = actor
 		scope:target_country = { save_scope_as = mbga_action_target }
 		save_temporary_scope_as = mbga_action_actor
 
 		scope:mbga_action_actor = {
+			# The panel reads the same variables, so filling its country list here keeps it
+			# showing the same country and state the map is working on.
+			mbga_fill_country_list = yes
 			set_variable = { name = mbga_target_country value = scope:mbga_action_target }
 			mbga_list_reachable_only = yes
 			if = {

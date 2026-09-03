@@ -1,15 +1,9 @@
-﻿# Listing the provinces of a state.
+﻿# The provinces of a state, read from the index in mbga_province_index.txt.
 #
-# This used to be thirty six branches, one per strategic region of the base game, each
-# naming a region and its iterator - seventy two names for one question. It is now a read
-# from the index in mbga_province_index.txt, and names nothing at all.
-#
-# The filter matters for split states. The index is keyed by state region, which is the
-# map, while a state is one owner's share of it, so a region held by three countries
-# answers with everything and only the provinces of the state actually asked about are
-# kept.
+# State scope, scope:actor receives them in its $LIST$ variable list. The filter keeps only
+# the provinces of the state asked about, since a region split between owners answers with
+# all of them.
 
-# State scope in, scope:actor receives the provinces in its $LIST$ variable list.
 mbga_fill_provinces_of_state = {
 	save_scope_as = mbga_fill_state
 	mbga_ensure_province_index = yes
@@ -24,15 +18,6 @@ mbga_fill_provinces_of_state = {
 			}
 		}
 
-		# A region the index never reached. On the base game map and on Anbennar's this
-		# does not happen, because both put every land strategic region inside old_world or
-		# new_world; on a map that does neither, this is the exact moment it shows, and it
-		# says so rather than presenting an empty list as though the state had no land.
-		#
-		# Asked here, of the one region being looked at, rather than counted across the
-		# world: a sea region is legitimately empty too, and nothing in script tells the
-		# two apart, so the only place the question has an unambiguous answer is a state
-		# somebody just clicked on.
 		if = {
 			limit = { NOT = { has_variable_list = mbga_region_provinces } }
 			debug_log = "MBGA|fill|this state region is not in the province index, its map is not covered by old_world or new_world"
