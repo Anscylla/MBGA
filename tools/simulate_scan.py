@@ -4,7 +4,8 @@
 The engine answers one question: given a set of provinces in one probe country and a set in
 the other, does any province of the first touch any province of the second. Asking is free.
 Changing what a probe holds is not: every province that enters a probe costs one load, and a
-load is two transfers, and a transfer is what damages buildings.
+load is two transfers. A transfer costs what an annexation costs - building levels survive it,
+their workforce does not - so this counts loads.
 
 So this counts loads, on graphs shaped like the ones states actually are, for the schedule
 in use now and for recursive rectangle splitting.

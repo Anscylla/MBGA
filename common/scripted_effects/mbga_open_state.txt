@@ -1,8 +1,11 @@
-﻿# Opens a state for demanding: records what was already ours, builds the candidates and
-# works out what may be taken.
+﻿# PUBLIC. The front door: opens a state for demanding. See README.md.
 #
-# State scope, scope:actor is the demanding country. Called by the debug panel, by the
-# diplomatic action, or by any other interface driving the API.
+# mbga_open_for_state_effect  state scope, scope:actor is the demanding country. Records what
+#                             was already ours, builds one container per province into the
+#                             global list mbga_candidates, and works out what may be taken.
+#
+# Called by the debug panel, by the diplomatic action, or by any other interface driving the
+# mod. Everything it needs, it takes from its own scope.
 
 mbga_open_for_state_effect = {
 	save_scope_as = mbga_opened_state
@@ -42,24 +45,28 @@ mbga_open_for_state_effect = {
 		}
 		mbga_recompute_takeable = yes
 	}
+	# Only worth saying when the pass actually ran: the game evaluates this effect to
+	# build tooltips as well, and nothing is counted then.
 	if = {
-		limit = { scope:actor = { var:mbga_candidate_count > 0 } }
-		debug_log = "MBGA|dyn|candidates built for this state"
-	}
-	else_if = {
-		limit = { scope:actor = { var:mbga_loaded_count = 0 } }
-		debug_log = "MBGA|dyn|the state listed no provinces at all, so nothing could be built"
-	}
-	else = {
-		debug_log = "MBGA|dyn|provinces were listed but none of them became a candidate"
+		limit = { scope:actor = { has_variable = mbga_candidate_count } }
+		if = {
+			limit = { scope:actor = { var:mbga_candidate_count > 0 } }
+			debug_log = "MBGA|dyn|candidates built for this state"
+		}
+		else_if = {
+			limit = { scope:actor = { var:mbga_loaded_count = 0 } }
+			debug_log = "MBGA|dyn|the state listed no provinces at all, so nothing could be built"
+		}
+		else = {
+			debug_log = "MBGA|dyn|provinces were listed but none of them became a candidate"
+		}
 	}
 }
 
 mbga_refresh_after_take = {
-	if = {
-		limit = { has_variable = mbga_lazy }
-		mbga_extend_after_take = yes
-	}
+	# Nothing is asked here while a state is worked out as it is used: a province proves
+	# itself when somebody tries to take it, which costs one question instead of one per
+	# province in the state.
 	mbga_recompute_takeable = yes
 }
 

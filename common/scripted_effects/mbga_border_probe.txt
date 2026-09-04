@@ -1,5 +1,5 @@
-﻿# Undoes a sweep that did not finish, handing back anything the probe countries still hold.
-# Country scope. Does nothing when a sweep completes normally.
+﻿# PRIVATE. Undoes a sweep that did not finish, handing back anything the probe countries
+# still hold. Country scope. Does nothing when a sweep completes normally.
 
 mbga_repair_probe_country = {
 	save_scope_as = mbga_prober

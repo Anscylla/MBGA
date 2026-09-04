@@ -5,5 +5,22 @@
 # unbearable, so only the border is worked out up front and each click pays for the ring it
 # opens, which grows with the province count instead.
 #
-# Where the line falls depends on the machine, so it lives here on its own.
-mbga_lazy_threshold = 25
+# None of this applies where a lookup table answers, since then nothing is worked out at all.
+# On the base game's map that is always, so this setting is there for a mod that redraws the
+# map and ships no table of its own.
+#
+# Where the line falls depends on the machine, so it is left to the mbga_scan_budget game
+# rule, and this is the only place that rule is read.
+mbga_lazy_threshold = {
+	if = {
+		limit = { has_game_rule = mbga_scan_budget_low }
+		value = 12
+	}
+	else_if = {
+		limit = { has_game_rule = mbga_scan_budget_high }
+		value = 60
+	}
+	else = {
+		value = 25
+	}
+}

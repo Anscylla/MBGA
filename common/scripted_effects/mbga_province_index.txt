@@ -1,10 +1,16 @@
-﻿# Every province in the game, filed under its state region, built once per save and read by
-# mbga_enumerate.txt.
+﻿# PUBLIC. Every province in the game, filed under its state region. See README.md.
 #
-# There is no province iterator on a state scope and only a geographic region yields
-# province scopes, so the map is walked through old_world and new_world, which between them
-# hold every land strategic region. The index lives on state regions rather than states
-# because a state is one owner's share of a region and comes and goes with the borders.
+# mbga_ensure_province_index  any scope. Builds the index if it is missing or out of date.
+#                             Cheap once built; every read goes through it.
+# mbga_build_province_index   any scope. Builds it unconditionally. Called from on_game_started.
+#
+# The list mbga_region_provinces on a state region is the index itself, and may be read
+# directly. The trigger mbga_province_index_is_ready says whether it is there.
+#
+# There is no province iterator on a state scope and only a geographic region yields province
+# scopes, so the map is walked through old_world and new_world, which between them hold every
+# land strategic region. The index lives on state regions rather than states because a state
+# is one owner's share of a region and comes and goes with the borders.
 
 mbga_index_one_province = {
 	save_scope_as = mbga_index_province

@@ -1,9 +1,11 @@
-﻿# Moves one province without naming it.
+﻿# PUBLIC. Moves one province without naming it. See README.md.
+#
+# mbga_transfer_province_to_taker
+#                             province scope, scope:mbga_taker is the country that should end
+#                             up with it.
 #
 # set_owner_of_provinces takes literal province ids only, so the province is given to a
 # courier country which the receiver then annexes.
-#
-# Province scope, scope:mbga_taker is the country that should end up with it.
 
 mbga_transfer_province_to_taker = {
 	save_scope_as = mbga_courier_province

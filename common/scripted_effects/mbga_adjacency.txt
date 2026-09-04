@@ -1,4 +1,6 @@
-﻿# Which candidate provinces the demander can reach from its own border.
+﻿# PRIVATE, apart from mbga_fill_adjacency_from_table, which a lookup table replaces.
+#
+# Which candidate provinces the demander can reach from its own border.
 #
 # The engine will not say whether two provinces touch, so each is made the entire territory
 # of a probe country and the question is asked about the states they stand on. Built once
@@ -8,7 +10,99 @@
 # whether any province of one touches any province of the other. Confirmed both ways, on an
 # edge that exists and on one that does not, with the probes verified as holding the ground.
 #
+# A lookup table may answer instead, at no cost at all, and is used when it proves to
+# describe the map being played. It is a separate module: with none loaded everything here
+# still works.
+#
 # Country scope. Reads the candidate containers built by mbga_containers.txt.
+
+mbga_fill_adjacency_from_table = {
+}
+
+# Country scope. Writes down that every pair inside this state region has been settled, so
+# the sweep never runs on it again in this save.
+mbga_mark_region_scanned = {
+	set_variable = mbga_adj_known
+	if = {
+		limit = {
+			NOT = {
+				is_target_in_variable_list = {
+					name = mbga_scanned_regions
+					target = var:mbga_active_state_region
+				}
+			}
+		}
+		add_to_variable_list = { name = mbga_scanned_regions target = var:mbga_active_state_region }
+	}
+}
+
+# Country scope. The same, and more: the neighbour lists reach past the state's own edge.
+#
+# Probing can only ever find neighbours among the candidates, which is enough to say what
+# connects to what inside the state but says nothing about the ground beyond it. A table
+# names every neighbour, so with one the question of whether a province touches the demander
+# becomes a question about who owns those neighbours, and no province need be lent out at all.
+mbga_mark_region_mapped = {
+	mbga_mark_region_scanned = yes
+	set_variable = mbga_adj_reaches_outside
+	if = {
+		limit = {
+			NOT = {
+				is_target_in_variable_list = {
+					name = mbga_mapped_regions
+					target = var:mbga_active_state_region
+				}
+			}
+		}
+		add_to_variable_list = { name = mbga_mapped_regions target = var:mbga_active_state_region }
+	}
+}
+
+# Country scope. Fills the candidates' neighbours from the lookup table, if one is loaded
+# and it describes the map actually being played.
+#
+# The table is checked rather than trusted. A province of this map has land neighbours, so a
+# table made for it leaves the containers with some; one made for a different map names
+# provinces that are elsewhere or nowhere, and the lists stay empty. Islands are counted with
+# the answered ones, the table having said how many of them the state holds, and a majority
+# settles it. Failing that, everything found is thrown away and the engine is asked instead.
+mbga_apply_adjacency_table = {
+	save_scope_as = mbga_builder
+	set_variable = { name = mbga_adj_filled value = 0 }
+	set_variable = { name = mbga_adj_wanted value = 0 }
+	set_variable = { name = mbga_adj_islands value = 0 }
+
+	mbga_fill_adjacency_from_table = yes
+
+	if = {
+		limit = { has_variable = mbga_adj_from_table }
+		every_in_global_list = {
+			variable = mbga_candidates
+			scope:mbga_builder = { change_variable = { name = mbga_adj_wanted add = 1 } }
+			if = {
+				limit = { any_in_list = { variable = mbga_adj count >= 1 } }
+				scope:mbga_builder = { change_variable = { name = mbga_adj_filled add = 1 } }
+			}
+		}
+
+		set_variable = { name = mbga_adj_score value = var:mbga_adj_filled }
+		change_variable = { name = mbga_adj_score add = var:mbga_adj_islands }
+		change_variable = { name = mbga_adj_score multiply = 2 }
+		if = {
+			limit = { var:mbga_adj_score >= var:mbga_adj_wanted }
+			mbga_mark_region_mapped = yes
+			debug_log = "MBGA|table|neighbours came from the lookup table, nothing was probed"
+		}
+		else = {
+			every_in_global_list = {
+				variable = mbga_candidates
+				clear_variable_list = mbga_adj
+			}
+			remove_variable = mbga_adj_from_table
+			debug_log = "MBGA|table|the lookup table does not describe this map, asking the engine"
+		}
+	}
+}
 
 mbga_lend_province_to = {
 	if = {
@@ -58,12 +152,24 @@ mbga_build_adjacency_graph = {
 	# The country question, kept as a measurement only. See where it is asked.
 	set_variable = { name = mbga_q_country value = 0 }
 
+	# Who owns what changes between one opening and the next; which province touches which
+	# does not. The neighbour lists are never thrown away, so a region gives up its shape once
+	# and keeps it for the rest of the save.
 	every_in_global_list = {
 		variable = mbga_candidates
 		limit = { NOT = { has_variable = mbga_own_from_start } }
-		clear_variable_list = mbga_adj
 		remove_variable = mbga_touches_home
 		remove_variable = mbga_pair_seen
+	}
+
+	# Only when the containers for this region were built a moment ago. Filling from the table
+	# on top of neighbours already found would enter them twice.
+	if = {
+		limit = {
+			has_variable = mbga_region_is_new
+			NOT = { has_variable = mbga_adj_known }
+		}
+		mbga_apply_adjacency_table = yes
 	}
 
 	# Nothing inside a state can touch our territory unless the state itself does, and that
@@ -74,52 +180,80 @@ mbga_build_adjacency_graph = {
 				any_neighbouring_state = { owner ?= scope:mbga_prober }
 			}
 		}
-		# what touches our own ground
-		every_in_global_list = {
-			variable = mbga_candidates
-			limit = { NOT = { has_variable = mbga_own_from_start } }
-			save_scope_as = mbga_outer_container
-			var:mbga_province = { save_scope_as = mbga_outer_province }
-			scope:mbga_outer_province = { state.owner = { save_scope_as = mbga_outer_owner } }
-			scope:mbga_prober = {
-				add_to_variable_map = {
-					name = mbga_probe_owner_of
-					key = scope:mbga_outer_province
-					value = scope:mbga_outer_owner
+		# What touches our own ground.
+		#
+		# Where the neighbours are known past the state's own edge, that is a question about
+		# who owns them and costs nothing. Otherwise each candidate is stood up as a country
+		# of its own and asked, and that is two province transfers apiece.
+		if = {
+			limit = { has_variable = mbga_adj_reaches_outside }
+			every_in_global_list = {
+				variable = mbga_candidates
+				limit = { NOT = { has_variable = mbga_own_from_start } }
+				save_scope_as = mbga_outer_container
+				scope:mbga_prober = { change_variable = { name = mbga_ops_candidates add = 1 } }
+				if = {
+					limit = {
+						any_in_list = {
+							variable = mbga_adj
+							state.owner ?= scope:mbga_prober
+						}
+					}
+					set_variable = mbga_touches_home
+					scope:mbga_prober = { change_variable = { name = mbga_touch_home_count add = 1 } }
 				}
 			}
-
-			scope:mbga_outer_province = { save_scope_as = mbga_lend_province }
-			mbga_lend_province_to = { TAG = MBG }
-			scope:mbga_prober = {
-				change_variable = { name = mbga_ops_candidates add = 1 }
-				change_variable = { name = mbga_ops_transfers add = 2 }
-			}
-
-			if = {
-				limit = {
-					scope:mbga_outer_province.state = {
-						any_neighbouring_state = { owner ?= scope:mbga_prober }
+		}
+		else = {
+			every_in_global_list = {
+				variable = mbga_candidates
+				limit = { NOT = { has_variable = mbga_own_from_start } }
+				save_scope_as = mbga_outer_container
+				var:mbga_province = { save_scope_as = mbga_outer_province }
+				scope:mbga_outer_province = { state.owner = { save_scope_as = mbga_outer_owner } }
+				scope:mbga_prober = {
+					add_to_variable_map = {
+						name = mbga_probe_owner_of
+						key = scope:mbga_outer_province
+						value = scope:mbga_outer_owner
 					}
 				}
-				scope:mbga_outer_container = { set_variable = mbga_touches_home }
-				scope:mbga_prober = { change_variable = { name = mbga_touch_home_count add = 1 } }
-			}
 
-			scope:mbga_outer_owner = { save_scope_as = mbga_taker }
-			scope:mbga_outer_province = { mbga_transfer_province_to_taker = yes }
+				scope:mbga_outer_province = { save_scope_as = mbga_lend_province }
+				mbga_lend_province_to = { TAG = MBG }
+				scope:mbga_prober = {
+					change_variable = { name = mbga_ops_candidates add = 1 }
+					change_variable = { name = mbga_ops_transfers add = 2 }
+				}
+
+				if = {
+					limit = {
+						scope:mbga_outer_province.state = {
+							any_neighbouring_state = { owner ?= scope:mbga_prober }
+						}
+					}
+					scope:mbga_outer_container = { set_variable = mbga_touches_home }
+					scope:mbga_prober = { change_variable = { name = mbga_touch_home_count add = 1 } }
+				}
+
+				scope:mbga_outer_owner = { save_scope_as = mbga_taker }
+				scope:mbga_outer_province = { mbga_transfer_province_to_taker = yes }
+			}
 		}
 
 		# What touches what, each unordered pair visited once.
 		#
 		# The pair sweep stands every candidate up as a country of its own, twice per pair, so it
-		# is skipped whenever its answers cannot change anything: nothing touching home means
-		# nothing is reachable, everything touching home means everything is takeable already.
-		# A state past the threshold is left to be worked out as it is used: the sweep below
-		# grows with the square of the province count, while a click costs a pass over what
-		# is still out of reach.
+		# is skipped whenever its answers cannot change anything: the neighbours are known
+		# already, nothing touches home so nothing is reachable, or everything does and
+		# everything is takeable. A state past the threshold with none of that settled is left
+		# to be worked out as it is used: the sweep grows with the square of the province
+		# count, while a click costs a pass over what is still out of reach.
 		if = {
-			limit = { var:mbga_ops_candidates > mbga_lazy_threshold }
+			limit = {
+				NOT = { has_variable = mbga_adj_known }
+				var:mbga_ops_candidates > mbga_lazy_threshold
+			}
 			set_variable = mbga_lazy
 			debug_log = "MBGA|graph|too large to work out at once, this state is done as it is used"
 		}
@@ -228,33 +362,36 @@ mbga_build_adjacency_graph = {
 	}
 
 
-	# What has been found about which province touches which is map data and does not
-	# change, so it is kept on the containers and never asked for twice.
+	# A complete sweep settles the region for good.
 	if = {
 		limit = { NOT = { has_variable = mbga_lazy } }
-		set_variable = mbga_adj_known
+		mbga_mark_region_scanned = yes
 	}
 
 	mbga_repair_probe_country = yes
 
+	# Same here: nothing was counted when the game is only working out a tooltip.
 	if = {
-		limit = { var:mbga_pairs_tried = 0 }
-		debug_log = "MBGA|graph|no pairs were tried at all"
-	}
-	else_if = {
-		limit = { var:mbga_holds_right = 0 }
-		debug_log = "MBGA|graph|the probe countries never held the pair being asked about"
-	}
-	else_if = {
-		limit = { var:mbga_holds_right < var:mbga_pairs_tried }
-		debug_log = "MBGA|graph|the probe countries held the right ground only some of the time"
-	}
-	else_if = {
-		limit = { var:mbga_pairs_found = 0 }
-		debug_log = "MBGA|graph|both countries held the right ground, yet no pair came back adjacent"
-	}
-	else = {
-		debug_log = "MBGA|graph|adjacency found between candidates"
+		limit = { has_variable = mbga_pairs_tried }
+		if = {
+			limit = { var:mbga_pairs_tried = 0 }
+			debug_log = "MBGA|graph|no pairs were tried at all"
+		}
+		else_if = {
+			limit = { var:mbga_holds_right = 0 }
+			debug_log = "MBGA|graph|the probe countries never held the pair being asked about"
+		}
+		else_if = {
+			limit = { var:mbga_holds_right < var:mbga_pairs_tried }
+			debug_log = "MBGA|graph|the probe countries held the right ground only some of the time"
+		}
+		else_if = {
+			limit = { var:mbga_pairs_found = 0 }
+			debug_log = "MBGA|graph|both countries held the right ground, yet no pair came back adjacent"
+		}
+		else = {
+			debug_log = "MBGA|graph|adjacency found between candidates"
+		}
 	}
 }
 
@@ -525,4 +662,30 @@ mbga_release_orphans_lazily = {
 		limit = { var:mbga_orphans_released > 0 }
 		debug_log = "MBGA|graph|provinces were cut off from home and handed back"
 	}
+}
+
+# Container scope, scope:mbga_prober is the demander. Asks about this one province and
+# nothing else.
+#
+# While a state is worked out as it is used, a province that is not yet known to be within
+# reach is checked when somebody tries to take it. One question, two transfers, instead of
+# asking every province in the state each time anything changes hands. What may be taken is
+# exactly the same either way; only the moment of asking differs.
+mbga_verify_one_candidate = {
+	save_scope_as = mbga_verify_container
+
+	var:mbga_province = { mbga_probe_one_province = yes }
+	if = {
+		limit = {
+			scope:mbga_probe_province.state = {
+				any_neighbouring_state = { owner ?= scope:mbga_prober }
+			}
+		}
+		scope:mbga_verify_container = {
+			set_variable = mbga_touches_home
+			set_variable = mbga_takeable
+		}
+	}
+	mbga_return_probed_province = yes
+	mbga_repair_probe_country = yes
 }

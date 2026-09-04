@@ -1,8 +1,13 @@
-﻿# The provinces of a state, read from the index in mbga_province_index.txt.
+﻿# PUBLIC. The provinces of a state, which the base game will not answer at all. Read from
+# the index in mbga_province_index.txt. See README.md.
 #
-# State scope, scope:actor receives them in its $LIST$ variable list. The filter keeps only
-# the provinces of the state asked about, since a region split between owners answers with
-# all of them.
+# mbga_fill_provinces_of_state = { LIST = x }
+#                             state scope, scope:actor receives them in its list x.
+# mbga_fill_selectable_provinces
+#                             the same, into mbga_selectable, cleared first.
+#
+# The filter keeps only the provinces of the state asked about, since a region split between
+# owners answers with all of them.
 
 mbga_fill_provinces_of_state = {
 	save_scope_as = mbga_fill_state

@@ -40,6 +40,17 @@
  setting_mbga_province_tool_debug: "#tooltippable #tooltip:[GetPlayer.GetTooltipTag],setting_mbga_province_tool_debug_desc #high Debug panel#!#!#!"
  setting_mbga_province_tool_debug_desc: "The panel this mod was built through: country list, state list, province rows and counters. For working on the mod rather than playing with it."
 
+ # This setting is for a mod that redraws the map and ships no table with it. On any map
+ # the mod has a table for, nothing is ever scanned and none of these three do anything.
+ rule_mbga_scan_budget: "#tooltip:[GetRawTextTooltipTag('mbga_tt')] @mbga_icon! #! Province Scanning"
+ setting_mbga_scan_budget_low: "#tooltippable #tooltip:[GetPlayer.GetTooltipTag],setting_mbga_scan_budget_low_desc Short waits#!#!"
+ setting_mbga_scan_budget_low_desc: "#high Has no effect on the base game's map.#!\n\nOnly small states are worked out the moment they open. Larger ones open at once and work themselves out as you click."
+ setting_mbga_scan_budget_standard: "#tooltippable #tooltip:[GetPlayer.GetTooltipTag],setting_mbga_scan_budget_standard_desc #high Balanced#!#!#!"
+ setting_mbga_scan_budget_standard_desc: "#high Has no effect on the base game's map.#!\n\nMost states are worked out on opening; the largest are left to work themselves out as they are used."
+ setting_mbga_scan_budget_high: "#tooltippable #tooltip:[GetPlayer.GetTooltipTag],setting_mbga_scan_budget_high_desc #high Fewest interruptions#!#!#!"
+ setting_mbga_scan_budget_high_desc: "#high Has no effect on the base game's map.#!\n\nNearly every state is worked out on opening, so clicking never stops to think. A large state can take a while to open."
+
+ MBGA_ACTION_EFFECT_TT: "Opens the chosen state on the map, where you take its provinces one at a time. Nothing changes hands until you click one."
  mbga_tt: "Added by Make Borders Great Again"
  mbga_take_provinces_action: "Take Provinces"
  mbga_take_provinces_action_desc: "Choose one of their states, then take the provinces you want from it directly on the map."

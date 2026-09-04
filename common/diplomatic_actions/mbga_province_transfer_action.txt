@@ -47,25 +47,36 @@ mbga_take_provinces_action = {
 		owner ?= scope:target_country
 	}
 
+	# The game builds this action's tooltip by walking the effect, and what it writes out
+	# is the script itself. hidden_effect keeps it out and custom_tooltip says instead
+	# what the action does.
 	accept_effect = {
-		save_scope_as = actor
-		scope:target_country = { save_scope_as = mbga_action_target }
-		save_temporary_scope_as = mbga_action_actor
+		custom_tooltip = MBGA_ACTION_EFFECT_TT
+		hidden_effect = {
+			save_scope_as = actor
+			scope:target_country = { save_scope_as = mbga_action_target }
+			save_temporary_scope_as = mbga_action_actor
 
-		scope:mbga_action_actor = {
-			# The panel reads the same variables, so filling its country list here keeps it
-			# showing the same country and state the map is working on.
-			mbga_fill_country_list = yes
-			set_variable = { name = mbga_target_country value = scope:mbga_action_target }
-			mbga_list_reachable_only = yes
+			scope:mbga_action_actor = {
+				# The panel reads the same variables, so filling its country list here keeps it
+				# showing the same country and state the map is working on.
+				mbga_fill_country_list = yes
+				set_variable = { name = mbga_target_country value = scope:mbga_action_target }
+				mbga_list_reachable_only = yes
+				if = {
+					limit = { has_game_rule = mbga_province_access_anywhere }
+					mbga_list_every_province = yes
+				}
+			}
+
+			# The state can still be the null object here, the effect being walked once before
+			# anything is picked.
 			if = {
-				limit = { has_game_rule = mbga_province_access_anywhere }
-				mbga_list_every_province = yes
+				limit = { exists = scope:second_state }
+				scope:second_state = { mbga_open_for_state_effect = yes }
+				debug_log = "MBGA|action|a state was handed in from the diplomacy screen"
 			}
 		}
-
-		scope:second_state = { mbga_open_for_state_effect = yes }
-		debug_log = "MBGA|action|a state was handed in from the diplomacy screen"
 	}
 
 	# Never on its own. This moves borders without a war, which is a tool, not a policy, and

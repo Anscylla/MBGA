@@ -256,8 +256,8 @@ widget = {
 		}
 	}
 
-	# Numbers live in their own window to the side. Putting them in the main one meant
-	# they sat on top of the province rows, which is where the eye actually needs to be.
+	# Numbers live in a window of their own, to the side, so that nothing ever covers the
+	# province rows.
 	window = {
 		name = "mbga_stats"
 		layer = popups

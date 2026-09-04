@@ -1,5 +1,5 @@
-﻿# Hand a state in, get its provinces back as containers. Part of the public API, see
-# common/scripted_effects/mbga_api.txt.
+﻿# PUBLIC. Hand a state in, get its provinces back as containers. The same thing
+# mbga_open_for_state_effect does, reachable from the interface. See README.md.
 
 mbga_open_for_state = {
 	scope = state

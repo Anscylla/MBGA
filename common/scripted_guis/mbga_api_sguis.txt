@@ -1,5 +1,8 @@
-﻿# What an interface may ask of the mod: the country list, the target country, the tool's
-# own state and the numbers panel.
+﻿# PUBLIC. What an interface may ask of the mod: the country list, the target country, the
+# tool's own state and the numbers panel. See README.md.
+#
+# mbga_toggle_stats, mbga_stats_shown and mbga_test_has_run belong to the debug panel and are
+# not part of the contract.
 
 mbga_refresh_countries = {
 	scope = country

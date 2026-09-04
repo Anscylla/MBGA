@@ -1,6 +1,9 @@
-﻿# The interface talks to containers, never to provinces. scope = container is what makes
-# that possible: the interface hands back the container it rendered and script unwraps the
-# province inside.
+﻿# PUBLIC. Everything the interface does to a candidate province. See README.md.
+#
+# The interface talks to containers, never to provinces. scope = container is what makes that
+# possible: the interface hands back the container it rendered and script unwraps the province
+# inside. mbga_take_container takes it, or hands it back if it was already taken; the rest
+# answer questions about a row so it can draw itself.
 
 mbga_container_taken = {
 	scope = container
@@ -16,16 +19,36 @@ mbga_take_container = {
 	is_shown = { always = yes }
 	# Something already taken can always be handed back, whatever the filter says about
 	# taking it in the first place.
+	# While a state is worked out as it is used, whether a province is within reach is not
+	# known until it is asked about, so the click is allowed and the effect asks.
 	is_valid = {
 		has_variable = mbga_province
 		OR = {
 			has_variable = mbga_taken
 			has_variable = mbga_takeable
+			scope:actor = { has_variable = mbga_lazy }
 		}
 	}
 	effect = {
+		if = {
+			limit = {
+				NOT = { has_variable = mbga_taken }
+				NOT = { has_variable = mbga_takeable }
+				scope:actor = { has_variable = mbga_lazy }
+			}
+			scope:actor = { save_scope_as = mbga_prober }
+			mbga_verify_one_candidate = yes
+		}
+
 		var:mbga_province = { save_scope_as = mbga_container_province }
 		if = {
+			limit = {
+				NOT = { has_variable = mbga_taken }
+				NOT = { has_variable = mbga_takeable }
+			}
+			debug_log = "MBGA|container|that province does not touch our ground yet"
+		}
+		else_if = {
 			limit = { has_variable = mbga_taken }
 			var:mbga_owner = { save_scope_as = mbga_taker }
 			scope:mbga_container_province = { mbga_transfer_province_to_taker = yes }

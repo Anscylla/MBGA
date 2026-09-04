@@ -1,6 +1,11 @@
-﻿# Which provinces may be demanded, and how the transfer tool is reached.
+﻿# Which provinces may be demanded, how the transfer tool is reached, and how much work a
+# state may cost when it opens.
 #
-# Read only in common/scripted_guis. The mechanism itself knows nothing about game rules.
+# The first two are read only in common/scripted_guis: the mechanism itself knows nothing
+# about what the game permits. The third is a machine setting rather than a rule of play and
+# is read in common/script_values/mbga_values.txt, which is the only place it is named. It
+# only ever applies on a map the mod has no lookup table for, since with one nothing is
+# scanned at all.
 
 mbga_province_access = {
 	default = mbga_province_access_bordering
@@ -22,5 +27,18 @@ mbga_province_tool = {
 	}
 
 	mbga_province_tool_debug = {
+	}
+}
+
+mbga_scan_budget = {
+	default = mbga_scan_budget_standard
+
+	mbga_scan_budget_low = {
+	}
+
+	mbga_scan_budget_standard = {
+	}
+
+	mbga_scan_budget_high = {
 	}
 }

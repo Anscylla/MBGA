@@ -31,60 +31,70 @@ def read(path):
     return open(path, encoding='utf-8-sig', errors='replace').read().replace('\r', '')
 
 
+def parse_region_text(text, filename=''):
+    """One state_regions file -> {state_region: {'provinces', 'hubs', 'file'}}"""
+    out = {}
+    # strip comments outside quotes
+    clean = []
+    for line in text.split('\n'):
+        q, buf = False, ''
+        for ch in line:
+            if ch == '"':
+                q = not q
+            if ch == '#' and not q:
+                break
+            buf += ch
+        clean.append(buf)
+    text = '\n'.join(clean)
+
+    depth, cur, body = 0, None, []
+    for line in text.split('\n'):
+        if depth == 0:
+            m = re.match(r'^\s*([A-Z_][A-Z0-9_]*)\s*=\s*\{', line)
+            if m:
+                cur, body = m.group(1), []
+        if cur:
+            body.append(line)
+        depth += line.count('{') - line.count('}')
+        if cur and depth == 0:
+            blob = '\n'.join(body)
+            pm = re.search(r'provinces\s*=\s*\{([^}]*)\}', blob, re.S)
+            provs = HEX.findall(pm.group(1)) if pm else []
+            hubs = {}
+            for h in HUBS:
+                hm = re.search(r'^\s*' + h + r'\s*=\s*"?(x[0-9A-Fa-f]{6})"?', blob, re.M)
+                if hm:
+                    hubs[h] = hm.group(1)
+            # keep the original casing: p: lookups are matched against the
+            # ids exactly as the game writes them
+            out[cur] = {'provinces': provs, 'hubs': hubs, 'file': filename}
+            cur = None
+    return out
+
+
 def parse_state_regions(game):
-    """-> {state_region: {'provinces': [...], 'hubs': {type: id}, 'traits': [...]}}"""
+    """-> {state_region: {'provinces': [...], 'hubs': {type: id}, 'file': name}}"""
     out = {}
     base = os.path.join(game, 'map_data', 'state_regions')
     for fn in sorted(os.listdir(base)):
-        if not fn.endswith('.txt'):
-            continue
-        text = read(os.path.join(base, fn))
-        # strip comments outside quotes
-        clean = []
-        for line in text.split('\n'):
-            q, buf = False, ''
-            for ch in line:
-                if ch == '"':
-                    q = not q
-                if ch == '#' and not q:
-                    break
-                buf += ch
-            clean.append(buf)
-        text = '\n'.join(clean)
+        if fn.endswith('.txt'):
+            out.update(parse_region_text(read(os.path.join(base, fn)), fn))
+    return out
 
-        depth, cur, body = 0, None, []
-        for line in text.split('\n'):
-            if depth == 0:
-                m = re.match(r'^\s*([A-Z_][A-Z0-9_]*)\s*=\s*\{', line)
-                if m:
-                    cur, body = m.group(1), []
-            if cur:
-                body.append(line)
-            depth += line.count('{') - line.count('}')
-            if cur and depth == 0:
-                blob = '\n'.join(body)
-                pm = re.search(r'provinces\s*=\s*\{([^}]*)\}', blob, re.S)
-                provs = HEX.findall(pm.group(1)) if pm else []
-                hubs = {}
-                for h in HUBS:
-                    hm = re.search(r'^\s*' + h + r'\s*=\s*"?(x[0-9A-Fa-f]{6})"?', blob, re.M)
-                    if hm:
-                        hubs[h] = hm.group(1)
-                # keep the original casing: p: lookups are matched against the
-                # ids exactly as the game writes them
-                out[cur] = {'provinces': provs, 'hubs': hubs, 'file': fn}
-                cur = None
+
+def parse_terrain_text(text):
+    """-> {province_id: terrain}"""
+    out = {}
+    for line in text.split('\n'):
+        m = re.match(r'^\s*(x[0-9A-Fa-f]{6})\s*=\s*"?([a-z_]+)"?', line)
+        if m:
+            out[m.group(1)] = m.group(2)
     return out
 
 
 def parse_terrains(game):
     """-> {province_id: terrain}, from the game's own generated file."""
-    out = {}
-    for line in read(os.path.join(game, 'map_data', 'province_terrains.txt')).split('\n'):
-        m = re.match(r'^\s*(x[0-9A-Fa-f]{6})\s*=\s*"?([a-z_]+)"?', line)
-        if m:
-            out[m.group(1)] = m.group(2)
-    return out
+    return parse_terrain_text(read(os.path.join(game, 'map_data', 'province_terrains.txt')))
 
 
 def main():
