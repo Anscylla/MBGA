@@ -20,6 +20,25 @@ Framework](https://github.com/Victoria-3-Modding-Co-op/Community-Mod-Framework).
 
 ---
 
+## Load it last
+
+**Put MBGA below every other mod in the playset.**
+
+MBGA overwrites no file of the base game and no file of any other mod. That is not enough on
+its own. A mod may claim a whole folder in its `replace_paths`, and the game then reads that
+folder from it alone, ignoring what every mod loaded **before** it put there — file names and
+prefixes do not enter into it. Total conversions claim folders MBGA needs, `common/decisions`
+and `common/country_definitions` among them.
+
+Loaded after such a mod, MBGA's own files are read and everything works. Loaded before it,
+they are dropped: the probe countries are gone, so nothing can be demanded, and the game
+reports `create_country effect [ Invalid tag ]`.
+
+Nothing about this can be fixed from inside the files, by us or by anyone. It is decided by
+the order alone, so put MBGA at the bottom.
+
+---
+
 ## What the engine will not do
 
 Most of this mod is shaped by what Victoria 3 refuses to answer. None of the following is a
@@ -45,16 +64,37 @@ The mod works around every one of these. How it does it is the rest of this docu
 
 ### The province index
 
-The map is walked once at the start of a game, through `old_world` and `new_world` — two
-geographic regions that between them hold every land strategic region in the base game — and
-every province is filed under its own state region in a variable list. That is the whole
-solution to "the provinces of a state": ask the state's region for its list and keep the ones
-that are in the state you asked about.
+The map is walked once at the start of a game and every province is filed under its own state
+region in a variable list. That is the whole solution to "the provinces of a state": ask the
+state's region for its list and keep the ones that are in the state you asked about.
 
-It lives on **state regions** rather than states because a state is one owner's share of a
-region and comes and goes as borders move, while a region is fixed for the life of the map.
+The walk goes through **geographic regions**, because `every_province_in_<short_key>` is the
+only thing in the game that hands out province scopes, and it exists only for regions declared
+in script. The key is part of the effect name and is fixed when the game loads, so it cannot
+be built from anything the mod learns while running.
 
-Two names are hardcoded, and only two. Nothing else in the mod names any part of the map.
+So the mod tries keys, widest first, and stops as soon as it is done:
+
+1. a generated index, if a module for this map is loaded — exact, and costs no walking;
+2. `old_world` and `new_world`, which between them are the base game's whole land map, and
+   that of anything keeping its region names — Anbennar included;
+3. every other key that could ever be needed, from
+   `common/scripted_effects/mbga_known_worlds.txt`, tried one at a time. That list holds the
+   base game's names and those of installed mods that both redraw the map *and* put land
+   somewhere `old_world` and `new_world` do not reach — a mod that plays on the base game's
+   map contributes nothing, however many regions it declares for its own events.
+
+It knows when to stop because the engine can be asked how large the map is: `every_state_region`
+names nothing and `num_provinces` is the engine's own count for one of them, so summing them
+gives every province on the map. A walk that reached only part of it cannot pass for a whole
+one, and the mod says so in the log rather than quietly listing less than there is.
+
+Each attempt is an effect of its own, since one naming a region this map does not declare is
+thrown out whole and would take the others with it.
+
+The index lives on **state regions** rather than states because a state is one owner's share
+of a region and comes and goes as borders move, while a region is fixed for the life of the
+map.
 
 ### Containers
 
@@ -267,6 +307,18 @@ No. Not one. The panel is mounted through `gui/scripted_widgets`, the on action 
 Only if that mod claims the country tags `MBG`, `MBH` or `MBT`, or defines something else
 called `mbga_*`. A mod that changes the map does not conflict — see
 [Building a table](#building-a-table-for-a-redrawn-map).
+
+### The tool does nothing, or the log says `create_country effect [ Invalid tag ]`
+
+MBGA is loaded too early. Move it below every other mod in the playset — see
+[Load it last](#load-it-last).
+
+This is what a mod's `replace_paths` does: it claims a whole folder, and the game then reads
+that folder only from it, dropping what every mod loaded before it put there. MBGA overwrites
+nothing, and it makes no difference: `common/country_definitions` claimed by someone else
+takes the probe countries with it, and `common/decisions` takes the bench.
+
+Loading last costs nothing, since MBGA overwrites nothing to begin with.
 
 ### Do I need a compatibility patch to play with a total conversion?
 

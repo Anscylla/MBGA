@@ -7,6 +7,53 @@
 # Country scope. Fills mbga_hub_city, _port, _farm, _mine and _wood for the state in
 # mbga_active_state_region.
 
+# One kind of hub, read out of its own map. $KIND$ is substituted when the game loads.
+#
+# The map is opened by mbga_unwrap_hub_<kind> rather than here: a parameter inside a quoted
+# event target link comes out mangled, so that one line is the only thing written five times.
+mbga_read_hub = {
+	if = {
+		limit = { has_variable_map = mbga_hubmap_$KIND$ }
+		every_key_in_variable_map = {
+			variable = mbga_hubmap_$KIND$
+			limit = { this = scope:mbga_hub_region }
+			save_scope_as = mbga_hub_key
+
+			scope:mbga_hub_reader = {
+				mbga_unwrap_hub_$KIND$ = yes
+				if = {
+					limit = {
+						scope:mbga_hub_found = {
+							state.state_region ?= scope:mbga_hub_region
+						}
+					}
+					set_variable = { name = mbga_hub_$KIND$ value = scope:mbga_hub_found }
+				}
+			}
+		}
+	}
+}
+
+mbga_unwrap_hub_city = {
+	"variable_map(mbga_hubmap_city|scope:mbga_hub_key)" = { save_scope_as = mbga_hub_found }
+}
+
+mbga_unwrap_hub_port = {
+	"variable_map(mbga_hubmap_port|scope:mbga_hub_key)" = { save_scope_as = mbga_hub_found }
+}
+
+mbga_unwrap_hub_farm = {
+	"variable_map(mbga_hubmap_farm|scope:mbga_hub_key)" = { save_scope_as = mbga_hub_found }
+}
+
+mbga_unwrap_hub_mine = {
+	"variable_map(mbga_hubmap_mine|scope:mbga_hub_key)" = { save_scope_as = mbga_hub_found }
+}
+
+mbga_unwrap_hub_wood = {
+	"variable_map(mbga_hubmap_wood|scope:mbga_hub_key)" = { save_scope_as = mbga_hub_found }
+}
+
 mbga_load_hubs_of_state = {
 	save_scope_as = mbga_hub_reader
 
@@ -36,120 +83,10 @@ mbga_load_hubs_of_state = {
 		limit = { has_variable = mbga_active_state_region }
 		var:mbga_active_state_region = { save_scope_as = mbga_hub_region }
 
-		# city
-		if = {
-			limit = { has_variable_map = mbga_hubmap_city }
-			every_key_in_variable_map = {
-				variable = mbga_hubmap_city
-				limit = { this = scope:mbga_hub_region }
-				save_scope_as = mbga_hub_key
-
-				scope:mbga_hub_reader = {
-					"variable_map(mbga_hubmap_city|scope:mbga_hub_key)" = {
-						save_scope_as = mbga_hub_city_found
-					}
-					if = {
-						limit = {
-							scope:mbga_hub_city_found = {
-								state.state_region ?= scope:mbga_hub_region
-							}
-						}
-						set_variable = { name = mbga_hub_city value = scope:mbga_hub_city_found }
-					}
-				}
-			}
-		}
-		# port
-		if = {
-			limit = { has_variable_map = mbga_hubmap_port }
-			every_key_in_variable_map = {
-				variable = mbga_hubmap_port
-				limit = { this = scope:mbga_hub_region }
-				save_scope_as = mbga_hub_key
-
-				scope:mbga_hub_reader = {
-					"variable_map(mbga_hubmap_port|scope:mbga_hub_key)" = {
-						save_scope_as = mbga_hub_port_found
-					}
-					if = {
-						limit = {
-							scope:mbga_hub_port_found = {
-								state.state_region ?= scope:mbga_hub_region
-							}
-						}
-						set_variable = { name = mbga_hub_port value = scope:mbga_hub_port_found }
-					}
-				}
-			}
-		}
-		# farm
-		if = {
-			limit = { has_variable_map = mbga_hubmap_farm }
-			every_key_in_variable_map = {
-				variable = mbga_hubmap_farm
-				limit = { this = scope:mbga_hub_region }
-				save_scope_as = mbga_hub_key
-
-				scope:mbga_hub_reader = {
-					"variable_map(mbga_hubmap_farm|scope:mbga_hub_key)" = {
-						save_scope_as = mbga_hub_farm_found
-					}
-					if = {
-						limit = {
-							scope:mbga_hub_farm_found = {
-								state.state_region ?= scope:mbga_hub_region
-							}
-						}
-						set_variable = { name = mbga_hub_farm value = scope:mbga_hub_farm_found }
-					}
-				}
-			}
-		}
-		# mine
-		if = {
-			limit = { has_variable_map = mbga_hubmap_mine }
-			every_key_in_variable_map = {
-				variable = mbga_hubmap_mine
-				limit = { this = scope:mbga_hub_region }
-				save_scope_as = mbga_hub_key
-
-				scope:mbga_hub_reader = {
-					"variable_map(mbga_hubmap_mine|scope:mbga_hub_key)" = {
-						save_scope_as = mbga_hub_mine_found
-					}
-					if = {
-						limit = {
-							scope:mbga_hub_mine_found = {
-								state.state_region ?= scope:mbga_hub_region
-							}
-						}
-						set_variable = { name = mbga_hub_mine value = scope:mbga_hub_mine_found }
-					}
-				}
-			}
-		}
-		# wood
-		if = {
-			limit = { has_variable_map = mbga_hubmap_wood }
-			every_key_in_variable_map = {
-				variable = mbga_hubmap_wood
-				limit = { this = scope:mbga_hub_region }
-				save_scope_as = mbga_hub_key
-
-				scope:mbga_hub_reader = {
-					"variable_map(mbga_hubmap_wood|scope:mbga_hub_key)" = {
-						save_scope_as = mbga_hub_wood_found
-					}
-					if = {
-						limit = {
-							scope:mbga_hub_wood_found = {
-								state.state_region ?= scope:mbga_hub_region
-							}
-						}
-						set_variable = { name = mbga_hub_wood value = scope:mbga_hub_wood_found }
-					}
-				}
-			}
-		}
+		mbga_read_hub = { KIND = city }
+		mbga_read_hub = { KIND = port }
+		mbga_read_hub = { KIND = farm }
+		mbga_read_hub = { KIND = mine }
+		mbga_read_hub = { KIND = wood }
 	}
 }

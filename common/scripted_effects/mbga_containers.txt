@@ -177,6 +177,27 @@ mbga_refresh_container = {
 # Everything set here is a fact about the map: which province it is, which region it belongs
 # to, which hub it is and where it sits in the list. What the borders decide is left to
 # mbga_refresh_container, which runs on every opening.
+# Country scope, scope:mbga_new_container is the container being built. Marks it if the
+# province it wraps is the state's hub of this kind. $KIND$, $ORDER$ and $LABEL$ are
+# substituted when the game loads.
+#
+# A province can only be one hub, so the first kind to claim it keeps it, and mbga_order is
+# what puts the named provinces at the head of the list.
+mbga_mark_hub = {
+	if = {
+		limit = {
+			scope:mbga_new_container = { NOT = { has_variable = mbga_hub } }
+			has_variable = mbga_hub_$KIND$
+			scope:mbga_wrap_province ?= var:mbga_hub_$KIND$
+		}
+		scope:mbga_new_container = {
+			set_variable = { name = mbga_hub value = $ORDER$ }
+			set_variable = { name = mbga_order value = $ORDER$ }
+			set_variable = { name = mbga_label value = flag:$LABEL$ }
+		}
+	}
+}
+
 mbga_wrap_province = {
 	create_container = {
 		tags = { mbga_candidate }
@@ -213,62 +234,14 @@ mbga_wrap_province = {
 		}
 	}
 
+	mbga_mark_hub = { KIND = city  ORDER = 1 LABEL = city }
+	mbga_mark_hub = { KIND = port  ORDER = 2 LABEL = port }
+	mbga_mark_hub = { KIND = farm  ORDER = 3 LABEL = farmland }
+	mbga_mark_hub = { KIND = mine  ORDER = 4 LABEL = mines }
+	mbga_mark_hub = { KIND = wood  ORDER = 5 LABEL = woodland }
+
 	if = {
-		limit = {
-			has_variable = mbga_hub_city
-			scope:mbga_wrap_province ?= var:mbga_hub_city
-		}
-		scope:mbga_new_container = {
-			set_variable = { name = mbga_hub value = 1 }
-			set_variable = { name = mbga_order value = 1 }
-			set_variable = { name = mbga_label value = flag:city }
-		}
-	}
-	else_if = {
-		limit = {
-			has_variable = mbga_hub_port
-			scope:mbga_wrap_province ?= var:mbga_hub_port
-		}
-		scope:mbga_new_container = {
-			set_variable = { name = mbga_hub value = 2 }
-			set_variable = { name = mbga_order value = 2 }
-			set_variable = { name = mbga_label value = flag:port }
-		}
-	}
-	else_if = {
-		limit = {
-			has_variable = mbga_hub_farm
-			scope:mbga_wrap_province ?= var:mbga_hub_farm
-		}
-		scope:mbga_new_container = {
-			set_variable = { name = mbga_hub value = 3 }
-			set_variable = { name = mbga_order value = 3 }
-			set_variable = { name = mbga_label value = flag:farmland }
-		}
-	}
-	else_if = {
-		limit = {
-			has_variable = mbga_hub_mine
-			scope:mbga_wrap_province ?= var:mbga_hub_mine
-		}
-		scope:mbga_new_container = {
-			set_variable = { name = mbga_hub value = 4 }
-			set_variable = { name = mbga_order value = 4 }
-			set_variable = { name = mbga_label value = flag:mines }
-		}
-	}
-	else_if = {
-		limit = {
-			has_variable = mbga_hub_wood
-			scope:mbga_wrap_province ?= var:mbga_hub_wood
-		}
-		scope:mbga_new_container = {
-			set_variable = { name = mbga_hub value = 5 }
-			set_variable = { name = mbga_order value = 5 }
-			set_variable = { name = mbga_label value = flag:woodland }
-		}
-	}
-	else = {
+		limit = { scope:mbga_new_container = { NOT = { has_variable = mbga_hub } } }
 		scope:mbga_new_container = {
 			set_variable = { name = mbga_order value = 6 }
 			set_variable = { name = mbga_label value = flag:countryside }

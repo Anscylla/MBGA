@@ -54,20 +54,23 @@ class MapSource:
                 return p
         return os.path.join(self.game, rel)
 
-    def region_files(self):
-        """Filename -> path, the mod's copy winning over the base game's."""
+    def script_files(self, folder):
+        """Filename -> path for a folder of script, read the way the game reads it: the mod's
+        copy wins over the base game's file of the same name, any other name is added, and a
+        folder the mod claims in replace_paths is read from the mod alone."""
         out = {}
-        bases = [self.game, self.mod] if not self.replaces(REGIONS) else [self.mod]
+        bases = [self.mod] if self.replaces(folder) else [self.game, self.mod]
         for base in bases:
-            if not base:
+            if not base or not os.path.isdir(os.path.join(base, folder)):
                 continue
-            d = os.path.join(base, REGIONS)
-            if not os.path.isdir(d):
-                continue
-            for fn in sorted(os.listdir(d)):
+            for fn in sorted(os.listdir(os.path.join(base, folder))):
                 if fn.endswith('.txt'):
-                    out[fn] = os.path.join(d, fn)
+                    out[fn] = os.path.join(base, folder, fn)
         return out
+
+    def region_files(self):
+        """The state region files, as the game reads them."""
+        return self.script_files(REGIONS)
 
     def state_regions(self):
         """-> {state_region: {'provinces': [...], 'hubs': {kind: id}, 'file': name}}"""
@@ -198,4 +201,4 @@ def mod_identity(path):
     return None, None
 
 
-__all__ = ['MapSource', 'find_game', 'mod_identity', 'replace_paths']
+__all__ = ['MapSource', 'find_game', 'mod_identity', 'replace_paths', 'read']

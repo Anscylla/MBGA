@@ -20,7 +20,7 @@ widget = {
 		movable = yes
 		using = clickthrough_blocker
 
-		size = { 270 480 }
+		size = { 270 520 }
 		parentanchor = top|left
 		position = { 40 80 }
 		visible = "[GetScriptedGui('mbga_test_has_run').IsShown(GuiScope.SetRoot(GetPlayer.MakeScope).End)]"
@@ -77,86 +77,98 @@ widget = {
 			alwaystransparent = yes
 		}
 		textbox = {
-			text = "MBGA_TEST_WORLD"
+			text = "MBGA_TEST_ALL"
 			position = { 10 155 }
 			size = { 250 18 }
 			alwaystransparent = yes
 		}
 		textbox = {
-			text = "MBGA_TEST_STORED"
+			text = "MBGA_TEST_EMPTYREGION"
 			position = { 10 174 }
 			size = { 250 18 }
 			alwaystransparent = yes
 		}
 		textbox = {
-			text = "MBGA_TEST_SCOPESTATES"
+			text = "MBGA_TEST_WORLD"
 			position = { 10 193 }
 			size = { 250 18 }
 			alwaystransparent = yes
 		}
 		textbox = {
-			text = "MBGA_TEST_FROMPROV"
+			text = "MBGA_TEST_STORED"
 			position = { 10 212 }
 			size = { 250 18 }
 			alwaystransparent = yes
 		}
 		textbox = {
-			text = "MBGA_TEST_LINK"
+			text = "MBGA_TEST_SCOPESTATES"
 			position = { 10 231 }
 			size = { 250 18 }
 			alwaystransparent = yes
 		}
 		textbox = {
-			text = "MBGA_TEST_STRAIT"
+			text = "MBGA_TEST_FROMPROV"
 			position = { 10 250 }
 			size = { 250 18 }
 			alwaystransparent = yes
 		}
 		textbox = {
-			text = "MBGA_TEST_BUILDING"
+			text = "MBGA_TEST_LINK"
 			position = { 10 269 }
 			size = { 250 18 }
 			alwaystransparent = yes
 		}
 		textbox = {
-			text = "MBGA_TEST_SRCAP"
+			text = "MBGA_TEST_STRAIT"
 			position = { 10 288 }
 			size = { 250 18 }
 			alwaystransparent = yes
 		}
 		textbox = {
-			text = "MBGA_TEST_STATECAP"
+			text = "MBGA_TEST_BUILDING"
 			position = { 10 307 }
 			size = { 250 18 }
 			alwaystransparent = yes
 		}
 		textbox = {
-			text = "MBGA_TEST_SEED"
+			text = "MBGA_TEST_SRCAP"
 			position = { 10 326 }
 			size = { 250 18 }
 			alwaystransparent = yes
 		}
 		textbox = {
-			text = "MBGA_TEST_SETORACLE"
+			text = "MBGA_TEST_STATECAP"
 			position = { 10 345 }
 			size = { 250 18 }
 			alwaystransparent = yes
 		}
 		textbox = {
-			text = "MBGA_TEST_SETCOST"
+			text = "MBGA_TEST_SEED"
 			position = { 10 364 }
 			size = { 250 18 }
 			alwaystransparent = yes
 		}
 		textbox = {
-			text = "MBGA_TEST_SETHOLDS"
+			text = "MBGA_TEST_SETORACLE"
 			position = { 10 383 }
 			size = { 250 18 }
 			alwaystransparent = yes
 		}
 		textbox = {
+			text = "MBGA_TEST_SETCOST"
+			position = { 10 402 }
+			size = { 250 18 }
+			alwaystransparent = yes
+		}
+		textbox = {
+			text = "MBGA_TEST_SETHOLDS"
+			position = { 10 421 }
+			size = { 250 18 }
+			alwaystransparent = yes
+		}
+		textbox = {
 			text = "MBGA_TEST_HINT"
-			position = { 10 352 }
+			position = { 10 466 }
 			size = { 250 26 }
 			alwaystransparent = yes
 			multiline = yes

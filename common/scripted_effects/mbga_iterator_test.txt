@@ -313,6 +313,51 @@ mbga_test_single = {
 	mbga_test_unload = { SLOT = $B$ }
 }
 
+# What a geographic region that lists nothing covers.
+#
+# Each is an effect of its own: a region the engine refused to declare makes the walk an
+# unknown effect, and that is thrown out whole. The counts are compared against the thirty six
+# named branches, which are the whole map.
+mbga_test_region_all = {
+	every_province_in_mbga_all = {
+		scope:mbga_test_runner = { change_variable = { name = mbga_test_n_all add = 1 } }
+	}
+}
+
+mbga_test_region_empty = {
+	every_province_in_mbga_empty = {
+		scope:mbga_test_runner = { change_variable = { name = mbga_test_n_empty add = 1 } }
+	}
+}
+
+# A province to stand on, taken from whichever walk answered. Without one the province side
+# probes cannot run at all.
+mbga_test_seed_anywhere = {
+	every_province_in_mbga_all = {
+		limit = {
+			state ?= scope:mbga_test_state
+			scope:mbga_test_runner = { NOT = { has_variable = mbga_test_seed } }
+		}
+		save_scope_as = mbga_test_seed_prov
+		scope:mbga_test_runner = { set_variable = { name = mbga_test_seed value = scope:mbga_test_seed_prov } }
+	}
+}
+
+# Whether the engine walks the provinces of a state at all.
+#
+# The base game does exactly this in common/script_values/occupation_values.txt, from a state,
+# so the walk exists somewhere. A script value can only count - no scope comes out of it - but
+# the count settles whether the state is a scope the engine accepts for every_province, and
+# therefore whether the refusal above is about the state or about the effect form.
+#
+# num_provinces is the engine's own count of the same thing, so the two must agree.
+mbga_test_value_walk = {
+	scope:mbga_test_runner = {
+		set_variable = { name = mbga_test_n_sv value = scope:mbga_test_state.mbga_test_sv_provinces }
+		set_variable = { name = mbga_test_n_engine value = scope:mbga_test_state.num_provinces }
+	}
+}
+
 # The plain iterator the documentation describes as taking a state.
 mbga_test_iter_every = {
 	every_province = {
@@ -361,6 +406,10 @@ mbga_test_run_iterators = {
 	set_variable = { name = mbga_test_n_stored value = 0 }
 	set_variable = { name = mbga_test_n_scopestates value = 0 }
 	set_variable = { name = mbga_test_n_fromprov value = 0 }
+	set_variable = { name = mbga_test_n_sv value = 0 }
+	set_variable = { name = mbga_test_n_all value = 0 }
+	set_variable = { name = mbga_test_n_empty value = 0 }
+	set_variable = { name = mbga_test_n_engine value = 0 }
 	remove_variable = mbga_test_seed
 	set_variable = { name = mbga_test_n_link value = 0 }
 	set_variable = { name = mbga_test_n_strait value = 0 }
@@ -391,12 +440,16 @@ mbga_test_run_iterators = {
 			mbga_test_probe_scopes = yes
 			mbga_test_scope_states = yes
 			mbga_test_seed_province = yes
+			mbga_test_region_all = yes
+			mbga_test_region_empty = yes
+			mbga_test_seed_anywhere = yes
 			mbga_test_link_province = yes
 			mbga_test_link_capital_province = yes
 			mbga_test_link_strait = yes
 			mbga_test_state_capital_province = yes
 			mbga_test_link_building = yes
 		}
+		mbga_test_value_walk = yes
 		mbga_test_pick_four = yes
 		mbga_test_seed_check = yes
 		mbga_test_set_oracle = yes
@@ -462,7 +515,25 @@ mbga_test_run_iterators = {
 			debug_log = "MBGA|test|A BUILDING KNOWS ITS PROVINCE - zero names is possible"
 		}
 		if = {
-			limit = { var:mbga_test_n_fromprov = var:mbga_test_n_regions }
+			limit = { var:mbga_test_n_all > 0 }
+			debug_log = "MBGA|test|A REGION THAT LISTS NOTHING COVERS GROUND - see whether the count is the whole map"
+		}
+		else = {
+			debug_log = "MBGA|test|a geographic region with no member list covers nothing"
+		}
+		if = {
+			limit = { var:mbga_test_n_empty > 0 }
+			debug_log = "MBGA|test|A REGION WITH AN EMPTY LIST COVERS GROUND - see whether the count is the whole map"
+		}
+		else = {
+			debug_log = "MBGA|test|a geographic region with an empty list covers nothing"
+		}
+
+		if = {
+			limit = {
+				var:mbga_test_n_fromprov > 0
+				var:mbga_test_n_fromprov = var:mbga_test_n_regions
+			}
 			debug_log = "MBGA|test|every_province FROM A PROVINCE walks the whole state - zero names is possible"
 		}
 		else_if = {
@@ -472,6 +543,21 @@ mbga_test_run_iterators = {
 		else = {
 			debug_log = "MBGA|test|every_province from a province gave nothing either"
 		}
+		if = {
+			limit = {
+				var:mbga_test_n_engine > 0
+				var:mbga_test_n_sv = var:mbga_test_n_engine
+			}
+			debug_log = "MBGA|test|every_province WALKS A STATE in a script value - the state is an accepted scope, only the effect form refuses"
+		}
+		else_if = {
+			limit = { var:mbga_test_n_engine > 0 }
+			debug_log = "MBGA|test|every_province in a script value did not match num_provinces, so it does not walk the state"
+		}
+		else = {
+			debug_log = "MBGA|test|num_provinces answered nothing, the script value test proves nothing"
+		}
+
 		if = {
 			limit = { var:mbga_test_n_stored = var:mbga_test_n_regions }
 			debug_log = "MBGA|test|a state region CAN hold the list, the index is possible"

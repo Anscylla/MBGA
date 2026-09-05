@@ -1,0 +1,18 @@
+﻿# How many provinces the map holds, asked of the engine rather than counted by the mod.
+#
+# every_state_region is a global iterator that names nothing, and num_provinces is the
+# engine's own count for one of them. Summed, that is every province on the map, whoever owns
+# it and whether or not anybody does.
+#
+# This is what tells the province index when it is finished. Without it a walk that reached
+# only part of the map would look exactly like one that reached all of it.
+#
+# every_province refuses to run as an effect but does run here: a script value walks a state
+# and counts, which is how the base game uses it in common/script_values/occupation_values.txt.
+# Counting is all it can do, since no scope comes out of a script value.
+
+mbga_map_province_count = {
+	every_state_region = {
+		add = num_provinces
+	}
+}

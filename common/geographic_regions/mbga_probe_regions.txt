@@ -1,0 +1,21 @@
+﻿# Two geographic regions that name no part of the map, to find out what the engine makes of
+# one that lists nothing.
+#
+# every_province_in_<short_key> is the only thing in the game that hands out province scopes,
+# and it exists only for regions declared here. Every region the base game declares names its
+# members, so what an empty one covers is undocumented: nothing, or everything. If it is
+# everything, the whole map is reachable on any map at all, without naming a single region.
+#
+# Read by the bench in common/scripted_effects/mbga_iterator_test.txt.
+# Test scaffolding: delete with the bench before release.
+
+geographic_region_mbga_all = {
+	short_key = "mbga_all"
+}
+
+geographic_region_mbga_empty = {
+	short_key = "mbga_empty"
+
+	strategic_regions = {
+	}
+}

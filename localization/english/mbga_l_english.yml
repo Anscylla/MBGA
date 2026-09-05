@@ -74,6 +74,8 @@
  MBGA_TEST_EVERY: "every_province #v [Country.MakeScope.Var('mbga_test_n_every').GetValue|0]#!"
  MBGA_TEST_ORDERED: "ordered_province #v [Country.MakeScope.Var('mbga_test_n_ordered').GetValue|0]#!"
  MBGA_TEST_RANDOM: "random_province #v [Country.MakeScope.Var('mbga_test_n_random').GetValue|0]#!"
+ MBGA_TEST_ALL: "region with no list #v [Country.MakeScope.Var('mbga_test_n_all').GetValue|0]#!"
+ MBGA_TEST_EMPTYREGION: "region with empty list #v [Country.MakeScope.Var('mbga_test_n_empty').GetValue|0]#!"
  MBGA_TEST_WORLD: "old+new world #v [Country.MakeScope.Var('mbga_test_n_world').GetValue|0]#!"
  MBGA_TEST_STORED: "kept on the region #v [Country.MakeScope.Var('mbga_test_n_stored').GetValue|0]#!"
  MBGA_TEST_SCOPESTATES: "every_scope_state #v [Country.MakeScope.Var('mbga_test_n_scopestates').GetValue|0]#!"

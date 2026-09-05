@@ -6,3 +6,13 @@ mbga_province_index_is_ready = {
 	has_global_variable = mbga_index_built
 	global_var:mbga_index_count > 0
 }
+
+# The index holds every province the engine says the map has. What the mod counted is compared
+# with common/script_values/mbga_index_values.txt, which asks the engine itself, so a walk that
+# reached only part of the map cannot pass for a whole one.
+mbga_province_index_is_complete = {
+	has_global_variable = mbga_index_count
+	has_global_variable = mbga_index_wanted
+	global_var:mbga_index_wanted > 0
+	global_var:mbga_index_count >= global_var:mbga_index_wanted
+}
