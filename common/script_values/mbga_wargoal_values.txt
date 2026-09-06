@@ -1,0 +1,35 @@
+﻿# What a state's provinces cost in infamy.
+#
+# The war goal itself charges nothing when it is added, because what is taken is not known
+# until the war is over and the borders have been drawn by hand. The price is paid then, a
+# share of the state's own price for every province taken.
+#
+# The formula is the base game's for a state, so a whole state costs the same either way,
+# whether it was taken by this mod or by conquest. Infamy decays as a war runs, so nothing is
+# charged up front and refunded: it is charged once, at the end, for what was actually taken.
+#
+# What share of this is owed is worked out in common/scripted_effects/mbga_settlement.txt,
+# from the provinces actually taken against the provinces worth taking.
+#
+# State scope.
+
+mbga_state_infamy = {
+	add = {
+		desc = "INFAMY_BASE_VALUE"
+		value = 5
+	}
+
+	multiply = {
+		desc = "INFAMY_STATE_POPULATION_FACTOR"
+		value = state_population
+		divide = define:NDiplomacy|WAR_GOAL_INFAMY_POPULATION_SCALING_FACTOR
+		multiply = define:NDiplomacy|WAR_GOAL_INFAMY_POPULATION_SCALING_MULTIPLIER
+		add = 1
+		max = define:NDiplomacy|WAR_GOAL_INFAMY_POPULATION_SCALING_MULTIPLIER_MAX_PER_STATE
+	}
+
+	min = {
+		desc = "INFAMY_MINIMUM_VALUE"
+		value = 5
+	}
+}

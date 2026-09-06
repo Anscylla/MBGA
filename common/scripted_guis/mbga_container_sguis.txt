@@ -58,6 +58,8 @@ mbga_take_container = {
 				change_variable = { name = mbga_taken_count subtract = 1 }
 			}
 			debug_log = "MBGA|container|province handed back"
+			save_scope_as = mbga_moved_container
+			scope:actor = { mbga_return_whole_massif = yes }
 			scope:actor = { mbga_refresh_after_return = yes }
 		}
 		else = {
@@ -70,6 +72,8 @@ mbga_take_container = {
 				set_variable = { name = mbga_last_taken value = scope:mbga_container_province }
 			}
 			debug_log = "MBGA|container|province taken"
+			save_scope_as = mbga_moved_container
+			scope:actor = { mbga_take_whole_massif = yes }
 			scope:actor = { mbga_refresh_after_take = yes }
 		}
 	}

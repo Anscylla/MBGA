@@ -38,6 +38,14 @@ widget = {
 			alwaystransparent = yes
 		}
 
+		textbox = {
+			text = "MBGA_SETTLE_INFAMY"
+			position = { 150 8 }
+			size = { 120 20 }
+			alwaystransparent = yes
+			visible = "[GetScriptedGui('mbga_is_settling').IsShown(GuiScope.SetRoot(GetPlayer.MakeScope).End)]"
+		}
+
 		button = {
 			text = "MBGA_BAR_DONE"
 			using = default_button

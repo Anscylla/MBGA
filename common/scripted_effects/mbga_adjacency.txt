@@ -91,7 +91,7 @@ mbga_apply_adjacency_table = {
 		if = {
 			limit = { var:mbga_adj_score >= var:mbga_adj_wanted }
 			mbga_mark_region_mapped = yes
-			debug_log = "MBGA|table|neighbours came from the lookup table, nothing was probed"
+			debug_log = "MBGA|table|neighbours came from the lookup table, no province was lent out"
 		}
 		else = {
 			every_in_global_list = {
@@ -99,7 +99,7 @@ mbga_apply_adjacency_table = {
 				clear_variable_list = mbga_adj
 			}
 			remove_variable = mbga_adj_from_table
-			debug_log = "MBGA|table|the lookup table does not describe this map, asking the engine"
+			debug_log = "MBGA|table|the lookup table is for a different map, asking the engine instead"
 		}
 	}
 }
@@ -148,6 +148,7 @@ mbga_build_adjacency_graph = {
 	set_variable = { name = mbga_ops_transfers value = 0 }
 	set_variable = { name = mbga_ops_candidates value = 0 }
 	set_variable = { name = mbga_touch_home_count value = 0 }
+	remove_variable = mbga_sweep_ran
 
 	# The country question, kept as a measurement only. See where it is asked.
 	set_variable = { name = mbga_q_country value = 0 }
@@ -187,6 +188,7 @@ mbga_build_adjacency_graph = {
 		# of its own and asked, and that is two province transfers apiece.
 		if = {
 			limit = { has_variable = mbga_adj_reaches_outside }
+			debug_log = "MBGA|graph|who touches home came from the neighbour lists, at no cost"
 			every_in_global_list = {
 				variable = mbga_candidates
 				limit = { NOT = { has_variable = mbga_own_from_start } }
@@ -205,6 +207,7 @@ mbga_build_adjacency_graph = {
 			}
 		}
 		else = {
+			debug_log = "MBGA|graph|who touches home is being asked of the engine, two transfers each"
 			every_in_global_list = {
 				variable = mbga_candidates
 				limit = { NOT = { has_variable = mbga_own_from_start } }
@@ -266,6 +269,7 @@ mbga_build_adjacency_graph = {
 				var:mbga_touch_home_count > 0
 				var:mbga_touch_home_count < var:mbga_ops_candidates
 			}
+			set_variable = mbga_sweep_ran
 			every_in_global_list = {
 				variable = mbga_candidates
 				limit = { NOT = { has_variable = mbga_own_from_start } }
@@ -348,8 +352,20 @@ mbga_build_adjacency_graph = {
 				scope:mbga_outer_container = { set_variable = mbga_pair_seen }
 			}
 		}
+		else_if = {
+			limit = { has_variable = mbga_adj_known }
+			debug_log = "MBGA|graph|no sweep: this region's neighbours were already known"
+		}
+		else_if = {
+			limit = { var:mbga_touch_home_count = 0 }
+			debug_log = "MBGA|graph|no sweep: nothing in this state borders us yet, so nothing could spread"
+		}
+		else_if = {
+			limit = { var:mbga_touch_home_count = var:mbga_ops_candidates }
+			debug_log = "MBGA|graph|no sweep: the whole state borders us already"
+		}
 		else = {
-			debug_log = "MBGA|graph|no pair sweep was needed for this state"
+			debug_log = "MBGA|graph|no sweep: this state is worked out as it is used"
 		}
 
 		every_in_global_list = {
@@ -362,22 +378,29 @@ mbga_build_adjacency_graph = {
 	}
 
 
-	# A complete sweep settles the region for good.
+	# A sweep that ran settles the region for good, because which province touches which does
+	# not change. A sweep that was skipped settles nothing: it was skipped because nothing
+	# bordered us yet, or because everything did, and both of those are about where the border
+	# runs today. Marking the region on that would leave it with no neighbour lists at all and
+	# no way ever to fill them, so nothing would spread from a province after it was taken.
 	if = {
-		limit = { NOT = { has_variable = mbga_lazy } }
+		limit = {
+			NOT = { has_variable = mbga_lazy }
+			has_variable = mbga_sweep_ran
+		}
 		mbga_mark_region_scanned = yes
 	}
 
 	mbga_repair_probe_country = yes
 
-	# Same here: nothing was counted when the game is only working out a tooltip.
+	# Only where a sweep actually ran. Nothing is counted when the game is working out a
+	# tooltip, and nothing is swept when the neighbours were known before it started.
 	if = {
-		limit = { has_variable = mbga_pairs_tried }
-		if = {
-			limit = { var:mbga_pairs_tried = 0 }
-			debug_log = "MBGA|graph|no pairs were tried at all"
+		limit = {
+			has_variable = mbga_pairs_tried
+			var:mbga_pairs_tried > 0
 		}
-		else_if = {
+		if = {
 			limit = { var:mbga_holds_right = 0 }
 			debug_log = "MBGA|graph|the probe countries never held the pair being asked about"
 		}
@@ -388,9 +411,6 @@ mbga_build_adjacency_graph = {
 		else_if = {
 			limit = { var:mbga_pairs_found = 0 }
 			debug_log = "MBGA|graph|both countries held the right ground, yet no pair came back adjacent"
-		}
-		else = {
-			debug_log = "MBGA|graph|adjacency found between candidates"
 		}
 	}
 }
@@ -465,6 +485,27 @@ mbga_enforce_connected_takes = {
 			set_variable = mbga_supported
 		}
 
+		# Ground nobody can march through is taken a whole state at a time, so a province in
+		# the middle of a range has no way home of its own and would be handed back on the
+		# spot. One of the range reaching our border holds all of it.
+		if = {
+			limit = {
+				any_in_global_list = {
+					variable = mbga_candidates
+					has_variable = mbga_impassable
+					has_variable = mbga_supported
+				}
+			}
+			every_in_global_list = {
+				variable = mbga_candidates
+				limit = {
+					has_variable = mbga_taken
+					has_variable = mbga_impassable
+				}
+				set_variable = mbga_supported
+			}
+		}
+
 		# and support spreads from those, one ring at a time, until it stops spreading
 		set_variable = { name = mbga_support_added value = 1 }
 		while = {
@@ -523,7 +564,7 @@ mbga_enforce_connected_takes = {
 
 		if = {
 			limit = { var:mbga_orphans_released > 0 }
-			debug_log = "MBGA|graph|provinces were cut off from home and handed back"
+			debug_log = "MBGA|graph|provinces were cut off by a hand back and were returned too"
 		}
 	}
 }
@@ -599,6 +640,10 @@ mbga_extend_after_take = {
 		scope:mbga_taken_province = { mbga_transfer_province_to_taker = yes }
 	}
 
+	if = {
+		limit = { var:mbga_ops_transfers > 0 }
+		debug_log = "MBGA|graph|what the province just taken opened up was asked of the engine"
+	}
 	mbga_repair_probe_country = yes
 	mbga_recompute_takeable = yes
 }
@@ -624,6 +669,9 @@ mbga_release_orphans_lazily = {
 				# A province standing on our own border cannot be cut off from it, so it is
 				# never worth asking about.
 				NOT = { has_variable = mbga_touches_home }
+				# Nor is ground nobody can march through: it is taken a whole state at a time
+				# and stands or falls with the rest of its range.
+				NOT = { has_variable = mbga_impassable }
 			}
 			save_scope_as = mbga_orphan_container
 
@@ -660,7 +708,7 @@ mbga_release_orphans_lazily = {
 
 	if = {
 		limit = { var:mbga_orphans_released > 0 }
-		debug_log = "MBGA|graph|provinces were cut off from home and handed back"
+		debug_log = "MBGA|graph|provinces lost their way home while the state was worked out as it is used"
 	}
 }
 

@@ -22,6 +22,6 @@ mbga_test_iterators_decision = {
 	}
 
 	ai_chance = {
-		base = 0
+		value = 0
 	}
 }

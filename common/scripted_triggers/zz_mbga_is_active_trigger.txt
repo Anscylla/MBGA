@@ -7,12 +7,18 @@ mbga_province_index_is_ready = {
 	global_var:mbga_index_count > 0
 }
 
-# The index holds every province the engine says the map has. What the mod counted is compared
-# with common/script_values/mbga_index_values.txt, which asks the engine itself, so a walk that
-# reached only part of the map cannot pass for a whole one.
+# Nothing is left to index: every state region that holds a state has its provinces filed.
+#
+# Asked of the map rather than of a count, so it needs no total to compare against. A region
+# holding no state is skipped, which is right: a province can only be demanded from somebody.
+# On the base game's map those are the seas, every land province belonging to a state from the
+# first day. A region that gains its first state later is picked up by mbga_enumerate.txt,
+# which rebuilds the index when a state turns out to have nothing filed.
 mbga_province_index_is_complete = {
-	has_global_variable = mbga_index_count
-	has_global_variable = mbga_index_wanted
-	global_var:mbga_index_wanted > 0
-	global_var:mbga_index_count >= global_var:mbga_index_wanted
+	NOT = {
+		any_state_region = {
+			any_scope_state = { always = yes }
+			NOT = { any_in_list = { variable = mbga_region_provinces count >= 1 } }
+		}
+	}
 }

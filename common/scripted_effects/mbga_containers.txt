@@ -19,6 +19,71 @@ mbga_clear_candidates = {
 	set_variable = { name = mbga_taken_count value = 0 }
 }
 
+# Country scope, scope:mbga_moved_container is the one that was clicked. Ground nobody can
+# march through is taken and handed back a whole state at a time.
+#
+# A province that cannot be marched through is worth nothing and holds nothing, so there is no
+# reason to pick and choose among them, and one left behind by accident is a trap: no army can
+# reach it, so no later war can take it. Reach does not travel out of them either, which the
+# lookup table sees to, so taking the lot gives away nothing.
+#
+# Only what the table marked. On a map with no table nothing carries mbga_impassable and every
+# province is treated as ordinary ground.
+mbga_take_whole_massif = {
+	save_scope_as = mbga_massif_taker
+	if = {
+		limit = { scope:mbga_moved_container = { has_variable = mbga_impassable } }
+		every_in_global_list = {
+			variable = mbga_candidates
+			limit = {
+				has_variable = mbga_impassable
+				NOT = { this = scope:mbga_moved_container }
+				NOT = { has_variable = mbga_own_from_start }
+				NOT = { has_variable = mbga_taken }
+			}
+			save_scope_as = mbga_massif_container
+			var:mbga_province = { save_scope_as = mbga_massif_province }
+			scope:mbga_massif_taker = { save_scope_as = mbga_taker }
+			scope:mbga_massif_province = { mbga_transfer_province_to_taker = yes }
+			set_variable = mbga_taken
+			set_variable = mbga_takeable
+			scope:mbga_massif_taker = {
+				add_to_variable_list = { name = mbga_taken target = scope:mbga_massif_province }
+				change_variable = { name = mbga_taken_count add = 1 }
+			}
+		}
+		debug_log = "MBGA|massif|the rest of the impassable ground in this state went with it"
+	}
+}
+
+# The same in reverse. One province left in our hands in the middle of a range would be as
+# stranded as one left in theirs.
+mbga_return_whole_massif = {
+	save_scope_as = mbga_massif_taker
+	if = {
+		limit = { scope:mbga_moved_container = { has_variable = mbga_impassable } }
+		every_in_global_list = {
+			variable = mbga_candidates
+			limit = {
+				has_variable = mbga_impassable
+				NOT = { this = scope:mbga_moved_container }
+				NOT = { has_variable = mbga_own_from_start }
+				has_variable = mbga_taken
+			}
+			save_scope_as = mbga_massif_container
+			var:mbga_province = { save_scope_as = mbga_massif_province }
+			var:mbga_owner = { save_scope_as = mbga_taker }
+			scope:mbga_massif_province = { mbga_transfer_province_to_taker = yes }
+			remove_variable = mbga_taken
+			scope:mbga_massif_taker = {
+				remove_list_variable = { name = mbga_taken target = scope:mbga_massif_province }
+				change_variable = { name = mbga_taken_count subtract = 1 }
+			}
+		}
+		debug_log = "MBGA|massif|the rest of the impassable ground in this state came back too"
+	}
+}
+
 # Country scope. Gathers the candidates for the state being opened: the containers already
 # standing for it, plus one for every province that has never been wrapped.
 mbga_build_candidates = {
@@ -40,7 +105,7 @@ mbga_build_candidates = {
 			}
 		}
 		set_variable = mbga_adj_known
-		debug_log = "MBGA|keep|every pair in this region was settled earlier, no sweep needed"
+		debug_log = "MBGA|keep|this region gave up its shape earlier, so no province is probed twice"
 	}
 	else = { remove_variable = mbga_adj_known }
 
@@ -107,10 +172,21 @@ mbga_build_candidates = {
 # Country scope. Every container this state already has, brought back into the candidate list
 # with what depends on the current borders set again.
 mbga_gather_standing_containers = {
+	# Asked for first. ?= covers the left side of the comparison alone, and the game walks
+	# this effect to build a tooltip, where no state has been chosen.
+	if = {
+		limit = { has_variable = mbga_active_state_region }
+		var:mbga_active_state_region = { save_scope_as = mbga_gather_region }
+		mbga_gather_containers_of_region = yes
+	}
+}
+
+# Country scope, scope:mbga_gather_region is the state region being opened.
+mbga_gather_containers_of_region = {
 	every_container = {
 		limit = {
 			has_tag = mbga_candidate
-			var:mbga_region ?= scope:mbga_builder.var:mbga_active_state_region
+			var:mbga_region ?= scope:mbga_gather_region
 		}
 		save_scope_as = mbga_standing_container
 		var:mbga_province = { save_scope_as = mbga_standing_province }

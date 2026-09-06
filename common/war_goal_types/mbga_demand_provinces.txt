@@ -21,7 +21,13 @@ mbga_demand_provinces = {
 
 	target_type = state
 
+	# An AI cannot draw a border province by province, so it does not get this goal unless the
+	# rule says otherwise, and then it takes the whole state instead.
 	possible = {
+		OR = {
+			is_ai = no
+			has_game_rule = mbga_ai_demands_allowed
+		}
 	}
 
 	valid = {
@@ -34,43 +40,31 @@ mbga_demand_provinces = {
 		value = 10
 	}
 
+	# Nothing when the goal is added, because what will be taken is not known until the war is
+	# over and the border has been drawn by hand. The price is paid then, a share of the
+	# state's own price for every province taken, in common/script_values.
+	#
+	# Charging up front and refunding the rest does not work: infamy decays while a war runs,
+	# so by the peace there may be nothing left to give back.
 	infamy = {
 		value = 0
-
-		add = {
-			desc = "INFAMY_BASE_VALUE"
-			value = 5
-		}
-
-		multiply = {
-			desc = "INFAMY_STATE_POPULATION_FACTOR"
-			value = scope:target_state.state_population
-			divide = define:NDiplomacy|WAR_GOAL_INFAMY_POPULATION_SCALING_FACTOR
-			multiply = define:NDiplomacy|WAR_GOAL_INFAMY_POPULATION_SCALING_MULTIPLIER
-			add = 1
-			max = define:NDiplomacy|WAR_GOAL_INFAMY_POPULATION_SCALING_MULTIPLIER_MAX_PER_STATE
-		}
-
-		min = {
-			desc = "INFAMY_MINIMUM_VALUE"
-			value = 5
-		}
 	}
 
+	# The state is won here; which of its provinces are actually taken is settled afterwards,
+	# in common/scripted_effects/mbga_settlement.txt.
 	on_enforced = {
-		scope:target_state = { save_scope_as = mbga_enforced_state }
+		scope:target_state = { save_scope_as = mbga_settle_state }
 		root = {
-			set_variable = { name = mbga_last_demanded_state value = scope:mbga_enforced_state }
-			save_scope_as = actor
-		}
-		scope:mbga_enforced_state = { mbga_fill_selectable_provinces = yes }
-
-		if = {
-			limit = { root = { any_in_list = { variable = mbga_selectable always = yes } } }
-			debug_log = "MBGA|wg|target_state captured and its provinces were listed"
-		}
-		else = {
-			debug_log = "MBGA|wg|target_state captured but the province list came back empty"
+			set_variable = { name = mbga_last_demanded_state value = scope:mbga_settle_state }
+			if = {
+				limit = { is_ai = no }
+				mbga_open_settlement = yes
+			}
+			else = {
+				# An AI cannot open the tool, so it draws the same border in script: what
+				# touches its own ground, and as far in as its ruler cares to go.
+				mbga_settle_as_ai = yes
+			}
 		}
 	}
 

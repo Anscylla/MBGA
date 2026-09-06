@@ -1,0 +1,42 @@
+﻿# How deep an AI cuts into a state it has won.
+#
+# The mod's own answer to a question the game never asks: a country that wins a state does not
+# have to swallow it. One ring is the provinces of the state that touch ground the winner
+# already holds; each ring after that is the provinces touching what was taken in the last.
+#
+# One ring is the modest settlement - a border straightened, a valley taken. A ruler who wants
+# more takes more, and the traits are the base game's own.
+#
+# Country scope.
+
+mbga_ai_rings = {
+	add = 1
+
+	if = {
+		limit = { ruler ?= { has_trait = imperious } }
+		add = 1
+	}
+	if = {
+		limit = { ruler ?= { has_trait = ambitious } }
+		add = 1
+	}
+	if = {
+		limit = { ruler ?= { has_trait = arrogant } }
+		add = 1
+	}
+	if = {
+		limit = { ruler ?= { has_trait = reckless } }
+		add = 1
+	}
+
+	# A cautious ruler settles for the border and no more, whatever else is true of them.
+	if = {
+		limit = { ruler ?= { has_trait = cautious } }
+		min = 1
+		max = 1
+	}
+
+	# Beyond this the difference from taking the whole state stops being visible, and every
+	# ring costs a pass over what is still out of reach.
+	max = 4
+}

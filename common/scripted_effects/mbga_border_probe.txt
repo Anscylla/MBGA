@@ -54,7 +54,4 @@ mbga_repair_probe_country = {
 		}
 		debug_log = "MBGA|probe|a probe country STILL holds land that could not be traced back"
 	}
-	else = {
-		debug_log = "MBGA|probe|sweep finished cleanly, neither probe country holds anything"
-	}
 }

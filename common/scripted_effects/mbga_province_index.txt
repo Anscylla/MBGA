@@ -13,10 +13,13 @@
 # declared in script. The key is part of the effect name and is fixed when the game loads, so
 # it cannot be built from anything learned while running.
 #
-# So the map is walked by trying keys, widest first, and stopping the moment the index holds
-# every province the engine says the map has. Each attempt is an effect of its own: one naming
-# a region that is not there is thrown out whole, and would take the others with it if they
-# shared an effect.
+# So the map is walked by trying keys, widest first, and stopping the moment nothing is left
+# to file. Each attempt is an effect of its own: one naming a region that is not there is
+# thrown out whole, and would take the others with it if they shared an effect.
+#
+# The keys live in zz_mbga_known_worlds.txt, named to be read after this file. A folder is
+# read in name order, and an effect naming one that has not been declared yet is discarded
+# without a word.
 #
 # The index lives on state regions rather than states because a state is one owner's share of
 # a region and comes and goes with the borders.
@@ -49,26 +52,19 @@ mbga_index_one_province = {
 	}
 }
 
-# One region, named by the caller. $REGION$ is substituted when the game loads, which is what
-# lets every key in mbga_known_worlds.txt name itself and nothing else.
-mbga_walk_one_region = {
-	every_province_in_$REGION$ = { mbga_index_one_province = yes }
-}
-
-# The same, skipped once the index is whole. The walk it calls has to stay a named effect of
-# its own: an effect naming a region this map does not declare is thrown out where it stands,
-# and inlining it here would take this one with it.
-mbga_walk_unless_complete = {
-	if = {
-		limit = { NOT = { mbga_province_index_is_complete = yes } }
-		mbga_walk_$REGION$ = yes
-	}
-}
-
 # The base game's two halves. Between them every land strategic region it declares, and every
 # map that keeps its region names, a total conversion included.
-mbga_walk_old_world = { mbga_walk_one_region = { REGION = old_world } }
-mbga_walk_new_world = { mbga_walk_one_region = { REGION = new_world } }
+#
+# Each walk is written out rather than named by a parameter. A scripted effect whose body
+# names an effect that does not exist when the game reads it is thrown away without a word,
+# and a parameter is not filled in early enough to stop that.
+mbga_walk_old_world = {
+	every_province_in_old_world = { mbga_index_one_province = yes }
+}
+
+mbga_walk_new_world = {
+	every_province_in_new_world = { mbga_index_one_province = yes }
+}
 
 mbga_walk_base_game_world = {
 	mbga_walk_old_world = yes
@@ -82,38 +78,66 @@ mbga_build_province_index = {
 		clear_variable_list = mbga_region_provinces
 	}
 	set_global_variable = { name = mbga_index_count value = 0 }
-	set_global_variable = { name = mbga_index_wanted value = mbga_map_province_count }
 
-	# A table made for this map, if one is loaded.
+	# Each rung says whether it was reached and what it left behind, so a map that comes out
+	# short can be read straight off the log without guessing which one did the work. Rungs
+	# after the one that finishes are never entered and say nothing.
+
+	# 1. A table generated for this map, if a module carrying one is loaded.
 	mbga_fill_index_from_table = yes
 
 	if = {
-		limit = { NOT = { mbga_province_index_is_complete = yes } }
-		mbga_walk_base_game_world = yes
+		limit = { mbga_province_index_is_complete = yes }
+		debug_log = "MBGA|index|1 of 3: a generated table filed the whole map, nothing was walked"
+	}
+	else_if = {
+		limit = { global_var:mbga_index_count > 0 }
+		debug_log = "MBGA|index|1 of 3: a generated table filed part of the map, walking the rest"
+	}
+	else = {
+		debug_log = "MBGA|index|1 of 3: no generated table for this map, walking instead"
 	}
 
-	# Whatever else the map calls its regions, from mbga_known_worlds.txt: hundreds of keys,
-	# tried in turn and abandoned the moment the index is whole, so a map answered by the two
-	# halves never enters this.
+	# 2. The base game's two halves.
+	if = {
+		limit = { NOT = { mbga_province_index_is_complete = yes } }
+		mbga_walk_base_game_world = yes
+
+		if = {
+			limit = { mbga_province_index_is_complete = yes }
+			debug_log = "MBGA|index|2 of 3: old_world and new_world filed the whole map"
+		}
+		else_if = {
+			limit = { global_var:mbga_index_count > 0 }
+			debug_log = "MBGA|index|2 of 3: old_world and new_world filed part of the map"
+		}
+		else = {
+			debug_log = "MBGA|index|2 of 3: old_world and new_world are not on this map"
+		}
+	}
+
+	# 3. Every other name the mod has ever seen, from zz_mbga_known_worlds.txt. Hundreds of keys,
+	# tried in turn and abandoned the moment the index is whole, so a map answered above never
+	# enters this.
 	if = {
 		limit = { NOT = { mbga_province_index_is_complete = yes } }
 		mbga_walk_known_worlds = yes
+
+		if = {
+			limit = { mbga_province_index_is_complete = yes }
+			debug_log = "MBGA|index|3 of 3: the named regions filed the rest of the map"
+		}
+		else_if = {
+			limit = { global_var:mbga_index_count > 0 }
+			debug_log = "MBGA|index|3 of 3: the named regions filed some of the map, and that is all there is"
+		}
+		else = {
+			debug_log = "MBGA|index|3 of 3: no name this mod knows of exists on this map"
+		}
 	}
 
 	set_global_variable = mbga_index_built
 	set_global_variable = { name = mbga_index_version value = 2 }
-
-	if = {
-		limit = { mbga_province_index_is_complete = yes }
-		debug_log = "MBGA|index|the province index holds the whole map"
-	}
-	else_if = {
-		limit = { global_var:mbga_index_count > 0 }
-		debug_log = "MBGA|index|the province index is INCOMPLETE: part of this map lies in regions under names nothing here knows, and the states there will list nothing"
-	}
-	else = {
-		debug_log = "MBGA|index|the province index came back EMPTY: no geographic region this mod knows of exists on this map"
-	}
 }
 
 mbga_ensure_province_index = {

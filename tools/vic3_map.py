@@ -118,6 +118,18 @@ class MapSource:
         return {int(p[1:], 16) for r in self.state_regions().values() for p in r['provinces']
                 if t.get(p.upper()) in WATER_TERRAIN}
 
+    def impassable(self):
+        """Province ids nobody can march through, as numbers.
+
+        A state region lists them outright. Nothing in script can tell one from any other
+        province: there is no trigger for it, and the terrain is no guide - the base game's
+        map has a thousand impassable provinces of plain."""
+        out = set()
+        for path in self.region_files().values():
+            for m in re.finditer(r'impassable\s*=\s*\{([^}]*)\}', read(path), re.S):
+                out |= {int(p[1:], 16) for p in HEX.findall(m.group(1))}
+        return out
+
     def straits(self):
         """Pairs that touch across water: straits, and the canals cut through them.
 

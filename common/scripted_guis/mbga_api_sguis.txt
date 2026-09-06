@@ -10,7 +10,6 @@ mbga_refresh_countries = {
 	is_valid = { always = yes }
 	effect = {
 		mbga_fill_country_list = yes
-		debug_log = "MBGA|api|country list rebuilt"
 	}
 }
 
@@ -30,7 +29,6 @@ mbga_set_target_country = {
 			set_variable = { name = mbga_loaded_count value = 0 }
 			mbga_clear_candidates = yes
 		}
-		debug_log = "MBGA|api|target country set"
 	}
 }
 
@@ -85,6 +83,7 @@ mbga_close_tool = {
 	is_shown = { has_variable = mbga_target_country }
 	is_valid = { always = yes }
 	effect = {
+		mbga_finish_settlement = yes
 		mbga_clear_candidates = yes
 		remove_variable = mbga_target_country
 		remove_variable = mbga_active_state
@@ -92,6 +91,14 @@ mbga_close_tool = {
 		clear_variable_list = mbga_selectable
 		debug_log = "MBGA|api|the tool was put down"
 	}
+}
+
+# A war is being settled rather than a demand made, so the bar shows what it will cost.
+mbga_is_settling = {
+	scope = country
+	is_shown = { has_variable = mbga_settling }
+	is_valid = { always = yes }
+	effect = {}
 }
 
 # The tool is on at all, whichever way it is reached. The bar that ends a selection belongs

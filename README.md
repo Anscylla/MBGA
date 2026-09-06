@@ -26,7 +26,7 @@ Framework](https://github.com/Victoria-3-Modding-Co-op/Community-Mod-Framework).
 
 MBGA overwrites no file of the base game and no file of any other mod. That is not enough on
 its own. A mod may claim a whole folder in its `replace_paths`, and the game then reads that
-folder from it alone, ignoring what every mod loaded **before** it put there — file names and
+folder from it alone, ignoring what every mod loaded **before** it put there - file names and
 prefixes do not enter into it. Total conversions claim folders MBGA needs, `common/decisions`
 and `common/country_definitions` among them.
 
@@ -47,7 +47,7 @@ empty result, or the wrong scope.
 
 | Wanted | What the engine says |
 | --- | --- |
-| The provinces of a state | There is no province iterator on a state. `every_province` demands a *province* scope, and the only iterator that yields provinces at all is `every_province_in_<geographic region>`. |
+| The provinces of a state | There is no province iterator on a state. `every_province` demands a *province* scope as an effect, and the only iterator that yields provinces at all is `every_province_in_<geographic region>`. As a *script value* it does walk a state, but a script value returns numbers, never scopes. |
 | A province by number, or a province's neighbours | Neither exists. A province can be reached only through `p:xRRGGBB` written out in full, or from a battle. |
 | Whether two provinces touch | Nothing asks it. The nearest thing is a question about their *states*. |
 | A variable on a province | Provinces do not support variables. State regions do. |
@@ -55,6 +55,7 @@ empty result, or the wrong scope.
 | Which province is a state's city, port, farm, mine or wood hub | Declared in the map data, never readable back. |
 | Moving a province | `set_owner_of_provinces` takes literal ids only. Nothing moves a province held in a scope. |
 | A map mode that computes something | `map_painting_mode` is an engine enum. There is no hook. |
+| An effect named by a variable | `$PARAM$` is filled in when the game loads, long before a variable has a value. It can name a variable, a flag or an effect to call, but not one the engine resolves as it reads the file. |
 
 The mod works around every one of these. How it does it is the rest of this document.
 
@@ -75,19 +76,22 @@ be built from anything the mod learns while running.
 
 So the mod tries keys, widest first, and stops as soon as it is done:
 
-1. a generated index, if a module for this map is loaded — exact, and costs no walking;
+1. a generated index, if a module for this map is loaded - exact, and costs no walking;
 2. `old_world` and `new_world`, which between them are the base game's whole land map, and
-   that of anything keeping its region names — Anbennar included;
+   that of anything keeping its region names - Anbennar included;
 3. every other key that could ever be needed, from
-   `common/scripted_effects/mbga_known_worlds.txt`, tried one at a time. That list holds the
+   `common/scripted_effects/zz_mbga_known_worlds.txt`, tried one at a time. That list holds the
    base game's names and those of installed mods that both redraw the map *and* put land
-   somewhere `old_world` and `new_world` do not reach — a mod that plays on the base game's
+   somewhere `old_world` and `new_world` do not reach - a mod that plays on the base game's
    map contributes nothing, however many regions it declares for its own events.
 
-It knows when to stop because the engine can be asked how large the map is: `every_state_region`
-names nothing and `num_provinces` is the engine's own count for one of them, so summing them
-gives every province on the map. A walk that reached only part of it cannot pass for a whole
-one, and the mod says so in the log rather than quietly listing less than there is.
+It knows when to stop by asking the map, not by counting: nothing is left to do once every
+state region that holds a state has its provinces filed. A walk that reached only part of the
+map cannot pass for a whole one, and the mod says so in the log rather than quietly listing
+less than there is.
+
+Should a state ever turn up with nothing filed, the index is built again there and then. A
+region that comes back empty a second time is remembered and not asked about again.
 
 Each attempt is an effect of its own, since one naming a region this map does not declare is
 thrown out whole and would take the others with it.
@@ -111,7 +115,7 @@ draw itself is a variable on the container.
 To take a province you must be able to reach it. Since the engine will not say whether two
 provinces touch, the mod makes each one the entire territory of a throwaway country and asks
 whether that country's state borders another. That works on any map, and it costs two
-province transfers per province — which is what makes a large state slow.
+province transfers per province - which is what makes a large state slow.
 
 So the answer is worked out ahead of time instead, from `map_data/provinces.png`, where two
 provinces are neighbours when their colours meet along a pixel edge, and from
@@ -136,8 +140,8 @@ province touches which is a fact about the map and does not expire, so a state r
 its shape once however many times it is opened, in however many wars.
 
 Two things are remembered apart. That every pair inside a region has been settled means the
-sweep never runs there again. That the neighbour lists reach past the region's own edge — which
-only a table can say, since probing finds neighbours only among the provinces on offer — means
+sweep never runs there again. That the neighbour lists reach past the region's own edge - which
+only a table can say, since probing finds neighbours only among the provinces on offer - means
 no province need be lent out to ask whether it borders you.
 
 So on a map with no table the first opening of a region is the expensive one, and every
@@ -147,13 +151,33 @@ opening after it is cheaper; on a map with one, none of them costs anything.
 
 `set_owner_of_provinces` only takes ids written out in full, which is no use when the province
 is a scope. So the province is given to a throwaway country of its own, and the receiver
-annexes that country immediately. Three such countries exist — two for asking about borders,
-one for carrying — and none is ever seen: they are raised and removed inside one effect chain.
+annexes that country immediately. Three such countries exist - two for asking about borders,
+one for carrying - and none is ever seen: they are raised and removed inside one effect chain.
 
 This is where the mod costs the player something, because the engine has no notion of handing
 over a province: an annexation is what it gives you, so a transfer costs what an annexation
 costs. Building levels come through it intact; their workforce and any Company Headquarters do
 not. See the [FAQ](#what-does-taking-a-province-cost-the-state-it-came-from).
+
+### Ground nobody can march through
+
+About a fifth of the land is impassable - 7699 provinces on the base game's map, mountain and
+ice and a good deal of plain that the map simply closes off. They belong to a state like any
+other province, so they can be demanded, but they follow two rules of their own.
+
+**Reach runs one way through them.** You can take a mountain from the valley beside it, but
+taking it opens nothing beyond: a range is not a road. Otherwise you could step across a
+mountain wall into land you never bordered.
+
+**They come as a set.** Taking one takes every impassable province in that state, and handing
+one back returns all of them. They hold nothing and are worth nothing, so there is no reason
+to choose among them - and one left behind by accident is a trap, since no army can reach it
+and no later war can take it.
+
+Nothing in script can tell an impassable province from any other. There is no trigger for it,
+and the terrain is no guide - the base game has over a thousand impassable provinces of plain.
+Only the state region files say so, so this needs a generated table; without one they are
+treated as ordinary ground.
 
 ### Staying connected
 
@@ -163,12 +187,54 @@ your border; when that happens the stranded province is handed back too.
 
 ---
 
+### Winning a state, then drawing the border
+
+The war goal **Demand Provinces** asks for a state, the way every territorial war goal does.
+What it does not do is take the state: when the peace is signed, a popup comes up for each
+state won, and its one option puts the province tool on that state. You draw the border by
+hand, close the tool, and the next popup is waiting.
+
+Infamy is charged **afterwards, for what was actually taken** - the share of the state you
+kept, out of the state's own price, which is what a conquest would have paid for all of it.
+Nothing is charged when the goal is added, because charging up front and refunding the rest
+cannot work: infamy decays while a war runs, so by the peace there may be nothing left to give
+back.
+
+Ground nobody can march through is free, and does not make the rest any cheaper either: it is
+left out of both halves of the sum, so a state that is half mountain still costs its full
+price for the half worth having. **On a map with no generated table this cannot be done** -
+nothing there knows which provinces those are, and they are charged like any other.
+
+An AI cannot open the tool, so under the AI rule it draws its border in script instead, and it
+is held to the same rule as a player: it never reaches ground it does not border. What shape
+it cuts depends on who is ruling.
+
+| Ruler | What it takes |
+| --- | --- |
+| `direct` | A corridor straight to the town, one province wide |
+| a naval commander, `dockyard_master` | A corridor to the port |
+| `ruthless`, `pillager` | A corridor to the mine |
+| `mountain_commander`, `meticulous` | Everything up to the first impassable ground, so the border ends on a ridge |
+| `arrogant` | Half the state |
+| anyone else | Rings out from the border, one for each of `imperious`, `ambitious`, `arrogant` and `reckless`, and only ever one for `cautious` |
+
+None of this knows where a province lies. There are no coordinates in script, so the shapes
+are grown from what touches what rather than drawn on a map, and a corridor is found by
+measuring how far each province is from the border and then walking back down the numbers.
+
+Whatever the shape, anything left cut off from home is handed back, exactly as it would be for
+a player.
+
+Without a lookup table nothing is known past the state's own edge, so an AI takes the border
+ring and no more rather than probing its way inwards during the peace.
+
 ## Game rules
 
 | Rule | Settings | What it does |
 | --- | --- | --- |
 | **Province Demands** | Bordering only *(default)* / Anywhere in the state | Whether a province has to touch land you hold. |
 | **Province Transfer Tool** | Off *(default)* / Diplomatic action / Debug panel | How the tool is reached. Off means provinces change hands through war only. |
+| **AI Province Demands** | Players only *(default)* / AI may demand too | Whether an AI may take the Demand Provinces war goal. It cannot pick provinces, so it takes the whole state. |
 | **Province Scanning** | Short waits / Balanced *(default)* / Fewest interruptions | How much work a state may cost when it opens. **Does nothing on any map the mod has a table for**, which includes the base game's. It is there for a mod that redraws the map and ships no table of its own. |
 
 The first two are read in `common/scripted_guis` and nowhere deeper. The mechanism itself
@@ -176,19 +242,27 @@ never asks what the game permits.
 
 ---
 
-## Building a table for a redrawn map
-
-If your mod changes the map, MBGA still works — it falls back to asking the engine, which is
-correct everywhere and slow on large states. A table makes it free.
+## Building a patch for a redrawn map
 
 ```
 python tools/make_compat.py "C:/path/to/your mod"
 ```
 
-That is the whole job. It reads your mod's map the way the game does — `provinces.png`,
-`province_terrains.txt`, `map_data/state_regions`, and `replace_paths` if you use it — and
-writes a finished compatibility mod next to your folder: metadata, dependencies, adjacency
-table, hub table, nothing left to fill in.
+That is the whole job. It reads your mod's map the way the game does - `provinces.png`,
+`province_terrains.txt`, `default.map`, `adjacencies.csv`, `map_data/state_regions`,
+`common/strategic_regions`, and `replace_paths` if you use it - and writes a finished
+compatibility mod next to your folder: metadata, dependencies and three tables, nothing left
+to fill in.
+
+The three are the province index, which states hold which provinces; the adjacency table,
+which provinces touch which; and the hub table, which province is each state's city, port,
+farm, mine and wood.
+
+**Whether you need it depends on your map.** MBGA reaches most redrawn maps on its own by
+trying region names, and then a patch is only about speed: without one it asks the engine
+which provinces border which, one at a time, which is slow on a large state. But a map whose
+states sit in no geographic region cannot be reached at all, and there the index in the patch
+is what makes the mod work. `tools/README.md` has the measurements, mod by mod.
 
 The output carries the **same file names** as MBGA's own tables, so it replaces them. Nothing
 detects anything; load order settles it. Enable it after MBGA and after the mod it is for.
@@ -200,10 +274,13 @@ players to enable.
 If your mod ships map files but has not actually moved any border, the tool says so and builds
 nothing.
 
-Run without an argument, it regenerates MBGA's own tables for the base game's map — do that
+Run without an argument, it regenerates MBGA's own tables for the base game's map - do that
 after a game update that changes the map.
 
 Needs `pillow` and `numpy`.
+
+Every tool, and a table of what has been tested against which mods, is in
+[tools/README.md](tools/README.md).
 
 ---
 
@@ -277,18 +354,28 @@ Clicking a taken province hands it back. The mod keeps the selection connected o
 | `mbga_fill_country_list` | country | Every country that exists, is not us, and holds land. |
 | `mbga_list_every_province` / `mbga_list_reachable_only` | country | Whether the next state opens with everything takeable or only what borders us. |
 
-Trigger `mbga_province_index_is_ready` says whether the index has been built.
+Two triggers go with the index: `mbga_province_index_is_ready` says whether it has been
+built, `mbga_province_index_is_complete` whether it reaches every state on the map. A map it
+does not reach in full is not an error - those states simply list nothing - so ask the second
+before relying on a state you did not open yourself.
 
-### Replacing the table
+### Replacing a table
 
-`mbga_fill_adjacency_from_table` is an empty effect in the core, replaced through
-`REPLACE_OR_CREATE` by the generated module. Replacing it again with your own is supported and
-needs no cooperation from this mod — but use `make_compat.py` rather than writing one by hand.
+Two effects in the core are empty on purpose and exist to be replaced through
+`REPLACE_OR_CREATE`: `mbga_fill_index_from_table`, which files every province under its state
+region, and `mbga_fill_adjacency_from_table`, which fills in which province touches which.
+Replacing either needs no cooperation from this mod. Use `make_compat.py` rather than writing
+one by hand.
+
+A file that replaces one of these must be read after the effect it calls, since the game reads
+a folder in name order and an effect naming one that has not been declared yet is discarded
+without a word. That is what the `zz_` prefix on the generated files is for.
 
 ### What is private
 
-`common/scripted_effects/mbga_adjacency.txt` apart from the hook above,
-`mbga_containers.txt`, `mbga_border_probe.txt`, `mbga_hubs.txt`, the probe countries `MBG`,
+`common/scripted_effects/mbga_adjacency.txt` apart from the two hooks above,
+`mbga_containers.txt`, `mbga_border_probe.txt`, `mbga_hubs.txt`, everything named
+`mbga_walk_*`, the generated `mbga_baked_*` and `zz_mbga_*` files, the probe countries `MBG`,
 `MBH` and `MBT` with their culture and country type, and every variable whose name begins
 `mbga_adj_`, `mbga_pairs_`, `mbga_ops_` or `mbga_probe_`. Do not call into these, and do not
 count on the MBG/MBH/MBT tags being free.
@@ -305,12 +392,12 @@ No. Not one. The panel is mounted through `gui/scripted_widgets`, the on action 
 ### Will it conflict with another mod?
 
 Only if that mod claims the country tags `MBG`, `MBH` or `MBT`, or defines something else
-called `mbga_*`. A mod that changes the map does not conflict — see
-[Building a table](#building-a-table-for-a-redrawn-map).
+called `mbga_*`. A mod that changes the map does not conflict - see
+[Building a patch](#building-a-patch-for-a-redrawn-map).
 
 ### The tool does nothing, or the log says `create_country effect [ Invalid tag ]`
 
-MBGA is loaded too early. Move it below every other mod in the playset — see
+MBGA is loaded too early. Move it below every other mod in the playset - see
 [Load it last](#load-it-last).
 
 This is what a mod's `replace_paths` does: it claims a whole folder, and the game then reads
@@ -322,13 +409,21 @@ Loading last costs nothing, since MBGA overwrites nothing to begin with.
 
 ### Do I need a compatibility patch to play with a total conversion?
 
-Both answers are true. **No** — the mod works on any map without one: it asks the engine
-province by province, which is correct everywhere. **Yes** — on a large state that is slow
-enough to feel, and a table is what removes the wait.
+It depends on the map, and the honest answer is measured rather than guessed -
+`tools/README.md` has it mod by mod.
 
-There are two ways to have the table. A mod that redraws the map can generate it and ship it
-itself, declaring MBGA as a dependency; then nothing else is needed. Otherwise someone builds
-a separate patch with the same tool. Either way it is the same generated files.
+**Usually no.** MBGA reaches most redrawn maps on its own, by trying the region names it
+knows. Then a patch only removes a wait: without one the mod asks the engine which provinces
+border which, one province at a time, which is slow on a large state.
+
+**Sometimes yes, to work at all.** Listing the provinces of a state takes a geographic region,
+and a mod only declares the regions its own events need. A map with states in no region cannot
+be reached by any name - Victorian Azeroth declares none at all - and there the province index
+in the patch is what makes the mod work.
+
+Either way the files are the same, and there are two ways to have them: a mod that redraws the
+map can generate them and ship them itself, declaring MBGA as a dependency, or somebody builds
+a separate patch with the same tool.
 
 ### Does it disable achievements?
 
@@ -350,7 +445,7 @@ stay where they were put.
 ### What does taking a province cost the state it came from?
 
 Building **levels** survive: they are what they were. What does not survive is who works in
-them — the buildings come out empty and refill over time. A company headquarters can also go,
+them - the buildings come out empty and refill over time. A company headquarters can also go,
 since it is a building like any other: `building_company_headquarter` is engine-placed, stands
 at the state's city hub, and moves or disappears with the ground under it. The company itself
 belongs to the country, not to the territory, and is not lost with the province.
@@ -370,7 +465,8 @@ this is the first thing that goes.
 Raising a country produces interest group errors of its own accord. They are harmless, and the
 countries are annexed away in the same effect chain.
 
-### How large is the table, and why?
+### Why is the mod so large?
 
-About 19 MB of script, 230 000 entries. It is one line per province pair because there is no
-other way to store a neighbour list the engine can read back.
+About 23 MB, nearly all of it the generated tables: 230 000 lines of adjacency, one per pair
+of provinces that touch, and 40 000 for the index, one per province. Neither can be stored any
+more tightly, because the only way to name a province in script is to write its id out.

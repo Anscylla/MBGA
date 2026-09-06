@@ -4,8 +4,8 @@
 Braces, encoding and indentation; effects, scripted guis, localization keys and game rule
 settings that are used but never declared; $PARAM$ inside quoted event target links, where
 the game silently resolves a different name; references to base game content that does not
-exist; and the rule that the mechanism must not read game rules, which belong to the
-interface layer.
+exist; a right side of ?= that the game does not cover; and the rule that the mechanism must
+not read game rules, which belong to the interface layer.
 
 Run: python tools/validate.py
 """
@@ -189,6 +189,17 @@ def main():
                 for name in set(re.findall(pattern, read(path))):
                     if name not in known:
                         problems.append(f'{rel(path)}: {label} {name} is named but never declared')
+
+    # ?= covers the left side of a comparison and nothing else, so a right side that may not
+    # exist raises "Invalid right side during comparison" once per evaluation. Turn the
+    # comparison around and the same test costs nothing.
+    risky = re.compile(r'\?=\s*(s:[A-Z_0-9]+|scope:[a-z_0-9]+\.var:[a-z_0-9]+)')
+    for path in script_files('common'):
+        for line in read(path).split(chr(10)):
+            m = risky.search(line)
+            if m and not line.lstrip().startswith('#'):
+                problems.append(f'{rel(path)}: {m.group(1)} stands on the right of ?=, '
+                                'which does not cover it; put it on the left')
 
     # a texture that is not there shows as a missing icon rather than an error anybody sees
     for path in script_files('common', 'gui'):

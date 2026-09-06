@@ -4,8 +4,9 @@
     python tools/make_compat.py "C:/.../mod/Some Total Conversion"
 
 That is the whole job. It reads the mod's map the way the game does, works out which
-provinces touch which and which province is each state region's hub, and writes a finished
-compatibility mod next to it: metadata, dependencies, tables, nothing left to fill in.
+provinces each state region holds, which of them touch which, and which is each region's hub,
+and writes a finished compatibility mod next to it: metadata, dependencies, tables, nothing
+left to fill in.
 
 Without a path it regenerates MBGA's own tables in place, for the base game's map.
 
@@ -26,6 +27,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import bake_adjacency                                        # noqa: E402
 import bake_hubs                                             # noqa: E402
+import bake_index                                            # noqa: E402
 from vic3_map import MapSource, find_game, mod_identity      # noqa: E402
 
 MOD = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -82,6 +84,7 @@ def own_tables(game):
     """MBGA's own tables, rewritten in place for the base game's map."""
     source = MapSource(game)
     files = {}
+    files.update(bake_index.build(source))
     files.update(bake_adjacency.build(source))
     files.update(bake_hubs.build(source))
     size = write_all(MOD, files)
@@ -105,6 +108,7 @@ def compat_for(game, target, out_dir=None):
           % (name, len(redrawn), ', '.join(os.path.basename(r) for r in redrawn[:3])))
 
     files = {}
+    files.update(bake_index.build(source))
     files.update(bake_adjacency.build(source))
     files.update(bake_hubs.build(source))
 

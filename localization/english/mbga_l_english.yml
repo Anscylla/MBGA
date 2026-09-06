@@ -7,6 +7,7 @@
  MBGA_PICK_STATE: "Their states:"
  MBGA_STATE_ROW: "[State.GetName]"
  MBGA_GOTO_STATE: "Go to"
+ MBGA_SETTLE_INFAMY: "Infamy: #v [Country.MakeScope.Var('mbga_settle_shown').GetValue|1]#!"
  MBGA_TAKEN_COUNT: "Taken: #v [Country.MakeScope.Var('mbga_taken_count').GetValue|0]#! of [Country.MakeScope.Var('mbga_candidate_count').GetValue|0]"
  war_goal_mbga_demand_provinces_type_name: "Demand Provinces"
  war_goal_mbga_demand_provinces_type_desc: "Demand individual provinces of a [concept_state] instead of the whole thing."
@@ -51,6 +52,17 @@
  setting_mbga_scan_budget_high_desc: "#high Has no effect on the base game's map.#!\n\nNearly every state is worked out on opening, so clicking never stops to think. A large state can take a while to open."
 
  MBGA_ACTION_EFFECT_TT: "Opens the chosen state on the map, where you take its provinces one at a time. Nothing changes hands until you click one."
+ rule_mbga_ai_demands: "#tooltip:[GetRawTextTooltipTag('mbga_tt')] @mbga_icon! #! AI Province Demands"
+ setting_mbga_ai_demands_blocked: "#tooltippable #tooltip:[GetPlayer.GetTooltipTag],setting_mbga_ai_demands_blocked_desc #high Players only#!#!#!"
+ setting_mbga_ai_demands_blocked_desc: "Only you can demand provinces. An AI cannot draw a border by hand, so the war goal is not offered to it."
+ setting_mbga_ai_demands_allowed: "#tooltippable #tooltip:[GetPlayer.GetTooltipTag],setting_mbga_ai_demands_allowed_desc AI may demand too#!#!"
+ setting_mbga_ai_demands_allowed_desc: "An AI may take the war goal as well. It takes the provinces bordering its own land and works inwards, as far as its ruler is minded to, and pays for what it took."
+
+ mbga_settlement.1.t: "The Border Commission"
+ mbga_settlement.1.d: "The guns are quiet and [SCOPE.sState('mbga_settle_state').GetName] is ours to divide. In a room far from it, clerks unroll a map of the province and wait on your word: which valleys, which passes, which stretch of coast."
+ mbga_settlement.1.f: "A war is won on the field and settled on paper. Every line you draw here will be somebody's border for a generation, and every one you leave crooked will be somebody's grievance."
+ mbga_settlement.1.a: "Let us get to the drawing board!\n\n#red (Pause the game before you begin, to be sure nothing shifts under you.)#!"
+
  mbga_tt: "Added by Make Borders Great Again"
  mbga_take_provinces_action: "Take Provinces"
  mbga_take_provinces_action_desc: "Choose one of their states, then take the provinces you want from it directly on the map."

@@ -1,0 +1,54 @@
+﻿# The popup that hands a won state over to the border tool.
+#
+# One per state won, raised as the peace is signed. The option is the only way in; it is shown
+# greyed while another state is being settled, since the tool does one state at a time.
+#
+# scope:mbga_settle_state is the state, carried in from the war goal.
+
+namespace = mbga_settlement
+
+mbga_settlement.1 = {
+	type = country_event
+	placement = ROOT
+
+	title = mbga_settlement.1.t
+	desc = mbga_settlement.1.d
+	flavor = mbga_settlement.1.f
+
+	duration = 3
+
+	event_image = {
+		video = "unspecific_signed_contract"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+
+	icon = "gfx/interface/icons/event_icons/event_map.dds"
+
+	trigger = {
+		exists = scope:mbga_settle_state
+	}
+
+	option = {
+		name = mbga_settlement.1.a
+		default_option = yes
+
+		# One state at a time: the tool cannot be pointed at two at once. The others wait,
+		# greyed rather than hidden, so the player can see what is still to come.
+		trigger = {
+			NOT = { has_variable = mbga_settling }
+		}
+		show_as_unavailable = {
+			always = yes
+		}
+
+		# The rule is read here rather than deeper: what the game permits belongs to the
+		# interface, and the mechanism below knows nothing about it.
+		mbga_list_reachable_only = yes
+		if = {
+			limit = { has_game_rule = mbga_province_access_anywhere }
+			mbga_list_every_province = yes
+		}
+		mbga_begin_settlement = yes
+	}
+}

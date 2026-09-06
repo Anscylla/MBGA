@@ -44,30 +44,44 @@ mbga_open_for_state_effect = {
 			mbga_build_adjacency_graph = yes
 		}
 		mbga_recompute_takeable = yes
+		mbga_show_settlement_price = yes
 	}
 	# Only worth saying when the pass actually ran: the game evaluates this effect to
 	# build tooltips as well, and nothing is counted then.
 	if = {
 		limit = { scope:actor = { has_variable = mbga_candidate_count } }
 		if = {
-			limit = { scope:actor = { var:mbga_candidate_count > 0 } }
-			debug_log = "MBGA|dyn|candidates built for this state"
-		}
-		else_if = {
-			limit = { scope:actor = { var:mbga_loaded_count = 0 } }
+			limit = {
+				scope:actor = {
+					var:mbga_candidate_count = 0
+					var:mbga_loaded_count = 0
+				}
+			}
 			debug_log = "MBGA|dyn|the state listed no provinces at all, so nothing could be built"
 		}
-		else = {
+		else_if = {
+			limit = { scope:actor = { var:mbga_candidate_count = 0 } }
 			debug_log = "MBGA|dyn|provinces were listed but none of them became a candidate"
 		}
 	}
 }
 
 mbga_refresh_after_take = {
-	# Nothing is asked here while a state is worked out as it is used: a province proves
-	# itself when somebody tries to take it, which costs one question instead of one per
-	# province in the state.
+	# A state worked out as it is used has no neighbour lists to reason from, so what the
+	# province just taken opened up has to be asked of the engine. Without this the border on
+	# screen never grows: the provinces beyond it can still be clicked, since a click on such
+	# a state asks about that one province, but nothing shows the player where they are.
+	#
+	# This is the cost the scan budget is choosing between. Every take pays for the ring it
+	# opens, and a pair once settled is never asked about again, so each take leaves less to
+	# do than the last.
+	if = {
+		limit = { has_variable = mbga_lazy }
+		mbga_extend_after_take = yes
+	}
+
 	mbga_recompute_takeable = yes
+	mbga_show_settlement_price = yes
 }
 
 # Handing back is the move that can strand something, so the taken set is checked for a
@@ -79,4 +93,5 @@ mbga_refresh_after_return = {
 	}
 	else = { mbga_enforce_connected_takes = yes }
 	mbga_recompute_takeable = yes
+	mbga_show_settlement_price = yes
 }

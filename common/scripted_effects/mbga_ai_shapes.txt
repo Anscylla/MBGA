@@ -1,0 +1,321 @@
+﻿# PRIVATE. The shapes an AI cuts out of a state it has won.
+#
+# A country that wins a state does not have to swallow it. What it takes is drawn from the
+# same reach the player is held to - never ground it does not border - but the shape differs
+# with the ruler.
+#
+# Every shape is built out of two moves: take everything within reach right now, and work out
+# what that opened up. Nothing here knows where a province lies on the map, only what it
+# touches, so the shapes are grown rather than drawn.
+#
+# Country scope, scope:mbga_settle_state is the state won.
+
+# How far a province is from our own ground, in provinces. Filled outwards from the border,
+# which is also how a corridor finds its way in.
+#
+# Country scope. Leaves mbga_step on every candidate it could reach.
+mbga_measure_from_home = {
+	save_scope_as = mbga_shaper
+	every_in_global_list = {
+		variable = mbga_candidates
+		remove_variable = mbga_step
+	}
+
+	set_variable = { name = mbga_step_now value = 1 }
+	every_in_global_list = {
+		variable = mbga_candidates
+		limit = {
+			has_variable = mbga_touches_home
+			NOT = { has_variable = mbga_own_from_start }
+		}
+		set_variable = { name = mbga_step value = 1 }
+	}
+
+	set_variable = { name = mbga_step_spread value = 1 }
+	while = {
+		limit = { var:mbga_step_spread > 0 }
+		set_variable = { name = mbga_step_spread value = 0 }
+		change_variable = { name = mbga_step_now add = 1 }
+
+		every_in_global_list = {
+			variable = mbga_candidates
+			limit = {
+				NOT = { has_variable = mbga_step }
+				NOT = { has_variable = mbga_own_from_start }
+			}
+			save_scope_as = mbga_step_container
+
+			# mbga_adj holds provinces, so the containers already measured are walked and each
+			# is asked whether the province it wraps is in this one's list.
+			every_in_global_list = {
+				variable = mbga_candidates
+				limit = {
+					has_variable = mbga_step
+					var:mbga_step < scope:mbga_shaper.var:mbga_step_now
+				}
+				var:mbga_province = { save_scope_as = mbga_step_neighbour }
+				if = {
+					limit = {
+						scope:mbga_step_container = {
+							NOT = { has_variable = mbga_step }
+							is_target_in_variable_list = {
+								name = mbga_adj
+								target = scope:mbga_step_neighbour
+							}
+						}
+					}
+					scope:mbga_step_container = {
+						set_variable = { name = mbga_step value = scope:mbga_shaper.var:mbga_step_now }
+					}
+					scope:mbga_shaper = { change_variable = { name = mbga_step_spread add = 1 } }
+				}
+			}
+		}
+	}
+	remove_variable = mbga_step_now
+	remove_variable = mbga_step_spread
+}
+
+# A straight cut inwards, as narrow as the map allows.
+#
+# The measure above says how far every province is from our border. A province of the state's
+# hub is the far end; from it the walk goes back down the numbers, one province per step, and
+# only those are taken. What comes out is a strip a province wide reaching the town.
+#
+# Country scope. $HUB$ is the hub number to aim at: 1 city, 2 port, 3 farm, 4 mine, 5 wood.
+mbga_ai_corridor_to = {
+	save_scope_as = mbga_shaper
+	mbga_measure_from_home = yes
+
+	remove_variable = mbga_corridor_end
+	set_variable = { name = mbga_corridor_at value = 0 }
+
+	# The nearest province of that kind, so the corridor is the shortest one that reaches it.
+	every_in_global_list = {
+		variable = mbga_candidates
+		limit = {
+			var:mbga_hub ?= $HUB$
+			has_variable = mbga_step
+			NOT = { has_variable = mbga_own_from_start }
+		}
+		save_scope_as = mbga_corridor_candidate
+		if = {
+			limit = {
+				OR = {
+					scope:mbga_shaper = { var:mbga_corridor_at = 0 }
+					var:mbga_step < scope:mbga_shaper.var:mbga_corridor_at
+				}
+			}
+			scope:mbga_shaper = {
+				set_variable = { name = mbga_corridor_end value = scope:mbga_corridor_candidate }
+				set_variable = { name = mbga_corridor_at value = scope:mbga_corridor_candidate.var:mbga_step }
+			}
+		}
+	}
+
+	if = {
+		limit = { has_variable = mbga_corridor_end }
+		var:mbga_corridor_end = { set_variable = mbga_wanted }
+
+		# Back down the numbers. At each step exactly one neighbour one nearer is marked, so
+		# the strip stays a province wide.
+		while = {
+			limit = { var:mbga_corridor_at > 1 }
+			mbga_corridor_step_back = yes
+		}
+		mbga_ai_take_wanted = yes
+		debug_log = "MBGA|ai|a corridor was cut to the hub it wanted"
+	}
+
+	remove_variable = mbga_corridor_end
+	remove_variable = mbga_corridor_at
+}
+
+# Country scope. One province nearer home than the last, joined to it.
+mbga_corridor_step_back = {
+	save_scope_as = mbga_shaper
+	change_variable = { name = mbga_corridor_at subtract = 1 }
+	var:mbga_corridor_end = { var:mbga_province = { save_scope_as = mbga_corridor_province } }
+	remove_variable = mbga_corridor_next
+
+	every_in_global_list = {
+		variable = mbga_candidates
+		limit = {
+			has_variable = mbga_step
+			var:mbga_step = scope:mbga_shaper.var:mbga_corridor_at
+			is_target_in_variable_list = {
+				name = mbga_adj
+				target = scope:mbga_corridor_province
+			}
+			scope:mbga_shaper = { NOT = { has_variable = mbga_corridor_next } }
+		}
+		set_variable = mbga_wanted
+		save_scope_as = mbga_corridor_pick
+		scope:mbga_shaper = {
+			set_variable = { name = mbga_corridor_next value = scope:mbga_corridor_pick }
+		}
+	}
+
+	if = {
+		limit = { has_variable = mbga_corridor_next }
+		set_variable = { name = mbga_corridor_end value = var:mbga_corridor_next }
+	}
+	else = {
+		# Nothing joins back, which should not happen; stop rather than loop.
+		set_variable = { name = mbga_corridor_at value = 0 }
+	}
+	remove_variable = mbga_corridor_next
+}
+
+# Rings until a share of the state is in hand, then stop. $PART$ is how many hundredths.
+#
+# Country scope.
+mbga_ai_take_share = {
+	save_scope_as = mbga_shaper
+	set_variable = { name = mbga_share_want value = var:mbga_candidate_count }
+	change_variable = { name = mbga_share_want multiply = $PART$ }
+	change_variable = { name = mbga_share_want divide = 100 }
+
+	set_variable = { name = mbga_share_more value = 1 }
+	while = {
+		limit = {
+			var:mbga_share_more > 0
+			var:mbga_taken_count < var:mbga_share_want
+		}
+		set_variable = { name = mbga_share_more value = 0 }
+		mbga_ai_take_one_ring = yes
+		if = {
+			limit = { var:mbga_ring_last > 0 }
+			set_variable = { name = mbga_share_more value = 1 }
+		}
+	}
+	remove_variable = mbga_share_want
+	remove_variable = mbga_share_more
+	debug_log = "MBGA|ai|it took its share of the state and stopped"
+}
+
+# Rings that stop at the first ground nobody can march through, so the border ends on a ridge
+# rather than in the middle of a valley.
+#
+# Country scope.
+mbga_ai_take_to_the_ridge = {
+	save_scope_as = mbga_shaper
+	set_variable = { name = mbga_ridge_more value = 1 }
+
+	while = {
+		limit = { var:mbga_ridge_more > 0 }
+		set_variable = { name = mbga_ridge_more value = 0 }
+
+		# Impassable ground is where it stops, so those are left out of the ring.
+		every_in_global_list = {
+			variable = mbga_candidates
+			limit = {
+				has_variable = mbga_takeable
+				NOT = { has_variable = mbga_taken }
+				NOT = { has_variable = mbga_own_from_start }
+				NOT = { has_variable = mbga_impassable }
+			}
+			set_variable = mbga_wanted
+			scope:mbga_shaper = { change_variable = { name = mbga_ridge_more add = 1 } }
+		}
+		if = {
+			limit = { var:mbga_ridge_more > 0 }
+			mbga_ai_take_wanted = yes
+		}
+	}
+	remove_variable = mbga_ridge_more
+	debug_log = "MBGA|ai|it took the ground up to the ridge and stopped there"
+}
+
+# Country scope. Takes every candidate marked mbga_wanted, and clears the mark.
+mbga_ai_take_wanted = {
+	save_scope_as = mbga_shaper
+	set_variable = { name = mbga_wanted_took value = 0 }
+
+	every_in_global_list = {
+		variable = mbga_candidates
+		limit = {
+			has_variable = mbga_wanted
+			NOT = { has_variable = mbga_taken }
+			NOT = { has_variable = mbga_own_from_start }
+		}
+		remove_variable = mbga_wanted
+		var:mbga_province = { save_scope_as = mbga_wanted_province }
+		scope:mbga_shaper = { save_scope_as = mbga_taker }
+		scope:mbga_wanted_province = { mbga_transfer_province_to_taker = yes }
+		set_variable = mbga_taken
+		scope:mbga_shaper = {
+			add_to_variable_list = { name = mbga_taken target = scope:mbga_wanted_province }
+			change_variable = { name = mbga_taken_count add = 1 }
+			change_variable = { name = mbga_wanted_took add = 1 }
+			set_variable = { name = mbga_last_taken value = scope:mbga_wanted_province }
+		}
+	}
+
+	every_in_global_list = {
+		variable = mbga_candidates
+		remove_variable = mbga_wanted
+	}
+
+	if = {
+		limit = { var:mbga_wanted_took > 0 }
+		mbga_refresh_after_take = yes
+	}
+	remove_variable = mbga_wanted_took
+}
+
+# Which shape this ruler cuts.
+#
+# One shape each, tried in the order that lets the sharper character win: a ruler who wants a
+# town takes the corridor whatever else is true of them, and only a ruler with no such bent
+# falls through to plain rings. The traits are the base game's own.
+#
+# Country scope.
+mbga_ai_choose_shape = {
+	if = {
+		# Straight for the town, and hang the border.
+		limit = { ruler ?= { has_trait = direct } }
+		mbga_ai_corridor_to = { HUB = 1 }
+	}
+	else_if = {
+		# A sailor wants the harbour.
+		limit = {
+			ruler ?= {
+				OR = {
+					has_trait = experienced_naval_commander
+					has_trait = expert_naval_commander
+					has_trait = dockyard_master
+				}
+			}
+		}
+		mbga_ai_corridor_to = { HUB = 2 }
+	}
+	else_if = {
+		# What is worth taking is what is worth digging.
+		limit = { ruler ?= { OR = { has_trait = ruthless has_trait = pillager } } }
+		mbga_ai_corridor_to = { HUB = 4 }
+	}
+	else_if = {
+		# A border that follows the ground, ending on a ridge rather than in a valley.
+		limit = { ruler ?= { OR = { has_trait = mountain_commander has_trait = meticulous } } }
+		mbga_ai_take_to_the_ridge = yes
+	}
+	else_if = {
+		# Half of it, and no argument about the rest.
+		limit = { ruler ?= { has_trait = arrogant } }
+		mbga_ai_take_share = { PART = 50 }
+	}
+	else = {
+		# As many rings as the ruler has appetite for.
+		set_variable = { name = mbga_ai_rings_left value = mbga_ai_rings }
+		while = {
+			limit = { var:mbga_ai_rings_left > 0 }
+			change_variable = { name = mbga_ai_rings_left subtract = 1 }
+			mbga_ai_take_one_ring = yes
+		}
+		remove_variable = mbga_ai_rings_left
+	}
+
+	# Whatever the shape, anything cut off from home goes back.
+	mbga_enforce_connected_takes = yes
+}

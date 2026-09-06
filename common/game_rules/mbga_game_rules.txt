@@ -42,3 +42,13 @@ mbga_scan_budget = {
 	mbga_scan_budget_high = {
 	}
 }
+
+mbga_ai_demands = {
+	default = mbga_ai_demands_blocked
+
+	mbga_ai_demands_blocked = {
+	}
+
+	mbga_ai_demands_allowed = {
+	}
+}

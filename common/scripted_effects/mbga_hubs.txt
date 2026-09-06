@@ -72,10 +72,10 @@ mbga_load_hubs_of_state = {
 
 		if = {
 			limit = { has_variable_map = mbga_hubmap_city }
-			debug_log = "MBGA|hubs|the hub table was built"
+			debug_log = "MBGA|hubs|the hub table was read, hubs are named"
 		}
 		else = {
-			debug_log = "MBGA|hubs|the hub table came back empty, names fall back to terrain"
+			debug_log = "MBGA|hubs|no hub table for this map, rows fall back to terrain names"
 		}
 	}
 
