@@ -5,14 +5,23 @@
 # of its own.
 
 mbga_demand_provinces = {
-	icon = "gfx/interface/icons/war_goals/conquer_state.dds"
+	icon = "gfx/interface/icons/diplomatic_action_icons/take_province.dds"
 
 	kind = custom
 
+	# The same guards the base game puts on conquering a state, since this wins the same thing
+	# and only takes less of it. annexes_entire_state is left out on purpose: the whole point
+	# is that it does not.
 	settings = {
 		require_target_be_part_of_war
 		can_add_for_other_country
 		requires_interest
+
+		validate_target_not_treaty_port
+		validate_conflicts_conquer_state
+
+		conflicts_with_country_creation
+		conflicts_with_annex_state
 	}
 
 	execution_priority = 68
@@ -33,6 +42,7 @@ mbga_demand_provinces = {
 	valid = {
 		scope:target_state = {
 			owner = scope:target_country
+			NOT = { has_claim_by = root }
 		}
 	}
 
@@ -56,15 +66,9 @@ mbga_demand_provinces = {
 		scope:target_state = { save_scope_as = mbga_settle_state }
 		root = {
 			set_variable = { name = mbga_last_demanded_state value = scope:mbga_settle_state }
-			if = {
-				limit = { is_ai = no }
-				mbga_open_settlement = yes
-			}
-			else = {
-				# An AI cannot open the tool, so it draws the same border in script: what
-				# touches its own ground, and as far in as its ruler cares to go.
-				mbga_settle_as_ai = yes
-			}
+			# Player or AI, the fork is inside: one gets a popup, the other draws its own
+			# border in script.
+			mbga_open_settlement = yes
 		}
 	}
 

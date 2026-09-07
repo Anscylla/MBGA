@@ -52,3 +52,37 @@ mbga_settlement.1 = {
 		mbga_begin_settlement = yes
 	}
 }
+
+# What was taken, told to the country it was taken from.
+#
+# One word covers both cases: a state annexed in part and a state annexed whole. The loser has
+# nothing to decide, so there is one option and it only acknowledges.
+#
+# scope:mbga_settle_state is the state, scope:mbga_settle_winner who took from it.
+mbga_settlement.2 = {
+	type = country_event
+
+	title = mbga_settlement.2.t
+	desc = mbga_settlement.2.d
+	flavor = mbga_settlement.2.f
+
+	duration = 3
+
+	event_image = {
+		video = "unspecific_signed_contract"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+
+	icon = "gfx/interface/icons/diplomatic_action_icons/take_province.dds"
+
+	trigger = {
+		exists = scope:mbga_settle_state
+		exists = scope:mbga_settle_winner
+	}
+
+	option = {
+		name = mbga_settlement.2.a
+		default_option = yes
+	}
+}

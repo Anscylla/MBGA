@@ -9,6 +9,7 @@
  MBGA_GOTO_STATE: "Go to"
  MBGA_SETTLE_INFAMY: "Infamy: #v [Country.MakeScope.Var('mbga_settle_shown').GetValue|1]#!"
  MBGA_TAKEN_COUNT: "Taken: #v [Country.MakeScope.Var('mbga_taken_count').GetValue|0]#! of [Country.MakeScope.Var('mbga_candidate_count').GetValue|0]"
+ mbga_dp_demand_provinces: "$war_goal_mbga_demand_provinces_type_name$"
  war_goal_mbga_demand_provinces_type_name: "Demand Provinces"
  war_goal_mbga_demand_provinces_type_desc: "Demand individual provinces of a [concept_state] instead of the whole thing."
  war_goal_mbga_demand_provinces: "Demand provinces in [WAR_GOAL_DRAFT.GetTargetState.GetCountry.GetFlagTextIcon] [WAR_GOAL_DRAFT.GetTargetState.GetName]"
@@ -62,6 +63,21 @@
  mbga_settlement.1.d: "The guns are quiet and [SCOPE.sState('mbga_settle_state').GetName] is ours to divide. In a room far from it, clerks unroll a map of the province and wait on your word: which valleys, which passes, which stretch of coast."
  mbga_settlement.1.f: "A war is won on the field and settled on paper. Every line you draw here will be somebody's border for a generation, and every one you leave crooked will be somebody's grievance."
  mbga_settlement.1.a: "Let us get to the drawing board!\n\n#red (Pause the game before you begin, to be sure nothing shifts under you.)#!"
+
+ # The three throwaway countries are annexed away inside one effect chain and never seen, but
+ # anything they touch keeps their name: a formation raised in a province while the courier
+ # held it is still called after it. Named so that what is left over reads as flavour.
+ MBG: "Occupation"
+ MBG_ADJ: "Occupation"
+ MBH: "Occupation"
+ MBH_ADJ: "Occupation"
+ MBT: "Conquest"
+ MBT_ADJ: "Conquest"
+
+ mbga_settlement.2.t: "Territory Annexed"
+ mbga_settlement.2.d: "[SCOPE.sCountry('mbga_settle_winner').GetName] has annexed territory in [SCOPE.sState('mbga_settle_state').GetName]. Their surveyors were on the ground before the ink was dry, and the new line runs where they say it runs.\n\nThe seizure has cost them #v [SCOPE.sCountry('mbga_settle_winner').MakeScope.Var('mbga_settle_told').GetValue|1]#! [concept_infamy]."
+ mbga_settlement.2.f: "Somewhere a clerk is redrawing a map, and somewhere else a family is finding out they woke up in another country."
+ mbga_settlement.2.a: "We will not forget this."
 
  mbga_tt: "Added by Make Borders Great Again"
  mbga_take_provinces_action: "Take Provinces"

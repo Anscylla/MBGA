@@ -189,9 +189,13 @@ your border; when that happens the stranded province is handed back too.
 
 ### Winning a state, then drawing the border
 
-The war goal **Demand Provinces** asks for a state, the way every territorial war goal does.
-What it does not do is take the state: when the peace is signed, a popup comes up for each
-state won, and its one option puts the province tool on that state. You draw the border by
+The war goal **Demand Provinces** asks for a state, the way every territorial war goal does,
+and comes with a diplomatic play of its own so it stands in the list of demands against a
+state beside Conquer State. It carries the same guards the base game puts on conquest, minus
+the one that annexes the whole state.
+What it does not do is take the state: when the demand is met - at the peace, or the moment
+they give in without a war - a popup comes up for each state won, and its one option puts the
+province tool on that state. You draw the border by
 hand, close the tool, and the next popup is waiting.
 
 Infamy is charged **afterwards, for what was actually taken** - the share of the state you

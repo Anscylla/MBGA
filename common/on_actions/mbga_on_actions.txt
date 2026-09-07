@@ -1,4 +1,5 @@
-﻿# Builds the province index at the start of a game.
+﻿# Builds the province index at the start of a game, and settles a demand that was given in to
+# without a war.
 
 on_game_started = {
 	on_actions = {
@@ -9,5 +10,24 @@ on_game_started = {
 mbga_on_game_started = {
 	effect = {
 		mbga_build_province_index = yes
+	}
+}
+
+# A demand met without a shot fired still has a border to draw. The war goal's own on_enforced
+# covers the peace at the end of a war; this covers the other way a demand is granted.
+#
+# Root is the diplomatic play, scope:actor the country that gave in.
+on_diplo_play_back_down = {
+	on_actions = {
+		mbga_on_back_down
+	}
+}
+
+mbga_on_back_down = {
+	effect = {
+		if = {
+			limit = { is_diplomatic_play_type = mbga_dp_demand_provinces }
+			mbga_settle_after_back_down = yes
+		}
 	}
 }

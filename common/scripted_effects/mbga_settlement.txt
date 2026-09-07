@@ -14,26 +14,61 @@
 mbga_open_settlement = {
 	save_scope_as = mbga_settle_winner
 
-	scope:mbga_settle_state = {
-		save_scope_as = mbga_settle_state_scope
-		scope:mbga_settle_winner = {
-			# The whole state's price, written down now. What share of it is owed is worked
-			# out when the border has been drawn, since only then is it known what was taken.
-			#
-			# Read off the state, not off us. A script value takes its numbers from the scope
-			# it is evaluated in, and state_population means nothing to a country: the whole
-			# formula would collapse to its minimum.
-			add_to_variable_map = {
-				name = mbga_settle_price
-				key = scope:mbga_settle_state_scope
-				value = scope:mbga_settle_state_scope.mbga_state_infamy
-			}
-			add_to_variable_list = { name = mbga_settle_pending target = scope:mbga_settle_state_scope }
-		}
+	# An AI cannot open the popup, so it draws its border here and now instead. This is the
+	# same fork the war goal makes; a demand given in to arrives through this effect alone.
+	if = {
+		limit = { is_ai = yes }
+		mbga_settle_as_ai = yes
 	}
+	else = {
 
-	trigger_event = { id = mbga_settlement.1 days = 0 popup = yes }
-	debug_log = "MBGA|war|a state was won, its border is waiting to be drawn"
+		scope:mbga_settle_state = {
+			save_scope_as = mbga_settle_state_scope
+			scope:mbga_settle_winner = {
+				# The whole state's price, written down now. What share of it is owed is worked
+				# out when the border has been drawn, since only then is it known what was taken.
+				#
+				# Read off the state, not off us. A script value takes its numbers from the scope
+				# it is evaluated in, and state_population means nothing to a country: the whole
+				# formula would collapse to its minimum.
+				add_to_variable_map = {
+					name = mbga_settle_price
+					key = scope:mbga_settle_state_scope
+					value = scope:mbga_settle_state_scope.mbga_state_infamy
+				}
+				add_to_variable_list = { name = mbga_settle_pending target = scope:mbga_settle_state_scope }
+			}
+		}
+
+		# No popup on purpose. A peace can win several states at once, and a popup for each
+		# would bury the screen the moment the war ends. Without it the event waits in the
+		# feed until it is opened, which is where the base game puts anything that can wait.
+		trigger_event = { id = mbga_settlement.1 days = 0 }
+		debug_log = "MBGA|war|a state was won, its border is waiting to be drawn"
+	}
+}
+
+# Diplomatic play scope. The same settlement, for a demand that was given in to rather than
+# fought over.
+#
+# A play knows its initiator and what it was aimed at. The target is taken as a state, which
+# is what this play type aims at; on anything else the link comes back empty and nothing
+# happens. Kept in an effect of its own so a link that does not resolve costs only this.
+mbga_settle_after_back_down = {
+	initiator ?= { save_scope_as = mbga_back_down_winner }
+	target ?= { save_scope_as = mbga_settle_state }
+
+	if = {
+		limit = {
+			exists = scope:mbga_back_down_winner
+			exists = scope:mbga_settle_state
+		}
+		scope:mbga_back_down_winner = { mbga_open_settlement = yes }
+		debug_log = "MBGA|war|a demand was given in to without a war, its border is waiting"
+	}
+	else = {
+		debug_log = "MBGA|war|a demand was given in to, but the play named no state to draw"
+	}
 }
 
 # Called by the popup's one option. Puts the tool up on that state and remembers that what
@@ -216,14 +251,38 @@ mbga_price_settlement = {
 	remove_variable = mbga_price_taken
 }
 
-# Country scope. Charges it.
+# Country scope. Charges it, and tells the country it was taken from what it cost them.
 mbga_charge_for_taken = {
+	save_scope_as = mbga_settle_winner
 	scope:mbga_settle_state = { save_scope_as = mbga_settle_state_scope }
 	mbga_price_settlement = yes
 
 	if = {
 		limit = { has_variable = mbga_settle_shown }
 		change_infamy = var:mbga_settle_shown
+		set_variable = { name = mbga_settle_told value = var:mbga_settle_shown }
 	}
 	remove_variable = mbga_settle_shown
+
+	# Left standing on purpose: the event is queued rather than raised on the spot, so the
+	# number has to still be there when its text is drawn. The next settlement overwrites it.
+	mbga_tell_the_loser = yes
+}
+
+# Country scope, scope:mbga_settle_state is the state. Nothing is sent where nothing was taken.
+mbga_tell_the_loser = {
+	save_scope_as = mbga_settle_winner
+	if = {
+		limit = { has_variable = mbga_settle_told }
+		scope:mbga_settle_state = { owner ?= { save_scope_as = mbga_settle_told_country } }
+		if = {
+			limit = {
+				exists = scope:mbga_settle_told_country
+				NOT = { scope:mbga_settle_told_country = scope:mbga_settle_winner }
+			}
+			scope:mbga_settle_told_country = {
+				trigger_event = { id = mbga_settlement.2 days = 0 }
+			}
+		}
+	}
 }
