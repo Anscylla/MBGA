@@ -23,8 +23,9 @@ mbga_dp_demand_provinces = {
 		diplomatic_play_has_no_relations_blockers = yes
 	}
 
-	# Easier to give in to than a demand for the whole state, since less is being asked.
-	ai_acceptance_max = 85
+	# The base game's ceiling for conquering a state. This goal can take the whole state, so it
+	# is answered as one.
+	ai_acceptance_max = 75
 
 	on_weekly_pulse = {}
 

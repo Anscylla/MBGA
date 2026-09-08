@@ -46,12 +46,6 @@ class Oracle:
         return any(frozenset((x, y)) in self.edges for x in a for y in b)
 
 
-def brute_force(n, oracle):
-    """One province against one province, every unordered pair."""
-    for i, j in itertools.combinations(range(n), 2):
-        oracle.ask({i}, {j})
-
-
 def split(s):
     s = sorted(s)
     half = len(s) // 2
@@ -101,23 +95,6 @@ def touching(a, b, oracle, out):
     b0, b1 = split(b)
     touching(a, b0, oracle, out)
     touching(a, b1, oracle, out)
-
-
-def reachable_set(n, home, oracle):
-    """Only what can be reached from home, never the whole graph.
-
-    One round finds every province touching the reached set at once, so the probe holding
-    that set is loaded once per round rather than once per province.
-    """
-    known, unknown = set(home), set(range(n)) - set(home)
-    while unknown:
-        found = set()
-        touching(known, unknown, oracle, found)
-        if not found:
-            break
-        known |= found
-        unknown -= found
-    return known
 
 
 class HomeOracle(Oracle):
@@ -244,8 +221,6 @@ def main():
                   % (name, n, len(edges), a.loads, a.loads * 2, b.loads, b.loads * 2,
                      100 - b.loads * 100 // max(1, a.loads)))
         print()
-
-
 
 
 if __name__ == '__main__':

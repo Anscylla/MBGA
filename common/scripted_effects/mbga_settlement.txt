@@ -1,7 +1,8 @@
-﻿# PRIVATE. Drawing the border after a war has been won.
+﻿# PRIVATE. Drawing the border once the war goal has been enforced.
 #
-# The war goal wins a state; which provinces of it are actually taken is settled afterwards,
-# one state at a time, through the same tool the diplomatic route uses.
+# The goal wins a state; which provinces of it are actually taken is settled afterwards, one
+# state at a time, through the same tool the diplomatic route uses. Every way of winning ends
+# here: a peace, a play conceded before the fighting, and a demand granted outright.
 #
 # The order of events is: the goal is enforced, one popup per state is raised, the player
 # opens one and the tool comes up on that state, and closing the tool charges the infamy for
@@ -45,29 +46,6 @@ mbga_open_settlement = {
 		# feed until it is opened, which is where the base game puts anything that can wait.
 		trigger_event = { id = mbga_settlement.1 days = 0 }
 		debug_log = "MBGA|war|a state was won, its border is waiting to be drawn"
-	}
-}
-
-# Diplomatic play scope. The same settlement, for a demand that was given in to rather than
-# fought over.
-#
-# A play knows its initiator and what it was aimed at. The target is taken as a state, which
-# is what this play type aims at; on anything else the link comes back empty and nothing
-# happens. Kept in an effect of its own so a link that does not resolve costs only this.
-mbga_settle_after_back_down = {
-	initiator ?= { save_scope_as = mbga_back_down_winner }
-	target ?= { save_scope_as = mbga_settle_state }
-
-	if = {
-		limit = {
-			exists = scope:mbga_back_down_winner
-			exists = scope:mbga_settle_state
-		}
-		scope:mbga_back_down_winner = { mbga_open_settlement = yes }
-		debug_log = "MBGA|war|a demand was given in to without a war, its border is waiting"
-	}
-	else = {
-		debug_log = "MBGA|war|a demand was given in to, but the play named no state to draw"
 	}
 }
 

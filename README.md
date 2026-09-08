@@ -1,4 +1,4 @@
-# Make Borders Great Again
+﻿# Make Borders Great Again
 
 Victoria 3 hands over territory one state at a time. This mod hands it over one **province**
 at a time: pick a country, pick one of its states, and click the provinces you want on the
@@ -192,11 +192,13 @@ your border; when that happens the stranded province is handed back too.
 The war goal **Demand Provinces** asks for a state, the way every territorial war goal does,
 and comes with a diplomatic play of its own so it stands in the list of demands against a
 state beside Conquer State. It carries the same guards the base game puts on conquest, minus
-the one that annexes the whole state.
-What it does not do is take the state: when the demand is met - at the peace, or the moment
-they give in without a war - a popup comes up for each state won, and its one option puts the
-province tool on that state. You draw the border by
-hand, close the tool, and the next popup is waiting.
+the one that annexes the whole state, and the same manoeuvre cost and acceptance ceiling, so
+an AI answers a demand for provinces exactly as it answers a demand for the whole state.
+What it does not do is take the state. A demand is met in one of three ways - a peace at the
+end of a war, a play conceded before the fighting starts, or a demand granted outright with no
+play at all - and the game enforces the goal on all three, so one hook covers them: a popup
+comes up for each state won, and its one option puts the province tool on that state. You draw
+the border by hand, close the tool, and the next popup is waiting.
 
 Infamy is charged **afterwards, for what was actually taken** - the share of the state you
 kept, out of the state's own price, which is what a conquest would have paid for all of it.

@@ -46,8 +46,24 @@ mbga_demand_provinces = {
 		}
 	}
 
+	# The base game's own cost for conquering a state, unchanged. The AI weighs a demand by the
+	# manoeuvre cost of the goal attached to it, so matching this is what makes it answer a
+	# demand for provinces exactly as it would answer a demand for the whole state.
 	maneuvers = {
-		value = 10
+		value = 0
+
+		add = {
+			desc = "MANEUVERS_BASE_VALUE"
+			value = 10
+		}
+
+		multiply = {
+			desc = "MANEUVERS_TARGET_STATE_POPULATION_FACTOR"
+			value = scope:target_state.state_population
+			divide = define:NDiplomacy|SWAY_OFFER_WARGOAL_MANEUVERS_COST_POPULATION_SCALING_FACTOR
+			multiply = define:NDiplomacy|SWAY_OFFER_WARGOAL_MANEUVERS_COST_POPULATION_SCALING_MULTIPLIER
+			max = define:NDiplomacy|SWAY_OFFER_WARGOAL_MANEUVERS_COST_POPULATION_SCALING_MULTIPLIER_MAX_PER_STATE
+		}
 	}
 
 	# Nothing when the goal is added, because what will be taken is not known until the war is
@@ -63,6 +79,7 @@ mbga_demand_provinces = {
 	# The state is won here; which of its provinces are actually taken is settled afterwards,
 	# in common/scripted_effects/mbga_settlement.txt.
 	on_enforced = {
+		debug_log = "MBGA|war|the goal was enforced"
 		scope:target_state = { save_scope_as = mbga_settle_state }
 		root = {
 			set_variable = { name = mbga_last_demanded_state value = scope:mbga_settle_state }
@@ -72,7 +89,9 @@ mbga_demand_provinces = {
 		}
 	}
 
+	# Land changing hands for good, which is what the base game marks significant: every goal
+	# that moves a border or a crown is yes, and the treaty and law goals are no.
 	ai = {
-		is_significant_demand = no
+		is_significant_demand = yes
 	}
 }
