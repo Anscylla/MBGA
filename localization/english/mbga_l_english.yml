@@ -1,6 +1,4 @@
 ﻿l_english:
- mbga_run_probes_decision: "MBGA: run capability probes"
- mbga_run_probes_decision_desc: "Writes the results of the province capability probes to the game log."
  MBGA_PANEL_TITLE: "#BOLD Province demands#!"
  MBGA_REFRESH_COUNTRIES: "List countries"
  MBGA_COUNTRY_ROW: "[Scope.GetCountry.GetName]"
@@ -40,7 +38,7 @@
  setting_mbga_province_tool_diplomatic: "#tooltippable #tooltip:[GetPlayer.GetTooltipTag],setting_mbga_province_tool_diplomatic_desc #high Diplomatic action#!#!#!"
  setting_mbga_province_tool_diplomatic_desc: "Adds an action to the diplomacy screen. Pick a country, pick one of its states, then click the provinces you want on the map."
  setting_mbga_province_tool_debug: "#tooltippable #tooltip:[GetPlayer.GetTooltipTag],setting_mbga_province_tool_debug_desc #high Debug panel#!#!#!"
- setting_mbga_province_tool_debug_desc: "The panel this mod was built through: country list, state list, province rows and counters. For working on the mod rather than playing with it."
+ setting_mbga_province_tool_debug_desc: "A debug panel: country list, state list, province rows and counters. For seeing what the mod is doing, not for playing."
 
  # This setting is for a mod that redraws the map and ships no table with it. On any map
  # the mod has a table for, nothing is ever scanned and none of these three do anything.
@@ -56,13 +54,17 @@
  rule_mbga_ai_demands: "#tooltip:[GetRawTextTooltipTag('mbga_tt')] @mbga_icon! #! AI Province Demands"
  setting_mbga_ai_demands_blocked: "#tooltippable #tooltip:[GetPlayer.GetTooltipTag],setting_mbga_ai_demands_blocked_desc #high Players only#!#!#!"
  setting_mbga_ai_demands_blocked_desc: "Only you can demand provinces. An AI cannot draw a border by hand, so the war goal is not offered to it."
- setting_mbga_ai_demands_allowed: "#tooltippable #tooltip:[GetPlayer.GetTooltipTag],setting_mbga_ai_demands_allowed_desc AI may demand too#!#!"
- setting_mbga_ai_demands_allowed_desc: "An AI may take the war goal as well. It takes the provinces bordering its own land and works inwards, as far as its ruler is minded to, and pays for what it took."
+ setting_mbga_ai_demands_allowed: "#tooltippable #tooltip:[GetPlayer.GetTooltipTag],setting_mbga_ai_demands_allowed_desc Make BORDERGORE Great Again#!#!"
+ setting_mbga_ai_demands_allowed_desc: "An AI may take the war goal as well. It takes the provinces bordering its own land and works inwards, as deep and in whatever shape its ruler's traits call for, and pays for what it took.\n\n#red On a total conversion with no compatibility module, expect the game to freeze at every AI peace: with no lookup table for the map, every border an AI draws has to be worked out province by province.#!"
 
  mbga_settlement.1.t: "The Border Commission"
- mbga_settlement.1.d: "The guns are quiet and [SCOPE.sState('mbga_settle_state').GetName] is ours to divide. In a room far from it, clerks unroll a map of the province and wait on your word: which valleys, which passes, which stretch of coast."
- mbga_settlement.1.f: "A war is won on the field and settled on paper. Every line you draw here will be somebody's border for a generation, and every one you leave crooked will be somebody's grievance."
- mbga_settlement.1.a: "Let us get to the drawing board!\n\n#red (Pause the game before you begin, to be sure nothing shifts under you.)#!"
+ mbga_settlement.1.d_war: "The guns are quiet and [SCOPE.sState('mbga_settle_state').GetName] is ours to divide. In a room far from it, clerks unroll a map of the province and wait on your word: which valleys to take, which passes, which stretch of coast."
+ mbga_settlement.1.d_conceded: "They counted the armies already marching and decided [SCOPE.sState('mbga_settle_state').GetName] was the cheaper loss. The play is settled without a battle, and in a room far from it, clerks unroll a map of the province and wait on your word: which valleys to take, which passes, which stretch of coast."
+ mbga_settlement.1.d_granted: "The demand went out and the answer came back before anyone had time to mobilise: [SCOPE.sState('mbga_settle_state').GetName] is yours, and not a regiment moved. In a room far from it, clerks unroll a map of the province and wait on your word: which valleys to take, which passes, which stretch of coast."
+ mbga_settlement.1.f_war: "A war is won on the field and settled on paper. Every line you draw here will be somebody's border for a generation, and every one you leave crooked will be somebody's grievance."
+ mbga_settlement.1.f_conceded: "A border drawn in the shadow of an army costs no lives and buys no gratitude. Every line you leave crooked will be remembered as the price of a threat that worked."
+ mbga_settlement.1.f_granted: "Nothing was taken here that was not handed over, which is the sort of thing men say for a generation and believe for about a year. Draw carefully: a border given away is the easiest of all to demand back."
+ mbga_settlement.1.a: "Let us get to the drawing board!\n\n#red (Pause the game before you begin, or something may break.)#!"
 
  # The three throwaway countries are annexed away inside one effect chain and never seen, but
  # anything they touch keeps their name: a formation raised in a province while the courier
@@ -75,7 +77,7 @@
  MBT_ADJ: "Conquest"
 
  mbga_settlement.2.t: "Territory Annexed"
- mbga_settlement.2.d: "[SCOPE.sCountry('mbga_settle_winner').GetName] has annexed territory in [SCOPE.sState('mbga_settle_state').GetName]. Their surveyors were on the ground before the ink was dry, and the new line runs where they say it runs.\n\nThe seizure has cost them #v [SCOPE.sCountry('mbga_settle_winner').MakeScope.Var('mbga_settle_told').GetValue|1]#! [concept_infamy]."
+ mbga_settlement.2.d: "[SCOPE.sCountry('mbga_settle_winner').GetName] has annexed territory in [SCOPE.sStateRegion('mbga_settle_region_scope').GetName]. Their surveyors were on the ground before the ink was dry, and the new line runs where they say it runs.\n\nThe seizure has cost them #v [SCOPE.sCountry('mbga_settle_winner').MakeScope.Var('mbga_settle_told').GetValue|1]#! [concept_infamy]."
  mbga_settlement.2.f: "Somewhere a clerk is redrawing a map, and somewhere else a family is finding out they woke up in another country."
  mbga_settlement.2.a: "We will not forget this."
 
@@ -91,33 +93,6 @@
  MBGA_STATS_HOME: "touch home #v [Country.MakeScope.Var('mbga_touch_home_count').GetValue|0]#!"
  MBGA_STATS_TAKEABLE: "takeable now #v [Country.MakeScope.Var('mbga_takeable_count').GetValue|0]#!"
  MBGA_STATS_ORPHANS: "cut off, released #v [Country.MakeScope.Var('mbga_orphans_released').GetValue|0]#!"
-
- mbga_test_iterators_decision: "MBGA: test province iterators"
- mbga_test_iterators_decision_desc: "Runs every way of listing a state's provinces against your capital and shows what each one answered. Costs nothing and changes nothing."
-
- MBGA_TEST_TITLE: "#BOLD Province iterators#!"
- MBGA_TEST_DESCENT: "regions #v [Country.MakeScope.Var('mbga_test_n_sr').GetValue|0]#! / #v [Country.MakeScope.Var('mbga_test_n_stateregions').GetValue|0]#! / states #v [Country.MakeScope.Var('mbga_test_n_states').GetValue|0]#!"
- MBGA_TEST_TRUTH: "the game says #v [State.GetNumProvinces]#!"
- MBGA_TEST_REGIONS: "region walk #v [Country.MakeScope.Var('mbga_test_n_regions').GetValue|0]#!"
- MBGA_TEST_EVERY: "every_province #v [Country.MakeScope.Var('mbga_test_n_every').GetValue|0]#!"
- MBGA_TEST_ORDERED: "ordered_province #v [Country.MakeScope.Var('mbga_test_n_ordered').GetValue|0]#!"
- MBGA_TEST_RANDOM: "random_province #v [Country.MakeScope.Var('mbga_test_n_random').GetValue|0]#!"
- MBGA_TEST_ALL: "region with no list #v [Country.MakeScope.Var('mbga_test_n_all').GetValue|0]#!"
- MBGA_TEST_EMPTYREGION: "region with empty list #v [Country.MakeScope.Var('mbga_test_n_empty').GetValue|0]#!"
- MBGA_TEST_WORLD: "old+new world #v [Country.MakeScope.Var('mbga_test_n_world').GetValue|0]#!"
- MBGA_TEST_STORED: "kept on the region #v [Country.MakeScope.Var('mbga_test_n_stored').GetValue|0]#!"
- MBGA_TEST_SCOPESTATES: "every_scope_state #v [Country.MakeScope.Var('mbga_test_n_scopestates').GetValue|0]#!"
- MBGA_TEST_FROMPROV: "from a province #v [Country.MakeScope.Var('mbga_test_n_fromprov').GetValue|0]#!"
- MBGA_TEST_LINK: "state.province link #v [Country.MakeScope.Var('mbga_test_n_link').GetValue|0]#!"
- MBGA_TEST_STRAIT: "straits from state #v [Country.MakeScope.Var('mbga_test_n_strait').GetValue|0]#!"
- MBGA_TEST_BUILDING: "building.province #v [Country.MakeScope.Var('mbga_test_n_building').GetValue|0]#!"
- MBGA_TEST_SRCAP: "sr.capital_province #v [Country.MakeScope.Var('mbga_test_n_srcap').GetValue|0]#!"
- MBGA_TEST_STATECAP: "state.capital_province #v [Country.MakeScope.Var('mbga_test_n_statecap').GetValue|0]#!"
- MBGA_TEST_SEED: "seed was taken #v [Country.MakeScope.Var('mbga_test_n_seed').GetValue|0]#!"
- MBGA_TEST_SETORACLE: "set #v [Country.MakeScope.Var('mbga_test_setgroup').GetValue|0]#! vs singles #v [Country.MakeScope.Var('mbga_test_setsingles').GetValue|0]#!"
- MBGA_TEST_SETCOST: "set test transfers #v [Country.MakeScope.Var('mbga_test_setcost').GetValue|0]#!"
- MBGA_TEST_SETHOLDS: "probes held all four #v [Country.MakeScope.Var('mbga_test_holds').GetValue|0]#!"
- MBGA_TEST_HINT: "Matching the first line is a pass. Zero means thrown out."
 
  MBGA_BAR_TAKEN: "Taken #v [Country.MakeScope.Var('mbga_taken_count').GetValue|0]#! of #v [Country.MakeScope.Var('mbga_candidate_count').GetValue|0]#!"
  MBGA_BAR_DONE: "Done"

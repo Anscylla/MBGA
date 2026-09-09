@@ -80,9 +80,28 @@ mbga_demand_provinces = {
 	# in common/scripted_effects/mbga_settlement.txt.
 	on_enforced = {
 		debug_log = "MBGA|war|the goal was enforced"
+
+		# Which of the three ways this was won, for the text the popup shows. A play that
+		# reached a war was fought over; a play that never did was conceded; no play at all
+		# means the demand was granted where it stood. The number rides with the event, so
+		# several states waiting at once each keep their own answer.
+		if = {
+			limit = { scope:diplomatic_play ?= { is_war = yes } }
+			save_scope_value_as = { name = mbga_settle_route value = 1 }
+			debug_log = "MBGA|war|and it was won at the peace"
+		}
+		else_if = {
+			limit = { exists = scope:diplomatic_play }
+			save_scope_value_as = { name = mbga_settle_route value = 2 }
+			debug_log = "MBGA|war|and the play was conceded before the fighting"
+		}
+		else = {
+			save_scope_value_as = { name = mbga_settle_route value = 3 }
+			debug_log = "MBGA|war|and the demand was granted where it stood"
+		}
+
 		scope:target_state = { save_scope_as = mbga_settle_state }
 		root = {
-			set_variable = { name = mbga_last_demanded_state value = scope:mbga_settle_state }
 			# Player or AI, the fork is inside: one gets a popup, the other draws its own
 			# border in script.
 			mbga_open_settlement = yes

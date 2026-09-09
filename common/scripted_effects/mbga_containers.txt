@@ -2,8 +2,8 @@
 # its container. What the interface may read off a container is in README.md.
 #
 # This is how a province reaches the interface: a data model item cannot be promoted to a
-# province, a container can. Each carries mbga_province, mbga_owner, mbga_hub and mbga_label,
-# and gains mbga_taken once handed over.
+# province, a container can. Each carries mbga_province, mbga_owner and mbga_hub, and
+# gains mbga_taken once handed over.
 #
 # A container is built once and then kept for the rest of the save. Which province it wraps,
 # which hub it is, and which provinces it touches are facts about the map and do not change,
@@ -166,7 +166,6 @@ mbga_build_candidates = {
 	sort_global_variable_list = { name = mbga_candidates order = var:mbga_order }
 
 	clear_variable_list = mbga_wrapped
-	clear_variable_list = mbga_border_provinces_local
 }
 
 # Country scope. Every container this state already has, brought back into the candidate list
@@ -254,8 +253,8 @@ mbga_refresh_container = {
 # to, which hub it is and where it sits in the list. What the borders decide is left to
 # mbga_refresh_container, which runs on every opening.
 # Country scope, scope:mbga_new_container is the container being built. Marks it if the
-# province it wraps is the state's hub of this kind. $KIND$, $ORDER$ and $LABEL$ are
-# substituted when the game loads.
+# province it wraps is the state's hub of this kind. $KIND$ and $ORDER$ are substituted
+# when the game loads.
 #
 # A province can only be one hub, so the first kind to claim it keeps it, and mbga_order is
 # what puts the named provinces at the head of the list.
@@ -269,7 +268,6 @@ mbga_mark_hub = {
 		scope:mbga_new_container = {
 			set_variable = { name = mbga_hub value = $ORDER$ }
 			set_variable = { name = mbga_order value = $ORDER$ }
-			set_variable = { name = mbga_label value = flag:$LABEL$ }
 		}
 	}
 }
@@ -310,17 +308,16 @@ mbga_wrap_province = {
 		}
 	}
 
-	mbga_mark_hub = { KIND = city  ORDER = 1 LABEL = city }
-	mbga_mark_hub = { KIND = port  ORDER = 2 LABEL = port }
-	mbga_mark_hub = { KIND = farm  ORDER = 3 LABEL = farmland }
-	mbga_mark_hub = { KIND = mine  ORDER = 4 LABEL = mines }
-	mbga_mark_hub = { KIND = wood  ORDER = 5 LABEL = woodland }
+	mbga_mark_hub = { KIND = city  ORDER = 1 }
+	mbga_mark_hub = { KIND = port  ORDER = 2 }
+	mbga_mark_hub = { KIND = farm  ORDER = 3 }
+	mbga_mark_hub = { KIND = mine  ORDER = 4 }
+	mbga_mark_hub = { KIND = wood  ORDER = 5 }
 
 	if = {
 		limit = { scope:mbga_new_container = { NOT = { has_variable = mbga_hub } } }
 		scope:mbga_new_container = {
 			set_variable = { name = mbga_order value = 6 }
-			set_variable = { name = mbga_label value = flag:countryside }
 		}
 	}
 

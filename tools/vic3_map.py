@@ -11,14 +11,10 @@ exactly that, and without honouring it the base game's map would be read on top 
 This reads a mod the way the game does, falling back to the base game for everything the mod
 does not carry.
 
-Used by tools/make_compat.py. Nothing in the mod itself depends on it.
+Used by make_compat.py and by every bake_*.py. Nothing in the mod itself depends on it.
 """
 import os
 import re
-import sys
-
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from verify_map_data import find_game, parse_region_text, parse_terrain_text, read  # noqa: E402
 
 MAP_DATA = 'map_data'
 REGIONS = os.path.join(MAP_DATA, 'state_regions')
@@ -26,6 +22,76 @@ DEFAULT = os.path.join(MAP_DATA, 'default.map')
 TERRAINS = os.path.join(MAP_DATA, 'province_terrains.txt')
 WATER_TERRAIN = ('ocean', 'lakes', 'lake')
 HEX = re.compile(r'x[0-9A-Fa-f]{6}')
+# The game writes hub ids quoted in some files and bare in others.
+QUOTED_HEX = re.compile(r'"?(x[0-9A-Fa-f]{6})"?')
+HUBS = ('city', 'port', 'farm', 'mine', 'wood')
+
+
+def find_game():
+    for base in (os.environ.get('VIC3_GAME'),
+                 r'C:\Steam\steamapps\common\Victoria 3\game'):
+        if base and os.path.isdir(os.path.join(base, 'map_data')):
+            return base
+    for drive in 'CDEFGH':
+        p = f'{drive}:\\Steam\\steamapps\\common\\Victoria 3\\game'
+        if os.path.isdir(os.path.join(p, 'map_data')):
+            return p
+    return None
+
+
+def read(path):
+    return open(path, encoding='utf-8-sig', errors='replace').read().replace('\r', '')
+
+
+def parse_region_text(text, filename=''):
+    """One state_regions file -> {state_region: {'provinces', 'hubs', 'file'}}"""
+    out = {}
+    # strip comments outside quotes
+    clean = []
+    for line in text.split('\n'):
+        q, buf = False, ''
+        for ch in line:
+            if ch == '"':
+                q = not q
+            if ch == '#' and not q:
+                break
+            buf += ch
+        clean.append(buf)
+    text = '\n'.join(clean)
+
+    depth, cur, body = 0, None, []
+    for line in text.split('\n'):
+        if depth == 0:
+            m = re.match(r'^\s*([A-Z_][A-Z0-9_]*)\s*=\s*\{', line)
+            if m:
+                cur, body = m.group(1), []
+        if cur:
+            body.append(line)
+        depth += line.count('{') - line.count('}')
+        if cur and depth == 0:
+            blob = '\n'.join(body)
+            pm = re.search(r'provinces\s*=\s*\{([^}]*)\}', blob, re.S)
+            provs = QUOTED_HEX.findall(pm.group(1)) if pm else []
+            hubs = {}
+            for h in HUBS:
+                hm = re.search(r'^\s*' + h + r'\s*=\s*"?(x[0-9A-Fa-f]{6})"?', blob, re.M)
+                if hm:
+                    hubs[h] = hm.group(1)
+            # keep the original casing: p: lookups are matched against the
+            # ids exactly as the game writes them
+            out[cur] = {'provinces': provs, 'hubs': hubs, 'file': filename}
+            cur = None
+    return out
+
+
+def parse_terrain_text(text):
+    """-> {province_id: terrain}"""
+    out = {}
+    for line in text.split('\n'):
+        m = re.match(r'^\s*(x[0-9A-Fa-f]{6})\s*=\s*"?([a-z_]+)"?', line)
+        if m:
+            out[m.group(1)] = m.group(2)
+    return out
 
 
 class MapSource:

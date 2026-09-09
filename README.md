@@ -197,8 +197,10 @@ an AI answers a demand for provinces exactly as it answers a demand for the whol
 What it does not do is take the state. A demand is met in one of three ways - a peace at the
 end of a war, a play conceded before the fighting starts, or a demand granted outright with no
 play at all - and the game enforces the goal on all three, so one hook covers them: a popup
-comes up for each state won, and its one option puts the province tool on that state. You draw
-the border by hand, close the tool, and the next popup is waiting.
+comes up for each state won, and its one option puts the province tool on that state. The
+popup reads differently for each of the three, since a border drawn after a war is not the
+same room as one drawn because nobody wanted the fight. You draw the border by hand, close the
+tool, and the next popup is waiting.
 
 Infamy is charged **afterwards, for what was actually taken** - the share of the state you
 kept, out of the state's own price, which is what a conquest would have paid for all of it.
@@ -240,7 +242,7 @@ ring and no more rather than probing its way inwards during the peace.
 | --- | --- | --- |
 | **Province Demands** | Bordering only *(default)* / Anywhere in the state | Whether a province has to touch land you hold. |
 | **Province Transfer Tool** | Off *(default)* / Diplomatic action / Debug panel | How the tool is reached. Off means provinces change hands through war only. |
-| **AI Province Demands** | Players only *(default)* / AI may demand too | Whether an AI may take the Demand Provinces war goal. It cannot pick provinces, so it takes the whole state. |
+| **AI Province Demands** | Players only *(default)* / Make BORDERGORE Great Again | Whether an AI may take the Demand Provinces war goal. It draws its own border, as deep and in whatever shape its ruler's traits call for. On a map with no lookup table, expect the game to freeze at every AI peace while that border is worked out. |
 | **Province Scanning** | Short waits / Balanced *(default)* / Fewest interruptions | How much work a state may cost when it opens. **Does nothing on any map the mod has a table for**, which includes the base game's. It is there for a mod that redraws the map and ships no table of its own. |
 
 The first two are read in `common/scripted_guis` and nowhere deeper. The mechanism itself
@@ -409,7 +411,8 @@ MBGA is loaded too early. Move it below every other mod in the playset - see
 This is what a mod's `replace_paths` does: it claims a whole folder, and the game then reads
 that folder only from it, dropping what every mod loaded before it put there. MBGA overwrites
 nothing, and it makes no difference: `common/country_definitions` claimed by someone else
-takes the probe countries with it, and `common/decisions` takes the bench.
+takes the probe countries with it, and without those the tool has nothing to move a province
+through.
 
 Loading last costs nothing, since MBGA overwrites nothing to begin with.
 

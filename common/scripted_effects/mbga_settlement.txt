@@ -59,6 +59,14 @@ mbga_begin_settlement = {
 	scope:mbga_settle_state = { owner ?= { save_scope_as = mbga_settle_loser } }
 	if = {
 		limit = { exists = scope:mbga_settle_loser }
+		# Written down now, because taking provinces splits the state and the scope then
+		# points at the winner's half. Asked afterwards, the state names the wrong country.
+		#
+		# The region goes with it: a state whose every province is taken stops existing, and
+		# its name goes with it, while the region it stood in is part of the map and stays.
+		set_variable = { name = mbga_settle_loser_country value = scope:mbga_settle_loser }
+		scope:mbga_settle_state = { state_region = { save_scope_as = mbga_settle_kept_region } }
+		set_variable = { name = mbga_settle_region value = scope:mbga_settle_kept_region }
 		mbga_fill_country_list = yes
 		set_variable = { name = mbga_target_country value = scope:mbga_settle_loser }
 		scope:mbga_settle_state = { mbga_open_for_state_effect = yes }
@@ -93,6 +101,8 @@ mbga_finish_settlement = {
 		remove_list_variable = { name = mbga_settle_pending target = scope:mbga_settle_state_scope }
 		remove_variable = mbga_settling
 		remove_variable = mbga_settling_state
+		remove_variable = mbga_settle_loser_country
+		remove_variable = mbga_settle_region
 	}
 }
 
@@ -113,6 +123,9 @@ mbga_settle_as_ai = {
 	if = {
 		limit = { exists = scope:mbga_settle_loser }
 
+		set_variable = { name = mbga_settle_loser_country value = scope:mbga_settle_loser }
+		scope:mbga_settle_state = { state_region = { save_scope_as = mbga_settle_kept_region } }
+		set_variable = { name = mbga_settle_region value = scope:mbga_settle_kept_region }
 		set_variable = { name = mbga_target_country value = scope:mbga_settle_loser }
 		mbga_list_reachable_only = yes
 		scope:mbga_settle_state = { mbga_open_for_state_effect = yes }
@@ -130,6 +143,8 @@ mbga_settle_as_ai = {
 
 		mbga_charge_for_taken = yes
 		mbga_clear_candidates = yes
+		remove_variable = mbga_settle_loser_country
+		remove_variable = mbga_settle_region
 		remove_variable = mbga_target_country
 		remove_variable = mbga_active_state
 		remove_variable = mbga_active_state_region
@@ -247,17 +262,21 @@ mbga_charge_for_taken = {
 	mbga_tell_the_loser = yes
 }
 
-# Country scope, scope:mbga_settle_state is the state. Nothing is sent where nothing was taken.
+# Country scope. Nothing is sent where nothing was taken.
+#
+# The country told is the one written down when the settlement opened, not whoever owns the
+# state now: taking part of a state splits it, and the state then answers with the winner.
 mbga_tell_the_loser = {
 	save_scope_as = mbga_settle_winner
 	if = {
-		limit = { has_variable = mbga_settle_told }
-		scope:mbga_settle_state = { owner ?= { save_scope_as = mbga_settle_told_country } }
+		limit = {
+			has_variable = mbga_settle_told
+			has_variable = mbga_settle_loser_country
+		}
+		var:mbga_settle_loser_country = { save_scope_as = mbga_settle_told_country }
+		var:mbga_settle_region ?= { save_scope_as = mbga_settle_region_scope }
 		if = {
-			limit = {
-				exists = scope:mbga_settle_told_country
-				NOT = { scope:mbga_settle_told_country = scope:mbga_settle_winner }
-			}
+			limit = { NOT = { scope:mbga_settle_told_country = scope:mbga_settle_winner } }
 			scope:mbga_settle_told_country = {
 				trigger_event = { id = mbga_settlement.2 days = 0 }
 			}
