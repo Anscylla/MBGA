@@ -13,6 +13,10 @@ mbga_dp_demand_provinces = {
 	texture = "gfx/interface/icons/diplomatic_action_icons/take_province.dds"
 
 	possible = {
+		# Turned off with the war goal it carries, in one file. See
+		# common/scripted_triggers/zz_mbga_config.txt.
+		mbga_wargoal_enabled = yes
+
 		NOT = { is_country_type = decentralized }
 		aggressive_diplomatic_plays_permitted = yes
 		NOT = { is_subject_of = scope:target_country }

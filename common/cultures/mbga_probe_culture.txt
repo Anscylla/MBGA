@@ -17,13 +17,15 @@ mbga_probe_culture = {
 		1 = neutral
 	}
 
+	# Prefixed, because a name is a localisation key of its own and a plain "Courier" would
+	# be a global key this mod has no business claiming.
 	male_common_first_names = {
-		Courier
+		mbga_name_courier
 	}
 	female_common_first_names = {
-		Courier
+		mbga_name_courier
 	}
 	common_last_names = {
-		Probe
+		mbga_name_probe
 	}
 }

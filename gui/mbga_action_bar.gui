@@ -1,5 +1,8 @@
-﻿# The whole interface of the diplomatic route: which state is open, and a button to stop.
-# Everything else happens on the map.
+# The whole interface of the province tool: what has been taken, what it costs, and a button
+# to stop. Everything else happens on the map.
+#
+# Two framed rows rather than one line of text, because this window is the only thing standing
+# between the player and a border they cannot undo once the tool is put down.
 
 widget = {
 	name = "mbga_action_bar"
@@ -18,7 +21,7 @@ widget = {
 		movable = yes
 		using = clickthrough_blocker
 
-		size = { 280 62 }
+		size = { 380 150 }
 		parentanchor = top|hcenter
 		position = { 0 90 }
 		visible = "[And( GetScriptedGui('mbga_tool_is_on').IsShown(GuiScope.SetRoot(GetPlayer.MakeScope).End), GetScriptedGui('mbga_has_target_country').IsShown(GuiScope.SetRoot(GetPlayer.MakeScope).End) )]"
@@ -30,27 +33,57 @@ widget = {
 		}
 		background = { using = entry_bg_simple }
 
-		textbox = {
-			text = "MBGA_BAR_TAKEN"
-			default_format = "#header"
-			position = { 10 8 }
-			size = { 260 20 }
+		# How much of the state is in hand.
+		widget = {
+			size = { 356 40 }
+			position = { 12 12 }
 			alwaystransparent = yes
+
+			background = { using = entry_bg }
+
+			textbox = {
+				text = "MBGA_BAR_TAKEN"
+				default_format = "#header"
+				size = { 336 40 }
+				position = { 10 0 }
+				align = center|nobaseline
+				alwaystransparent = yes
+			}
 		}
 
-		textbox = {
-			text = "MBGA_SETTLE_INFAMY"
-			position = { 150 8 }
-			size = { 120 20 }
+		# What it will cost. The diplomatic route charges nothing and says so, rather than
+		# leaving the row out and making the window two different shapes.
+		widget = {
+			size = { 356 40 }
+			position = { 12 58 }
 			alwaystransparent = yes
-			visible = "[GetScriptedGui('mbga_is_settling').IsShown(GuiScope.SetRoot(GetPlayer.MakeScope).End)]"
+
+			background = { using = entry_bg }
+
+			textbox = {
+				text = "MBGA_SETTLE_INFAMY"
+				size = { 336 40 }
+				position = { 10 0 }
+				align = center|nobaseline
+				alwaystransparent = yes
+				visible = "[GetScriptedGui('mbga_is_settling').IsShown(GuiScope.SetRoot(GetPlayer.MakeScope).End)]"
+			}
+
+			textbox = {
+				text = "MBGA_SETTLE_FREE"
+				size = { 336 40 }
+				position = { 10 0 }
+				align = center|nobaseline
+				alwaystransparent = yes
+				visible = "[Not( GetScriptedGui('mbga_is_settling').IsShown(GuiScope.SetRoot(GetPlayer.MakeScope).End) )]"
+			}
 		}
 
 		button = {
 			text = "MBGA_BAR_DONE"
 			using = default_button
-			size = { 90 20 }
-			position = { 10 34 }
+			size = { 172 32 }
+			position = { 12 106 }
 			onclick = "[GetScriptedGui('mbga_close_tool').Execute(GuiScope.SetRoot(GetPlayer.MakeScope).End)]"
 		}
 
@@ -58,8 +91,8 @@ widget = {
 		button = {
 			text = "MBGA_GOTO_STATE"
 			using = default_button
-			size = { 74 20 }
-			position = { 110 34 }
+			size = { 172 32 }
+			position = { 196 106 }
 			datacontext = "[GetPlayer.MakeScope.Var('mbga_active_state').GetState]"
 			onclick = "[State.ZoomExtraCloseToCapital]"
 		}

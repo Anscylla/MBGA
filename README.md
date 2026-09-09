@@ -299,6 +299,26 @@ it can change or disappear between versions without notice.
 
 Test with the trigger `mbga_is_active`, which follows the CMF convention.
 
+### Turning parts of it off
+
+`common/scripted_triggers/zz_mbga_config.txt` is the one file to override. Ship a file of
+your own named so it sorts after it - `zzz_` is enough, since the game settles a clash by
+file name rather than by the order the mods are listed in - and repeat only what you want
+changed:
+
+```
+# common/scripted_triggers/zzz_yourmod_mbga_config.txt
+REPLACE_OR_CREATE:mbga_wargoal_enabled = { always = no }
+```
+
+| Trigger | Default | What `no` does |
+| --- | --- | --- |
+| `mbga_wargoal_enabled` | yes | Demand Provinces is not offered, and neither is the diplomatic play that carries it. |
+
+Turning one off removes an answer of ours, never a capability: the tool, the API and
+everything else on this page stay as they were. A mod that wins ground its own way can turn
+the goal off and still open the tool on what it won.
+
 ### Opening a state
 
 ```
@@ -383,7 +403,8 @@ without a word. That is what the `zz_` prefix on the generated files is for.
 
 `common/scripted_effects/mbga_adjacency.txt` apart from the two hooks above,
 `mbga_containers.txt`, `mbga_border_probe.txt`, `mbga_hubs.txt`, everything named
-`mbga_walk_*`, the generated `mbga_baked_*` and `zz_mbga_*` files, the probe countries `MBG`,
+`mbga_walk_*`, the generated `mbga_baked_*` files and the `zz_mbga_*` ones apart from
+`zz_mbga_config.txt`, the probe countries `MBG`,
 `MBH` and `MBT` with their culture and country type, and every variable whose name begins
 `mbga_adj_`, `mbga_pairs_`, `mbga_ops_` or `mbga_probe_`. Do not call into these, and do not
 count on the MBG/MBH/MBT tags being free.

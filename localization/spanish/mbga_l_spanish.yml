@@ -6,6 +6,7 @@
  MBGA_STATE_ROW: "[State.GetName]"
  MBGA_GOTO_STATE: "Ver"
  MBGA_SETTLE_INFAMY: "Infamia: #v [Country.MakeScope.Var('mbga_settle_shown').GetValue|1]#!"
+ MBGA_SETTLE_FREE: "#v Gratis#!"
  MBGA_TAKEN_COUNT: "Tomadas: #v [Country.MakeScope.Var('mbga_taken_count').GetValue|0]#! de [Country.MakeScope.Var('mbga_candidate_count').GetValue|0]"
  mbga_dp_demand_provinces: "$war_goal_mbga_demand_provinces_type_name$"
  war_goal_mbga_demand_provinces_type_name: "Exigir provincias"
@@ -75,6 +76,12 @@
  MBH_ADJ: "de ocupación"
  MBT: "Conquista"
  MBT_ADJ: "de conquista"
+
+ mbga_probe_culture: "Ocupación"
+ mbga_name_courier: "Correo"
+ mbga_name_probe: "Sonda"
+ mbga_take_provinces_action_action_notification_name: "[INITIATOR_COUNTRY.GetName] toma provincias"
+ mbga_take_provinces_action_action_notification_desc: "[INITIATOR_COUNTRY.GetName] nos ha tomado provincias, y la frontera pasa ahora por donde dicen sus agrimensores."
 
  mbga_settlement.2.t: "Territorio anexionado"
  mbga_settlement.2.d: "El país [SCOPE.sCountry('mbga_settle_winner').GetName] se ha anexionado territorio en el estado de [SCOPE.sStateRegion('mbga_settle_region_scope').GetName]. Sus agrimensores estaban sobre el terreno antes de que se secara la tinta, y la nueva línea pasa por donde ellos dicen.\n\nLa toma les ha costado #v [SCOPE.sCountry('mbga_settle_winner').MakeScope.Var('mbga_settle_told').GetValue|1]#! de [concept_infamy]."

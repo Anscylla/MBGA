@@ -1,0 +1,21 @@
+﻿# PUBLIC. The one file another mod overrides to turn part of this one off.
+#
+# Everything here answers yes and is meant to. A mod that wants the province tool but not the
+# content built on top of it ships a single file of its own, named so it sorts after this one
+# - zzz_ is enough, since the game settles a clash by file name rather than by the order the
+# mods are listed in - and repeats only what it wants changed:
+#
+#     common/scripted_triggers/zzz_yourmod_mbga_config.txt
+#     REPLACE_OR_CREATE:mbga_wargoal_enabled = { always = no }
+#
+# Nothing else has to be touched. Turning one of these off removes an answer of ours, never a
+# capability: the tool, the API and everything in README.md stay exactly as they were.
+
+# Whether Demand Provinces is offered at all - the war goal, and the diplomatic play that
+# carries it into the list of demands against a state.
+#
+# Off leaves the province tool and the whole API standing, so a mod can win ground its own way
+# and still open the tool on it.
+REPLACE_OR_CREATE:mbga_wargoal_enabled = {
+	always = yes
+}

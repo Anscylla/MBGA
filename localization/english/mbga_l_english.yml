@@ -6,6 +6,7 @@
  MBGA_STATE_ROW: "[State.GetName]"
  MBGA_GOTO_STATE: "Go to"
  MBGA_SETTLE_INFAMY: "Infamy: #v [Country.MakeScope.Var('mbga_settle_shown').GetValue|1]#!"
+ MBGA_SETTLE_FREE: "#v Free#!"
  MBGA_TAKEN_COUNT: "Taken: #v [Country.MakeScope.Var('mbga_taken_count').GetValue|0]#! of [Country.MakeScope.Var('mbga_candidate_count').GetValue|0]"
  mbga_dp_demand_provinces: "$war_goal_mbga_demand_provinces_type_name$"
  war_goal_mbga_demand_provinces_type_name: "Demand Provinces"
@@ -75,6 +76,12 @@
  MBH_ADJ: "Occupation"
  MBT: "Conquest"
  MBT_ADJ: "Conquest"
+
+ mbga_probe_culture: "Occupation"
+ mbga_name_courier: "Courier"
+ mbga_name_probe: "Probe"
+ mbga_take_provinces_action_action_notification_name: "[INITIATOR_COUNTRY.GetName] taking provinces"
+ mbga_take_provinces_action_action_notification_desc: "[INITIATOR_COUNTRY.GetName] have taken provinces from us, and the border now runs where their surveyors say it runs."
 
  mbga_settlement.2.t: "Territory Annexed"
  mbga_settlement.2.d: "[SCOPE.sCountry('mbga_settle_winner').GetName] has annexed territory in [SCOPE.sStateRegion('mbga_settle_region_scope').GetName]. Their surveyors were on the ground before the ink was dry, and the new line runs where they say it runs.\n\nThe seizure has cost them #v [SCOPE.sCountry('mbga_settle_winner').MakeScope.Var('mbga_settle_told').GetValue|1]#! [concept_infamy]."

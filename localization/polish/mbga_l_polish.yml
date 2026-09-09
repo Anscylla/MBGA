@@ -6,6 +6,7 @@
  MBGA_STATE_ROW: "[State.GetName]"
  MBGA_GOTO_STATE: "Pokaż"
  MBGA_SETTLE_INFAMY: "Niesława: #v [Country.MakeScope.Var('mbga_settle_shown').GetValue|1]#!"
+ MBGA_SETTLE_FREE: "#v Darmowe#!"
  MBGA_TAKEN_COUNT: "Wzięto: #v [Country.MakeScope.Var('mbga_taken_count').GetValue|0]#! z [Country.MakeScope.Var('mbga_candidate_count').GetValue|0]"
  mbga_dp_demand_provinces: "$war_goal_mbga_demand_provinces_type_name$"
  war_goal_mbga_demand_provinces_type_name: "Żądanie prowincji"
@@ -75,6 +76,12 @@
  MBH_ADJ: "Okupacyjna"
  MBT: "Podbój"
  MBT_ADJ: "Podbita"
+
+ mbga_probe_culture: "Okupacja"
+ mbga_name_courier: "Kurier"
+ mbga_name_probe: "Sonda"
+ mbga_take_provinces_action_action_notification_name: "[INITIATOR_COUNTRY.GetName] zabiera prowincje"
+ mbga_take_provinces_action_action_notification_desc: "[INITIATOR_COUNTRY.GetName] zabrał nam prowincje, a granica biegnie teraz tam, gdzie każą jego geodeci."
 
  mbga_settlement.2.t: "Terytorium zaanektowane"
  mbga_settlement.2.d: "Kraj [SCOPE.sCountry('mbga_settle_winner').GetName] anektuje terytorium w obszarze administracyjnym [SCOPE.sStateRegion('mbga_settle_region_scope').GetName]. Ich geodeci byli na miejscu, zanim atrament wysechł, a nowa linia biegnie tam, gdzie oni każą.\n\nTo zagarnięcie kosztowało ich #v [SCOPE.sCountry('mbga_settle_winner').MakeScope.Var('mbga_settle_told').GetValue|1]#! [Concept('concept_infamy', 'niesławy')]."

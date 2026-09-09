@@ -33,6 +33,10 @@ mbga_demand_provinces = {
 	# An AI cannot draw a border province by province, so it does not get this goal unless the
 	# rule says otherwise, and then it takes the whole state instead.
 	possible = {
+		# A mod that wants the tool but not this goal turns it off in one file. See
+		# common/scripted_triggers/zz_mbga_config.txt.
+		mbga_wargoal_enabled = yes
+
 		OR = {
 			is_ai = no
 			has_game_rule = mbga_ai_demands_allowed
