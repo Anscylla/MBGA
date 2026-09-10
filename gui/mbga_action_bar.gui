@@ -24,7 +24,11 @@ widget = {
 		size = { 380 150 }
 		parentanchor = top|hcenter
 		position = { 0 90 }
-		visible = "[And( GetScriptedGui('mbga_tool_is_on').IsShown(GuiScope.SetRoot(GetPlayer.MakeScope).End), GetScriptedGui('mbga_has_target_country').IsShown(GuiScope.SetRoot(GetPlayer.MakeScope).End) )]"
+		# Shown whenever a state is actually open, and on nothing else. The game rule decides
+		# whether the free-form tool exists at all; it must not decide whether a border that
+		# is already being drawn can be finished. A state won through the war goal opens the
+		# tool with the rule off, and without this the window that closes it never appears.
+		visible = "[GetScriptedGui('mbga_has_target_country').IsShown(GuiScope.SetRoot(GetPlayer.MakeScope).End)]"
 
 		icon = {
 			texture = "gfx/interface/backgrounds/entry_bg_simple_solid.dds"

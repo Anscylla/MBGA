@@ -125,9 +125,15 @@ mbga_container_is_plain = {
 
 # A candidate the current filter will not let go of. Shown rather than hidden, so the
 # player can see the shape of what is out of reach.
+# Out of reach, and not already in hand. Ground nobody can march through loses mbga_takeable
+# once the reach is worked out again, since reach never runs back out of it - without the
+# second half of this a taken range would wear the cross and the tick at the same time.
 mbga_container_blocked = {
 	scope = container
-	is_shown = { NOT = { has_variable = mbga_takeable } }
+	is_shown = {
+		NOT = { has_variable = mbga_takeable }
+		NOT = { has_variable = mbga_taken }
+	}
 	is_valid = { always = yes }
 	effect = {}
 }

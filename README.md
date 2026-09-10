@@ -342,7 +342,6 @@ Afterwards the global list `mbga_candidates` holds one container per province of
 | `mbga_province` | The province it wraps. |
 | `mbga_owner` | Who held it when the state was opened, so it can be handed back. |
 | `mbga_hub` | 1 city, 2 port, 3 farm, 4 mine, 5 wood, absent otherwise. |
-| `mbga_label` | A flag naming the hub, for localization. |
 | `mbga_taken` | Taken during this session. |
 | `mbga_takeable` | May be taken right now. |
 | `mbga_own_from_start` | Already ours before the state was opened. |
