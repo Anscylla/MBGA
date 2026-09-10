@@ -155,7 +155,7 @@ widget = {
 
 			scrollwidget = {
 				vbox = {
-					spacing = 2
+					spacing = 5
 					parentanchor = top|left
 					datamodel = "[GetGlobalList('mbga_candidates')]"
 
@@ -163,92 +163,9 @@ widget = {
 						hbox = {
 							datacontext = "[Scope.GetScriptContainer]"
 							spacing = 4
-							visible = "[Not(GetScriptedGui('mbga_container_own_from_start').IsShown(GuiScope.SetRoot(ScriptContainer.MakeScope).End))]"
 
-							icon = {
-								size = { 20 20 }
-								texture = "gfx/interface/icons/building_icons/urban_center.dds"
-								visible = "[GetScriptedGui('mbga_container_is_city').IsShown(GuiScope.SetRoot(ScriptContainer.MakeScope).End)]"
-								alwaystransparent = yes
-							}
-							icon = {
-								size = { 20 20 }
-								texture = "gfx/interface/icons/building_icons/building_port.dds"
-								visible = "[GetScriptedGui('mbga_container_is_port').IsShown(GuiScope.SetRoot(ScriptContainer.MakeScope).End)]"
-								alwaystransparent = yes
-							}
-							icon = {
-								size = { 20 20 }
-								texture = "gfx/interface/icons/building_icons/wheat_farm.dds"
-								visible = "[GetScriptedGui('mbga_container_is_farm').IsShown(GuiScope.SetRoot(ScriptContainer.MakeScope).End)]"
-								alwaystransparent = yes
-							}
-							icon = {
-								size = { 20 20 }
-								texture = "gfx/interface/icons/building_icons/coal_mine.dds"
-								visible = "[GetScriptedGui('mbga_container_is_mine').IsShown(GuiScope.SetRoot(ScriptContainer.MakeScope).End)]"
-								alwaystransparent = yes
-							}
-							icon = {
-								size = { 20 20 }
-								texture = "gfx/interface/icons/building_icons/logging_camp.dds"
-								visible = "[GetScriptedGui('mbga_container_is_wood').IsShown(GuiScope.SetRoot(ScriptContainer.MakeScope).End)]"
-								alwaystransparent = yes
-							}
-							textbox = {
-								text = "MBGA_TAKEN_MARK"
-								size = { 18 22 }
-								visible = "[GetScriptedGui('mbga_container_taken').IsShown(GuiScope.SetRoot(ScriptContainer.MakeScope).End)]"
-								alwaystransparent = yes
-							}
-							textbox = {
-								text = "MBGA_MAP_BLOCKED"
-								size = { 18 22 }
-								visible = "[GetScriptedGui('mbga_container_blocked').IsShown(GuiScope.SetRoot(ScriptContainer.MakeScope).End)]"
-								alwaystransparent = yes
-							}
-							button = {
-								text = "MBGA_ROW_CITY"
-								using = default_button
-								size = { 240 22 }
-								visible = "[GetScriptedGui('mbga_container_is_city').IsShown(GuiScope.SetRoot(ScriptContainer.MakeScope).End)]"
-								onclick = "[GetScriptedGui('mbga_take_container').Execute(GuiScope.SetRoot(ScriptContainer.MakeScope).AddScope('actor', GetPlayer.MakeScope).End)]"
-							}
-							button = {
-								text = "MBGA_ROW_PORT"
-								using = default_button
-								size = { 240 22 }
-								visible = "[GetScriptedGui('mbga_container_is_port').IsShown(GuiScope.SetRoot(ScriptContainer.MakeScope).End)]"
-								onclick = "[GetScriptedGui('mbga_take_container').Execute(GuiScope.SetRoot(ScriptContainer.MakeScope).AddScope('actor', GetPlayer.MakeScope).End)]"
-							}
-							button = {
-								text = "MBGA_ROW_FARM"
-								using = default_button
-								size = { 240 22 }
-								visible = "[GetScriptedGui('mbga_container_is_farm').IsShown(GuiScope.SetRoot(ScriptContainer.MakeScope).End)]"
-								onclick = "[GetScriptedGui('mbga_take_container').Execute(GuiScope.SetRoot(ScriptContainer.MakeScope).AddScope('actor', GetPlayer.MakeScope).End)]"
-							}
-							button = {
-								text = "MBGA_ROW_MINE"
-								using = default_button
-								size = { 240 22 }
-								visible = "[GetScriptedGui('mbga_container_is_mine').IsShown(GuiScope.SetRoot(ScriptContainer.MakeScope).End)]"
-								onclick = "[GetScriptedGui('mbga_take_container').Execute(GuiScope.SetRoot(ScriptContainer.MakeScope).AddScope('actor', GetPlayer.MakeScope).End)]"
-							}
-							button = {
-								text = "MBGA_ROW_WOOD"
-								using = default_button
-								size = { 240 22 }
-								visible = "[GetScriptedGui('mbga_container_is_wood').IsShown(GuiScope.SetRoot(ScriptContainer.MakeScope).End)]"
-								onclick = "[GetScriptedGui('mbga_take_container').Execute(GuiScope.SetRoot(ScriptContainer.MakeScope).AddScope('actor', GetPlayer.MakeScope).End)]"
-							}
-							button = {
-								text = "MBGA_ROW_PLAIN"
-								using = default_button
-								size = { 240 22 }
-								visible = "[GetScriptedGui('mbga_container_is_plain').IsShown(GuiScope.SetRoot(ScriptContainer.MakeScope).End)]"
-								onclick = "[GetScriptedGui('mbga_take_container').Execute(GuiScope.SetRoot(ScriptContainer.MakeScope).AddScope('actor', GetPlayer.MakeScope).End)]"
-							}
+							mbga_province_row = { size = { 226 34 } }
+							mbga_province_mark = {}
 						}
 					}
 				}

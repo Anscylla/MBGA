@@ -163,9 +163,30 @@ mbga_build_candidates = {
 	# Hubs head the list, and the rest follow. Order is set here rather than by the order the
 	# containers were built, since a container may have been built for a different state of
 	# the same region, in some other war.
+	#
+	# The list comes out highest first, so a hub carries the largest rank: city 7 down to
+	# wood 3, prime land 2, everything else 1.
 	sort_global_variable_list = { name = mbga_candidates order = var:mbga_order }
 
 	clear_variable_list = mbga_wrapped
+}
+
+# Country scope. Prime land follows the hubs and leads the rest.
+#
+# Which province is prime land comes from the lookup table, which is read after the list has
+# already been built and sorted, so the rank is given here and the list sorted a second time.
+# On a map with no table nothing is marked, every province keeps the rank it was built with
+# and this changes nothing.
+mbga_rank_prime_land = {
+	every_in_global_list = {
+		variable = mbga_candidates
+		limit = {
+			has_variable = mbga_prime
+			NOT = { has_variable = mbga_hub }
+		}
+		set_variable = { name = mbga_order value = 2 }
+	}
+	sort_global_variable_list = { name = mbga_candidates order = var:mbga_order }
 }
 
 # Country scope. Every container this state already has, brought back into the candidate list
@@ -256,8 +277,10 @@ mbga_refresh_container = {
 # province it wraps is the state's hub of this kind. $KIND$ and $ORDER$ are substituted
 # when the game loads.
 #
-# A province can only be one hub, so the first kind to claim it keeps it, and mbga_order is
-# what puts the named provinces at the head of the list.
+# A province can only be one hub, so the first kind to claim it keeps it. Which hub it is and
+# where it sits in the list are two different numbers: the list is sorted highest first, so a
+# rank counts down from the city while the hub itself is numbered the way the interface asks
+# for it.
 mbga_mark_hub = {
 	if = {
 		limit = {
@@ -267,7 +290,7 @@ mbga_mark_hub = {
 		}
 		scope:mbga_new_container = {
 			set_variable = { name = mbga_hub value = $ORDER$ }
-			set_variable = { name = mbga_order value = $ORDER$ }
+			set_variable = { name = mbga_order value = $RANK$ }
 		}
 	}
 }
@@ -308,16 +331,18 @@ mbga_wrap_province = {
 		}
 	}
 
-	mbga_mark_hub = { KIND = city  ORDER = 1 }
-	mbga_mark_hub = { KIND = port  ORDER = 2 }
-	mbga_mark_hub = { KIND = farm  ORDER = 3 }
-	mbga_mark_hub = { KIND = mine  ORDER = 4 }
-	mbga_mark_hub = { KIND = wood  ORDER = 5 }
+	mbga_mark_hub = { KIND = city  ORDER = 1  RANK = 7 }
+	mbga_mark_hub = { KIND = port  ORDER = 2  RANK = 6 }
+	mbga_mark_hub = { KIND = farm  ORDER = 3  RANK = 5 }
+	mbga_mark_hub = { KIND = mine  ORDER = 4  RANK = 4 }
+	mbga_mark_hub = { KIND = wood  ORDER = 5  RANK = 3 }
 
+	# 2 is left for prime land, which only the lookup table knows about and which is marked
+	# after this runs. See mbga_rank_prime_land.
 	if = {
 		limit = { scope:mbga_new_container = { NOT = { has_variable = mbga_hub } } }
 		scope:mbga_new_container = {
-			set_variable = { name = mbga_order value = 6 }
+			set_variable = { name = mbga_order value = 1 }
 		}
 	}
 

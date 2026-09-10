@@ -81,7 +81,7 @@ def collect(source):
     return by_state, blocked, islands
 
 
-def bake(by_state, blocked, by_region, islands):
+def bake(by_state, blocked, by_region, islands, prime):
     """-> {relative path: file text}. One effect per state region, and a dispatcher.
 
     A province's neighbours are dropped straight into the container wrapping it, found through
@@ -119,6 +119,8 @@ def bake(by_state, blocked, by_region, islands):
                 out.append(T * 2 + here + ' = {' + NL)
                 if a in blocked:
                     out.append(T * 3 + 'set_variable = mbga_impassable' + NL)
+                if a in prime:
+                    out.append(T * 3 + 'set_variable = mbga_prime' + NL)
                 for b in neighbours:
                     out.append(T * 3 + 'add_to_variable_list = '
                                '{ name = mbga_adj target = p:x%06X }' % b + NL)
@@ -148,9 +150,14 @@ def bake(by_state, blocked, by_region, islands):
 def build(source, report=print):
     """Everything the adjacency table needs, as {relative path: text}."""
     by_state, blocked, islands = collect(source)
+    prime = source.prime_land()
+    # A province is written to only where the table has something to say to it. Ground that
+    # cannot be marched through has no edges of its own, and prime land may be an island, so
+    # both are listed by region as well to make sure the mark reaches them.
+    marked = blocked | prime
     by_region = {}
     for name, r in source.state_regions().items():
-        here = [int(p[1:], 16) for p in r['provinces'] if int(p[1:], 16) in blocked]
+        here = [int(p[1:], 16) for p in r['provinces'] if int(p[1:], 16) in marked]
         if here:
             by_region[name] = sorted(here)
     total = sum(len(v) for v in by_state.values())
@@ -159,7 +166,8 @@ def build(source, report=print):
            % (sum(len(v) for v in by_region.values()), len(by_region)))
     report('%d provinces have no land neighbour, in %d state regions'
            % (sum(islands.values()), len(islands)))
-    return bake(by_state, blocked, by_region, islands)
+    report('%d provinces are prime land' % len(prime))
+    return bake(by_state, blocked, by_region, islands, prime)
 
 
 def main():

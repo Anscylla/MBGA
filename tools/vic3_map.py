@@ -196,6 +196,18 @@ class MapSource:
                 out |= {int(p[1:], 16) for p in HEX.findall(m.group(1))}
         return out
 
+    def prime_land(self):
+        """Province ids the state region calls prime land, as numbers.
+
+        Prime land counts five times an ordinary province towards a state's share of its
+        region, and that share is what its arable land and its resource caps are worked out
+        from. Nothing in script can see it either: it is map data and no trigger reads it."""
+        out = set()
+        for path in self.region_files().values():
+            for m in re.finditer(r'prime_land\s*=\s*\{([^}]*)\}', read(path), re.S):
+                out |= {int(p[1:], 16) for p in HEX.findall(m.group(1))}
+        return out
+
     def straits(self):
         """Pairs that touch across water: straits, and the canals cut through them.
 

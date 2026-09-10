@@ -1,7 +1,7 @@
 {
 	"name": "[1.14] Make Borders Great Again",
 	"id": "com.github.Make-Borders-Great-Again",
-	"version": "1.0.0",
+	"version": "1.1.0",
 	"game_id": "victoria3",
 	"supported_game_version": "1.14.*",
 	"short_description": "Demand individual provinces instead of whole states. Load this below every other mod in the playset.",

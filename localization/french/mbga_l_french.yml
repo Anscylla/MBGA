@@ -14,7 +14,6 @@
  war_goal_mbga_demand_provinces: "Exiger des provinces dans l'État de [WAR_GOAL_DRAFT.GetTargetState.GetCountry.GetFlagTextIcon] [WAR_GOAL_DRAFT.GetTargetState.GetName]"
  war_goal_mbga_demand_provinces_desc: "Le pays [WAR_GOAL_DRAFT.GetHolder.GetName] exige de [WAR_GOAL_DRAFT.GetTarget.GetName] certaines provinces de l'État de [WAR_GOAL_DRAFT.GetTargetState.GetName]"
 
- MBGA_TAKEN_MARK: "@green_checkmark_box!"
  MBGA_ROW_CITY: "[Country.MakeScope.Var('mbga_active_state').GetState.GetCityHubName]"
  MBGA_ROW_PORT: "[Country.MakeScope.Var('mbga_active_state').GetState.GetPortHubName]"
  MBGA_ROW_FARM: "[Country.MakeScope.Var('mbga_active_state').GetState.GetFarmHubName]"
@@ -103,4 +102,9 @@
 
  MBGA_BAR_TAKEN: "Prises #v [Country.MakeScope.Var('mbga_taken_count').GetValue|0]#! sur #v [Country.MakeScope.Var('mbga_candidate_count').GetValue|0]#!"
  MBGA_BAR_DONE: "Terminé"
+ MBGA_BAR_TITLE: "[Country.MakeScope.Var('mbga_active_state').GetState.GetName]"
+ MBGA_BAR_TITLE_TOOLTIP: "#header Tracer la frontière#!\n\nChaque province de l'État, une par ligne, sur une image de son propre terrain.\n\n#v Une lueur dorée#! signale une terre de qualité. Elle compte cinq fois plus qu'une province ordinaire dans la part de la région détenue par cet État, et c'est de cette part que découlent ses terres arables et ses gisements.\n\n#v Une lueur rouge#! signale un terrain infranchissable.\n\nLe repère à côté de la ligne indique ce qu'on peut en faire : prise, hors de portée, ou libre."
+ MBGA_BAR_LIST: "[SelectLocalization(GetScriptedGui('mbga_province_list_shown').IsShown(GuiScope.SetRoot(GetPlayer.MakeScope).End), 'MBGA_BAR_LIST_HIDE', 'MBGA_BAR_LIST_SHOW')]"
+ MBGA_BAR_LIST_SHOW: "Liste des provinces"
+ MBGA_BAR_LIST_HIDE: "Masquer les provinces"
  MBGA_ALREADY_OPEN: "Un État est déjà ouvert. Finissez-en d'abord avec lui."

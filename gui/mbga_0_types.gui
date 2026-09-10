@@ -1,0 +1,218 @@
+﻿# One province, drawn the same way wherever it is listed: in the settlement window and in the
+# debug panel. Nothing here is a base game file, and the name sorts first so the type is
+# defined before either panel asks for it.
+
+# A glow that breathes rather than sitting still. The base game animates this way itself, in
+# look_at_me_animation: two states pointing at each other, each fading into the next. This one
+# never fades to nothing, since it marks something that is true whether or not the eye is on it.
+template mbga_glow_pulse
+{
+	state = {
+		trigger_on_create = yes
+		name = 1
+		next = 2
+		alpha = 0.15
+		duration = 1.6
+		using = Animation_Curve_Default
+	}
+	state = {
+		name = 2
+		next = 1
+		alpha = 0.45
+		duration = 1.6
+		using = Animation_Curve_Default
+	}
+}
+
+types mbga_types
+{
+	# The ground the province stands on is the background: the engine hands out the picture
+	# for its terrain, so this works on any map, including one this mod has never seen. It is
+	# a wide photograph and a row is a narrow strip, so it is cropped to the middle rather
+	# than squeezed into shape.
+	#
+	# The hub icon is only there for a hub, and a hidden widget takes no room in an hbox, so
+	# the name slides left on its own when there is none.
+	#
+	# Needs ScriptContainer as its datacontext.
+	type mbga_province_row = button {
+		size = { 100% 34 }
+		using = clickthrough_blocker
+		alwaystransparent = no
+		enabled = "[Not(GetScriptedGui('mbga_container_blocked').IsShown(GuiScope.SetRoot(ScriptContainer.MakeScope).End))]"
+		visible = "[Not(GetScriptedGui('mbga_container_own_from_start').IsShown(GuiScope.SetRoot(ScriptContainer.MakeScope).End))]"
+		onclick = "[GetScriptedGui('mbga_take_container').Execute(GuiScope.SetRoot(ScriptContainer.MakeScope).AddScope('actor', GetPlayer.MakeScope).End)]"
+
+		background = {
+			texture = "[ScriptContainer.MakeScope.Var('mbga_province').GetProvince.GetBestTexture]"
+			fittype = centercrop
+		}
+
+		# The picture is a photograph and the name has to be read over it.
+		icon = {
+			size = { 100% 100% }
+			texture = "gfx/interface/backgrounds/white.dds"
+			color = { 0 0 0 0.62 }
+			alwaystransparent = yes
+		}
+
+		# Prime land is worth five ordinary provinces to the state's share of the region, and
+		# ground nobody can march through is worth nothing at all. Both wear a glow rather than
+		# a line: the base game lights its own buttons with this texture, and a hard border on
+		# a photograph reads as a mistake.
+		icon = {
+			size = { 100% 100% }
+			texture = "gfx/interface/buttons/glow_button_border.dds"
+			spriteType = CorneredStretched
+			spriteborder = { 60 60 }
+			framesize = { 150 150 }
+			frame = 2
+			using = mbga_glow_pulse
+			color = { 1 0.78 0.3 1 }
+			alwaystransparent = yes
+			visible = "[GetScriptedGui('mbga_container_is_prime').IsShown(GuiScope.SetRoot(ScriptContainer.MakeScope).End)]"
+		}
+		icon = {
+			size = { 100% 100% }
+			texture = "gfx/interface/buttons/glow_button_border.dds"
+			spriteType = CorneredStretched
+			spriteborder = { 60 60 }
+			framesize = { 150 150 }
+			frame = 2
+			using = mbga_glow_pulse
+			color = { 1 0.28 0.22 1 }
+			alwaystransparent = yes
+			visible = "[GetScriptedGui('mbga_container_is_impassable').IsShown(GuiScope.SetRoot(ScriptContainer.MakeScope).End)]"
+		}
+		# Transparent throughout: the row is the button, and nothing inside it may take the
+		# click away from it.
+		hbox = {
+			size = { 100% 100% }
+			margin = { 8 0 }
+			spacing = 6
+			alwaystransparent = yes
+
+			icon = {
+				size = { 24 24 }
+				texture = "gfx/interface/icons/building_icons/urban_center.dds"
+				visible = "[GetScriptedGui('mbga_container_is_city').IsShown(GuiScope.SetRoot(ScriptContainer.MakeScope).End)]"
+				alwaystransparent = yes
+			}
+			icon = {
+				size = { 24 24 }
+				texture = "gfx/interface/icons/building_icons/building_port.dds"
+				visible = "[GetScriptedGui('mbga_container_is_port').IsShown(GuiScope.SetRoot(ScriptContainer.MakeScope).End)]"
+				alwaystransparent = yes
+			}
+			icon = {
+				size = { 24 24 }
+				texture = "gfx/interface/icons/building_icons/wheat_farm.dds"
+				visible = "[GetScriptedGui('mbga_container_is_farm').IsShown(GuiScope.SetRoot(ScriptContainer.MakeScope).End)]"
+				alwaystransparent = yes
+			}
+			icon = {
+				size = { 24 24 }
+				texture = "gfx/interface/icons/building_icons/coal_mine.dds"
+				visible = "[GetScriptedGui('mbga_container_is_mine').IsShown(GuiScope.SetRoot(ScriptContainer.MakeScope).End)]"
+				alwaystransparent = yes
+			}
+			icon = {
+				size = { 24 24 }
+				texture = "gfx/interface/icons/building_icons/logging_camp.dds"
+				visible = "[GetScriptedGui('mbga_container_is_wood').IsShown(GuiScope.SetRoot(ScriptContainer.MakeScope).End)]"
+				alwaystransparent = yes
+			}
+
+			# One of these is the name: a hub is called what the state calls it, and everything
+			# else is called after the ground it is made of.
+			textbox = {
+				layoutpolicy_horizontal = expanding
+				size = { 0 34 }
+				align = nobaseline
+				elide = right
+				text = "MBGA_ROW_CITY"
+				visible = "[GetScriptedGui('mbga_container_is_city').IsShown(GuiScope.SetRoot(ScriptContainer.MakeScope).End)]"
+				alwaystransparent = yes
+			}
+			textbox = {
+				layoutpolicy_horizontal = expanding
+				size = { 0 34 }
+				align = nobaseline
+				elide = right
+				text = "MBGA_ROW_PORT"
+				visible = "[GetScriptedGui('mbga_container_is_port').IsShown(GuiScope.SetRoot(ScriptContainer.MakeScope).End)]"
+				alwaystransparent = yes
+			}
+			textbox = {
+				layoutpolicy_horizontal = expanding
+				size = { 0 34 }
+				align = nobaseline
+				elide = right
+				text = "MBGA_ROW_FARM"
+				visible = "[GetScriptedGui('mbga_container_is_farm').IsShown(GuiScope.SetRoot(ScriptContainer.MakeScope).End)]"
+				alwaystransparent = yes
+			}
+			textbox = {
+				layoutpolicy_horizontal = expanding
+				size = { 0 34 }
+				align = nobaseline
+				elide = right
+				text = "MBGA_ROW_MINE"
+				visible = "[GetScriptedGui('mbga_container_is_mine').IsShown(GuiScope.SetRoot(ScriptContainer.MakeScope).End)]"
+				alwaystransparent = yes
+			}
+			textbox = {
+				layoutpolicy_horizontal = expanding
+				size = { 0 34 }
+				align = nobaseline
+				elide = right
+				text = "MBGA_ROW_WOOD"
+				visible = "[GetScriptedGui('mbga_container_is_wood').IsShown(GuiScope.SetRoot(ScriptContainer.MakeScope).End)]"
+				alwaystransparent = yes
+			}
+			textbox = {
+				layoutpolicy_horizontal = expanding
+				size = { 0 34 }
+				align = nobaseline
+				elide = right
+				text = "MBGA_ROW_PLAIN"
+				visible = "[GetScriptedGui('mbga_container_is_plain').IsShown(GuiScope.SetRoot(ScriptContainer.MakeScope).End)]"
+				alwaystransparent = yes
+			}
+		}
+	}
+
+	# What can be done with the province, beside the row rather than on it: the row is the
+	# ground, this is its state. A plate of its own, so it reads as a column down the list.
+	#
+	# Needs ScriptContainer as its datacontext.
+	type mbga_province_mark = widget {
+		size = { 34 34 }
+		alwaystransparent = yes
+		visible = "[Not(GetScriptedGui('mbga_container_own_from_start').IsShown(GuiScope.SetRoot(ScriptContainer.MakeScope).End))]"
+
+		background = { using = entry_bg }
+
+		textbox = {
+			size = { 100% 100% }
+			align = center|nobaseline
+			text = "MBGA_MAP_TAKEN"
+			visible = "[GetScriptedGui('mbga_container_taken').IsShown(GuiScope.SetRoot(ScriptContainer.MakeScope).End)]"
+			alwaystransparent = yes
+		}
+		textbox = {
+			size = { 100% 100% }
+			align = center|nobaseline
+			text = "MBGA_MAP_BLOCKED"
+			visible = "[GetScriptedGui('mbga_container_blocked').IsShown(GuiScope.SetRoot(ScriptContainer.MakeScope).End)]"
+			alwaystransparent = yes
+		}
+		textbox = {
+			size = { 100% 100% }
+			align = center|nobaseline
+			text = "MBGA_MAP_FREE"
+			visible = "[And( Not(GetScriptedGui('mbga_container_taken').IsShown(GuiScope.SetRoot(ScriptContainer.MakeScope).End)), Not(GetScriptedGui('mbga_container_blocked').IsShown(GuiScope.SetRoot(ScriptContainer.MakeScope).End)) )]"
+			alwaystransparent = yes
+		}
+	}
+}

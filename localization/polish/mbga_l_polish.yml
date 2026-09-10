@@ -14,7 +14,6 @@
  war_goal_mbga_demand_provinces: "Żądanie prowincji w obszarze administracyjnym [WAR_GOAL_DRAFT.GetTargetState.GetCountry.GetFlagTextIcon] [WAR_GOAL_DRAFT.GetTargetState.GetName]"
  war_goal_mbga_demand_provinces_desc: "Kraj [WAR_GOAL_DRAFT.GetHolder.GetName] żąda pojedynczych prowincji obszaru administracyjnego [WAR_GOAL_DRAFT.GetTargetState.GetName], należącego do kraju [WAR_GOAL_DRAFT.GetTarget.GetName]"
 
- MBGA_TAKEN_MARK: "@green_checkmark_box!"
  MBGA_ROW_CITY: "[Country.MakeScope.Var('mbga_active_state').GetState.GetCityHubName]"
  MBGA_ROW_PORT: "[Country.MakeScope.Var('mbga_active_state').GetState.GetPortHubName]"
  MBGA_ROW_FARM: "[Country.MakeScope.Var('mbga_active_state').GetState.GetFarmHubName]"
@@ -103,4 +102,9 @@
 
  MBGA_BAR_TAKEN: "Wzięto #v [Country.MakeScope.Var('mbga_taken_count').GetValue|0]#! z #v [Country.MakeScope.Var('mbga_candidate_count').GetValue|0]#!"
  MBGA_BAR_DONE: "Gotowe"
+ MBGA_BAR_TITLE: "[Country.MakeScope.Var('mbga_active_state').GetState.GetName]"
+ MBGA_BAR_TITLE_TOOLTIP: "#header Wytyczanie granicy#!\n\nKażda prowincja stanu, po jednej w wierszu, na zdjęciu własnego terenu.\n\n#v Złota poświata#! oznacza prime land. Liczy się pięć razy bardziej niż zwykła prowincja przy udziale stanu w regionie, a z tego udziału wynikają jego ziemia uprawna i limity surowców.\n\n#v Czerwona poświata#! oznacza teren, przez który nie da się przejść.\n\nZnacznik obok wiersza mówi, co można z nią zrobić: wzięta, poza zasięgiem albo wolna."
+ MBGA_BAR_LIST: "[SelectLocalization(GetScriptedGui('mbga_province_list_shown').IsShown(GuiScope.SetRoot(GetPlayer.MakeScope).End), 'MBGA_BAR_LIST_HIDE', 'MBGA_BAR_LIST_SHOW')]"
+ MBGA_BAR_LIST_SHOW: "Lista prowincji"
+ MBGA_BAR_LIST_HIDE: "Ukryj prowincje"
  MBGA_ALREADY_OPEN: "Jeden obszar jest już otwarty. Trzeba najpierw z nim skończyć."

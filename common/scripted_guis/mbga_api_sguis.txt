@@ -70,6 +70,29 @@ mbga_stats_shown = {
 	effect = {}
 }
 
+# Roll the list of provinces out of the bottom of the settlement window, or back in.
+mbga_toggle_province_list = {
+	scope = country
+	is_shown = { always = yes }
+	is_valid = { always = yes }
+	effect = {
+		if = {
+			limit = { has_variable = mbga_list_shown }
+			remove_variable = mbga_list_shown
+		}
+		else = {
+			set_variable = mbga_list_shown
+		}
+	}
+}
+
+mbga_province_list_shown = {
+	scope = country
+	is_shown = { has_variable = mbga_list_shown }
+	is_valid = { always = yes }
+	effect = {}
+}
+
 # The iterator bench has been run at least once, so its readout may show.
 mbga_test_has_run = {
 	scope = country

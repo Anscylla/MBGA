@@ -123,6 +123,26 @@ mbga_container_is_plain = {
 	effect = {}
 }
 
+# Prime land counts five times an ordinary province towards the state's share of its region,
+# and that share is what its arable land and resource caps are worked out from. Marked from
+# the lookup table, so on a map without one no province answers to this and nothing is drawn.
+mbga_container_is_prime = {
+	scope = container
+	is_shown = { has_variable = mbga_prime }
+	is_valid = { always = yes }
+	effect = {}
+}
+
+# Ground nobody can march through. Marked from the same table as prime land, and told apart
+# from the rest of what is out of reach because it is out of reach for a different reason: no
+# border will ever run to it, whereas an ordinary province only waits its turn.
+mbga_container_is_impassable = {
+	scope = container
+	is_shown = { has_variable = mbga_impassable }
+	is_valid = { always = yes }
+	effect = {}
+}
+
 # A candidate the current filter will not let go of. Shown rather than hidden, so the
 # player can see the shape of what is out of reach.
 # Out of reach, and not already in hand. Ground nobody can march through loses mbga_takeable

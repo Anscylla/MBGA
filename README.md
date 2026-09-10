@@ -123,6 +123,15 @@ provinces are neighbours when their colours meet along a pixel edge, and from
 nowhere on the map at all. That is the **lookup table**: 230 000 entries covering the base
 game's map.
 
+Two things the table carries besides neighbours, because the engine will not answer
+either of them at runtime and both are written in `map_data/state_regions`: which
+provinces cannot be marched through, and which are **prime land**. Prime land counts
+five times an ordinary province towards a state's share of its region, and that share
+is what its arable land and resource caps are worked out from, so it is worth telling
+apart before a border is drawn through it. Both are marks only: they change what the
+interface draws, never what may be taken, so they are read under either rule - the
+unfiltered one builds no neighbour graph, but it still reads the table for these.
+
 The table is *checked, not trusted*. When a state opens, the mod fills the neighbours from the
 table and counts how many containers ended up with any. A table made for this map fills them;
 one made for a different map names provinces that are elsewhere or nowhere and fills nothing.
@@ -342,13 +351,16 @@ Afterwards the global list `mbga_candidates` holds one container per province of
 | `mbga_province` | The province it wraps. |
 | `mbga_owner` | Who held it when the state was opened, so it can be handed back. |
 | `mbga_hub` | 1 city, 2 port, 3 farm, 4 mine, 5 wood, absent otherwise. |
+| `mbga_prime` | Prime land: it counts five times an ordinary province towards the state's share of its region, so it carries most of the arable land and the resource caps that go with the ground. From the lookup table, absent without one. |
+| `mbga_impassable` | Nobody can march through it. From the lookup table as well. |
 | `mbga_taken` | Taken during this session. |
 | `mbga_takeable` | May be taken right now. |
 | `mbga_own_from_start` | Already ours before the state was opened. |
 
 Scripted GUIs answering the same, for an interface that cannot read variables directly:
 `mbga_container_taken`, `mbga_container_blocked`, `mbga_container_own_from_start`,
-`mbga_container_is_city` / `_port` / `_farm` / `_mine` / `_wood` / `_plain`.
+`mbga_container_is_city` / `_port` / `_farm` / `_mine` / `_wood` / `_plain`,
+`mbga_container_is_prime`, `mbga_container_is_impassable`.
 
 ### Taking one
 

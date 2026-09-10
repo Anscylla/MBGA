@@ -43,6 +43,9 @@ mbga_open_for_state_effect = {
 			limit = { NOT = { has_variable = mbga_unfiltered } }
 			mbga_build_adjacency_graph = yes
 		}
+		else = {
+			mbga_apply_marks_from_table = yes
+		}
 		mbga_recompute_takeable = yes
 		mbga_show_settlement_price = yes
 	}

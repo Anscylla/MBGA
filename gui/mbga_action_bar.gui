@@ -1,8 +1,13 @@
-# The whole interface of the province tool: what has been taken, what it costs, and a button
-# to stop. Everything else happens on the map.
+﻿# The whole interface of the province tool: what has been taken, what it costs, a button to
+# stop, and the state's provinces one by one. Everything else happens on the map.
 #
 # Two framed rows rather than one line of text, because this window is the only thing standing
 # between the player and a border they cannot undo once the tool is put down.
+#
+# The list rolls out below the window rather than inside it. A window clips what does not fit
+# its size, and its size is fixed: it cannot be told to grow from script. So the list is a
+# child drawn outside the frame, which keeps it part of the window - it moves when the window
+# is dragged - and lets it come and go without leaving a hole.
 
 widget = {
 	name = "mbga_action_bar"
@@ -21,7 +26,7 @@ widget = {
 		movable = yes
 		using = clickthrough_blocker
 
-		size = { 380 150 }
+		size = { 380 226 }
 		parentanchor = top|hcenter
 		position = { 0 90 }
 		# Shown whenever a state is actually open, and on nothing else. The game rule decides
@@ -30,6 +35,14 @@ widget = {
 		# tool with the rule off, and without this the window that closes it never appears.
 		visible = "[GetScriptedGui('mbga_has_target_country').IsShown(GuiScope.SetRoot(GetPlayer.MakeScope).End)]"
 
+		# The window stands over the map, and the map is busy. The base game's own plate is
+		# laid twice rather than a plate of my own: the second pass is what makes it solid,
+		# and the colour stays the colour every other panel is.
+		icon = {
+			texture = "gfx/interface/backgrounds/entry_bg_simple_solid.dds"
+			size = { 100% 100% }
+			alwaystransparent = yes
+		}
 		icon = {
 			texture = "gfx/interface/backgrounds/entry_bg_simple_solid.dds"
 			size = { 100% 100% }
@@ -37,68 +50,143 @@ widget = {
 		}
 		background = { using = entry_bg_simple }
 
-		# How much of the state is in hand.
+		# The base game's own title bar: its plate, its corner pieces, its title font. Drawn
+		# after the plates above, since a background is drawn behind a widget's children and
+		# would be covered by them.
+		default_header = {
+			size = { 380 44 }
+			tooltip = "MBGA_BAR_TITLE_TOOLTIP"
+
+			blockoverride "text" {
+				text = "MBGA_BAR_TITLE"
+			}
+		}
+
+		flowcontainer = {
+			direction = vertical
+			position = { 12 52 }
+			spacing = 8
+
+			# How much of the state is in hand.
+			widget = {
+				size = { 356 40 }
+				alwaystransparent = yes
+
+				background = { using = entry_bg }
+
+				textbox = {
+					text = "MBGA_BAR_TAKEN"
+					default_format = "#header"
+					size = { 336 40 }
+					position = { 10 0 }
+					align = center|nobaseline
+					alwaystransparent = yes
+				}
+			}
+
+			# What it will cost. The diplomatic route charges nothing and says so, rather than
+			# leaving the row out and making the window two different shapes.
+			widget = {
+				size = { 356 40 }
+				alwaystransparent = yes
+
+				background = { using = entry_bg }
+
+				textbox = {
+					text = "MBGA_SETTLE_INFAMY"
+					size = { 336 40 }
+					position = { 10 0 }
+					align = center|nobaseline
+					alwaystransparent = yes
+					visible = "[GetScriptedGui('mbga_is_settling').IsShown(GuiScope.SetRoot(GetPlayer.MakeScope).End)]"
+				}
+
+				textbox = {
+					text = "MBGA_SETTLE_FREE"
+					size = { 336 40 }
+					position = { 10 0 }
+					align = center|nobaseline
+					alwaystransparent = yes
+					visible = "[Not( GetScriptedGui('mbga_is_settling').IsShown(GuiScope.SetRoot(GetPlayer.MakeScope).End) )]"
+				}
+			}
+
+			flowcontainer = {
+				direction = horizontal
+				spacing = 12
+
+				button = {
+					text = "MBGA_BAR_DONE"
+					using = default_button
+					size = { 172 32 }
+					onclick = "[GetScriptedGui('mbga_close_tool').Execute(GuiScope.SetRoot(GetPlayer.MakeScope).End)]"
+				}
+
+				# The camera cannot be sent to a province, so this is as close as the interface
+				# gets.
+				button = {
+					text = "MBGA_GOTO_STATE"
+					using = default_button
+					size = { 172 32 }
+					datacontext = "[GetPlayer.MakeScope.Var('mbga_active_state').GetState]"
+					onclick = "[State.ZoomExtraCloseToCapital]"
+				}
+			}
+
+			button = {
+				text = "MBGA_BAR_LIST"
+				using = default_button
+				size = { 356 26 }
+				onclick = "[GetScriptedGui('mbga_toggle_province_list').Execute(GuiScope.SetRoot(GetPlayer.MakeScope).End)]"
+			}
+		}
+
+		# Below the frame, and carrying its own, so the two read as one window.
 		widget = {
-			size = { 356 40 }
-			position = { 12 12 }
-			alwaystransparent = yes
+			position = { 0 226 }
+			size = { 380 236 }
+			allow_outside = yes
+			visible = "[GetScriptedGui('mbga_province_list_shown').IsShown(GuiScope.SetRoot(GetPlayer.MakeScope).End)]"
 
-			background = { using = entry_bg }
-
-			textbox = {
-				text = "MBGA_BAR_TAKEN"
-				default_format = "#header"
-				size = { 336 40 }
-				position = { 10 0 }
-				align = center|nobaseline
+			icon = {
+				texture = "gfx/interface/backgrounds/entry_bg_simple_solid.dds"
+				size = { 100% 100% }
 				alwaystransparent = yes
 			}
-		}
-
-		# What it will cost. The diplomatic route charges nothing and says so, rather than
-		# leaving the row out and making the window two different shapes.
-		widget = {
-			size = { 356 40 }
-			position = { 12 58 }
-			alwaystransparent = yes
-
-			background = { using = entry_bg }
-
-			textbox = {
-				text = "MBGA_SETTLE_INFAMY"
-				size = { 336 40 }
-				position = { 10 0 }
-				align = center|nobaseline
+			icon = {
+				texture = "gfx/interface/backgrounds/entry_bg_simple_solid.dds"
+				size = { 100% 100% }
 				alwaystransparent = yes
-				visible = "[GetScriptedGui('mbga_is_settling').IsShown(GuiScope.SetRoot(GetPlayer.MakeScope).End)]"
 			}
+			background = { using = entry_bg_simple }
 
-			textbox = {
-				text = "MBGA_SETTLE_FREE"
-				size = { 336 40 }
-				position = { 10 0 }
-				align = center|nobaseline
-				alwaystransparent = yes
-				visible = "[Not( GetScriptedGui('mbga_is_settling').IsShown(GuiScope.SetRoot(GetPlayer.MakeScope).End) )]"
+			# Even margins all round: the scrollbar sits inside the scroll area, so the rows
+			# have to stop short of its right edge rather than run up to it.
+			scrollarea = {
+				position = { 12 10 }
+				size = { 356 216 }
+				scrollbarpolicy_horizontal = always_off
+
+				scrollbar_vertical = { using = vertical_scrollbar }
+
+				scrollwidget = {
+					vbox = {
+						spacing = 5
+						parentanchor = top|left
+						datamodel = "[GetGlobalList('mbga_candidates')]"
+
+						item = {
+							hbox = {
+								datacontext = "[Scope.GetScriptContainer]"
+								spacing = 4
+
+								mbga_province_row = { size = { 292 34 } }
+								mbga_province_mark = {}
+							}
+						}
+					}
+				}
 			}
-		}
-
-		button = {
-			text = "MBGA_BAR_DONE"
-			using = default_button
-			size = { 172 32 }
-			position = { 12 106 }
-			onclick = "[GetScriptedGui('mbga_close_tool').Execute(GuiScope.SetRoot(GetPlayer.MakeScope).End)]"
-		}
-
-		# The camera cannot be sent to a province, so this is as close as the interface gets.
-		button = {
-			text = "MBGA_GOTO_STATE"
-			using = default_button
-			size = { 172 32 }
-			position = { 196 106 }
-			datacontext = "[GetPlayer.MakeScope.Var('mbga_active_state').GetState]"
-			onclick = "[State.ZoomExtraCloseToCapital]"
 		}
 	}
 }

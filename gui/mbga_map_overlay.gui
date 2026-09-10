@@ -31,6 +31,36 @@ widget = {
 				visible = "[Not(GetScriptedGui('mbga_container_own_from_start').IsShown(GuiScope.SetRoot(ScriptContainer.MakeScope).End))]"
 				onclick = "[GetScriptedGui('mbga_take_container').Execute(GuiScope.SetRoot(ScriptContainer.MakeScope).AddScope('actor', GetPlayer.MakeScope).End)]"
 
+				# The two frames the list uses as well: prime land, and ground nobody can march
+				# through. Both are marked from the lookup table, so on a map without one
+				# neither is ever drawn.
+				icon = {
+					parentanchor = center
+					size = { 40 40 }
+					texture = "gfx/interface/buttons/glow_button_border.dds"
+					spriteType = CorneredStretched
+					spriteborder = { 60 60 }
+					framesize = { 150 150 }
+					frame = 2
+					using = mbga_glow_pulse
+					color = { 1 0.78 0.3 1 }
+					alwaystransparent = yes
+					visible = "[GetScriptedGui('mbga_container_is_prime').IsShown(GuiScope.SetRoot(ScriptContainer.MakeScope).End)]"
+				}
+				icon = {
+					parentanchor = center
+					size = { 40 40 }
+					texture = "gfx/interface/buttons/glow_button_border.dds"
+					spriteType = CorneredStretched
+					spriteborder = { 60 60 }
+					framesize = { 150 150 }
+					frame = 2
+					using = mbga_glow_pulse
+					color = { 1 0.28 0.22 1 }
+					alwaystransparent = yes
+					visible = "[GetScriptedGui('mbga_container_is_impassable').IsShown(GuiScope.SetRoot(ScriptContainer.MakeScope).End)]"
+				}
+
 				textbox = {
 					parentanchor = center
 					size = { 36 36 }

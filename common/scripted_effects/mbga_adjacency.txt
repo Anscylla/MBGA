@@ -91,16 +91,41 @@ mbga_apply_adjacency_table = {
 		if = {
 			limit = { var:mbga_adj_score >= var:mbga_adj_wanted }
 			mbga_mark_region_mapped = yes
+			mbga_rank_prime_land = yes
 			debug_log = "MBGA|table|neighbours came from the lookup table, no province was lent out"
 		}
 		else = {
+			# The marks came from the same table as the neighbours, so they describe the map
+			# it turned out not to be, and they go the same way.
 			every_in_global_list = {
 				variable = mbga_candidates
 				clear_variable_list = mbga_adj
+				remove_variable = mbga_impassable
+				remove_variable = mbga_prime
 			}
 			remove_variable = mbga_adj_from_table
 			debug_log = "MBGA|table|the lookup table is for a different map, asking the engine instead"
 		}
+	}
+}
+
+# Country scope. The marks alone, for the rule that takes the whole state at once.
+#
+# Under that rule no neighbour graph is built, since nothing needs to reach anything - but
+# prime land and impassable ground say what the ground is worth and are worth knowing wherever
+# the border is drawn. The lookup table is the only place either is written down, and reading
+# it is a pass over the region with no province lent out, so the marks cost nothing. The
+# neighbour lists it fills alongside them are simply never asked for.
+#
+# With no table, or one made for another map, the same check as ever throws everything away
+# and nothing is marked.
+mbga_apply_marks_from_table = {
+	if = {
+		limit = {
+			has_variable = mbga_region_is_new
+			NOT = { has_variable = mbga_adj_known }
+		}
+		mbga_apply_adjacency_table = yes
 	}
 }
 

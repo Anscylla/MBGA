@@ -14,7 +14,6 @@
  war_goal_mbga_demand_provinces: "Exigir provincias en el estado de [WAR_GOAL_DRAFT.GetTargetState.GetCountry.GetFlagTextIcon] [WAR_GOAL_DRAFT.GetTargetState.GetName]"
  war_goal_mbga_demand_provinces_desc: "El país [WAR_GOAL_DRAFT.GetHolder.GetName] exige a [WAR_GOAL_DRAFT.GetTarget.GetName] provincias concretas del estado de [WAR_GOAL_DRAFT.GetTargetState.GetName]"
 
- MBGA_TAKEN_MARK: "@green_checkmark_box!"
  MBGA_ROW_CITY: "[Country.MakeScope.Var('mbga_active_state').GetState.GetCityHubName]"
  MBGA_ROW_PORT: "[Country.MakeScope.Var('mbga_active_state').GetState.GetPortHubName]"
  MBGA_ROW_FARM: "[Country.MakeScope.Var('mbga_active_state').GetState.GetFarmHubName]"
@@ -103,4 +102,9 @@
 
  MBGA_BAR_TAKEN: "Tomadas #v [Country.MakeScope.Var('mbga_taken_count').GetValue|0]#! de #v [Country.MakeScope.Var('mbga_candidate_count').GetValue|0]#!"
  MBGA_BAR_DONE: "Listo"
+ MBGA_BAR_TITLE: "[Country.MakeScope.Var('mbga_active_state').GetState.GetName]"
+ MBGA_BAR_TITLE_TOOLTIP: "#header Trazar la frontera#!\n\nCada provincia del estado, una por fila, sobre una imagen de su propio terreno.\n\n#v Un brillo dorado#! señala tierra de primera. Cuenta cinco veces más que una provincia corriente para la parte de la región que posee este estado, y de esa parte salen su tierra cultivable y sus límites de recursos.\n\n#v Un brillo rojo#! señala terreno intransitable.\n\nLa marca junto a la fila dice qué se puede hacer con ella: tomada, fuera de alcance o libre."
+ MBGA_BAR_LIST: "[SelectLocalization(GetScriptedGui('mbga_province_list_shown').IsShown(GuiScope.SetRoot(GetPlayer.MakeScope).End), 'MBGA_BAR_LIST_HIDE', 'MBGA_BAR_LIST_SHOW')]"
+ MBGA_BAR_LIST_SHOW: "Lista de provincias"
+ MBGA_BAR_LIST_HIDE: "Ocultar provincias"
  MBGA_ALREADY_OPEN: "Ya hay un estado abierto. Hay que terminar antes con él."

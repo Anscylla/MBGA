@@ -3019,6 +3019,7 @@ mbga_adj_STATE_AMHARA = {
 	if = {
 		limit = { exists = "variable_map(mbga_container_of|p:xC4CB68)" }
 		"variable_map(mbga_container_of|p:xC4CB68)" = {
+			set_variable = mbga_prime
 			add_to_variable_list = { name = mbga_adj target = p:x1F0F14 }
 			add_to_variable_list = { name = mbga_adj target = p:x573362 }
 			add_to_variable_list = { name = mbga_adj target = p:x69B4E9 }
@@ -4205,6 +4206,7 @@ mbga_adj_STATE_BRUNSWICK = {
 	if = {
 		limit = { exists = "variable_map(mbga_container_of|p:x2180E0)" }
 		"variable_map(mbga_container_of|p:x2180E0)" = {
+			set_variable = mbga_prime
 			add_to_variable_list = { name = mbga_adj target = p:x165E05 }
 			add_to_variable_list = { name = mbga_adj target = p:x218061 }
 			add_to_variable_list = { name = mbga_adj target = p:x694B91 }
@@ -4249,6 +4251,7 @@ mbga_adj_STATE_BRUNSWICK = {
 	if = {
 		limit = { exists = "variable_map(mbga_container_of|p:xA61E6E)" }
 		"variable_map(mbga_container_of|p:xA61E6E)" = {
+			set_variable = mbga_prime
 			add_to_variable_list = { name = mbga_adj target = p:x12694A }
 			add_to_variable_list = { name = mbga_adj target = p:x2180E0 }
 			add_to_variable_list = { name = mbga_adj target = p:x43D537 }
@@ -4746,6 +4749,7 @@ mbga_adj_STATE_CENTRAL_PROVINCES = {
 	if = {
 		limit = { exists = "variable_map(mbga_container_of|p:x015F11)" }
 		"variable_map(mbga_container_of|p:x015F11)" = {
+			set_variable = mbga_prime
 			add_to_variable_list = { name = mbga_adj target = p:x96CDBD }
 			add_to_variable_list = { name = mbga_adj target = p:xA06520 }
 			add_to_variable_list = { name = mbga_adj target = p:xA939B9 }
@@ -4756,6 +4760,7 @@ mbga_adj_STATE_CENTRAL_PROVINCES = {
 	if = {
 		limit = { exists = "variable_map(mbga_container_of|p:x03614F)" }
 		"variable_map(mbga_container_of|p:x03614F)" = {
+			set_variable = mbga_prime
 			add_to_variable_list = { name = mbga_adj target = p:x6B578E }
 			add_to_variable_list = { name = mbga_adj target = p:x6C4C5A }
 			add_to_variable_list = { name = mbga_adj target = p:xE167A8 }
@@ -4898,6 +4903,7 @@ mbga_adj_STATE_CENTRAL_PROVINCES = {
 	if = {
 		limit = { exists = "variable_map(mbga_container_of|p:x4B7422)" }
 		"variable_map(mbga_container_of|p:x4B7422)" = {
+			set_variable = mbga_prime
 			add_to_variable_list = { name = mbga_adj target = p:x013159 }
 			add_to_variable_list = { name = mbga_adj target = p:x9B0E9E }
 			add_to_variable_list = { name = mbga_adj target = p:x9C673D }
@@ -4920,6 +4926,7 @@ mbga_adj_STATE_CENTRAL_PROVINCES = {
 	if = {
 		limit = { exists = "variable_map(mbga_container_of|p:x53D2AE)" }
 		"variable_map(mbga_container_of|p:x53D2AE)" = {
+			set_variable = mbga_prime
 			add_to_variable_list = { name = mbga_adj target = p:x0E41BA }
 			add_to_variable_list = { name = mbga_adj target = p:x51B021 }
 			add_to_variable_list = { name = mbga_adj target = p:x9473DC }
@@ -5008,6 +5015,7 @@ mbga_adj_STATE_CENTRAL_PROVINCES = {
 	if = {
 		limit = { exists = "variable_map(mbga_container_of|p:x745647)" }
 		"variable_map(mbga_container_of|p:x745647)" = {
+			set_variable = mbga_prime
 			add_to_variable_list = { name = mbga_adj target = p:x1E32E0 }
 			add_to_variable_list = { name = mbga_adj target = p:x293762 }
 			add_to_variable_list = { name = mbga_adj target = p:x9257D2 }
@@ -5030,6 +5038,7 @@ mbga_adj_STATE_CENTRAL_PROVINCES = {
 	if = {
 		limit = { exists = "variable_map(mbga_container_of|p:x8B8B4D)" }
 		"variable_map(mbga_container_of|p:x8B8B4D)" = {
+			set_variable = mbga_prime
 			add_to_variable_list = { name = mbga_adj target = p:x51B021 }
 			add_to_variable_list = { name = mbga_adj target = p:x903020 }
 			add_to_variable_list = { name = mbga_adj target = p:x96CDBD }
@@ -5061,6 +5070,7 @@ mbga_adj_STATE_CENTRAL_PROVINCES = {
 	if = {
 		limit = { exists = "variable_map(mbga_container_of|p:x90F020)" }
 		"variable_map(mbga_container_of|p:x90F020)" = {
+			set_variable = mbga_prime
 			add_to_variable_list = { name = mbga_adj target = p:x1622F2 }
 			add_to_variable_list = { name = mbga_adj target = p:x274E94 }
 			add_to_variable_list = { name = mbga_adj target = p:x5031A0 }
@@ -5072,6 +5082,7 @@ mbga_adj_STATE_CENTRAL_PROVINCES = {
 	if = {
 		limit = { exists = "variable_map(mbga_container_of|p:x9473DC)" }
 		"variable_map(mbga_container_of|p:x9473DC)" = {
+			set_variable = mbga_prime
 			add_to_variable_list = { name = mbga_adj target = p:x013159 }
 			add_to_variable_list = { name = mbga_adj target = p:x274E94 }
 			add_to_variable_list = { name = mbga_adj target = p:x53D2AE }
@@ -5084,6 +5095,7 @@ mbga_adj_STATE_CENTRAL_PROVINCES = {
 	if = {
 		limit = { exists = "variable_map(mbga_container_of|p:x958AC3)" }
 		"variable_map(mbga_container_of|p:x958AC3)" = {
+			set_variable = mbga_prime
 			add_to_variable_list = { name = mbga_adj target = p:x9B0E9E }
 			add_to_variable_list = { name = mbga_adj target = p:xA939B9 }
 			add_to_variable_list = { name = mbga_adj target = p:xCC1F79 }
@@ -5093,6 +5105,7 @@ mbga_adj_STATE_CENTRAL_PROVINCES = {
 	if = {
 		limit = { exists = "variable_map(mbga_container_of|p:x96CDBD)" }
 		"variable_map(mbga_container_of|p:x96CDBD)" = {
+			set_variable = mbga_prime
 			add_to_variable_list = { name = mbga_adj target = p:x015F11 }
 			add_to_variable_list = { name = mbga_adj target = p:x8B8B4D }
 			add_to_variable_list = { name = mbga_adj target = p:x903020 }
@@ -5116,6 +5129,7 @@ mbga_adj_STATE_CENTRAL_PROVINCES = {
 	if = {
 		limit = { exists = "variable_map(mbga_container_of|p:x9B0E9E)" }
 		"variable_map(mbga_container_of|p:x9B0E9E)" = {
+			set_variable = mbga_prime
 			add_to_variable_list = { name = mbga_adj target = p:x4B7422 }
 			add_to_variable_list = { name = mbga_adj target = p:x958AC3 }
 			add_to_variable_list = { name = mbga_adj target = p:xCC1F79 }
@@ -5128,6 +5142,7 @@ mbga_adj_STATE_CENTRAL_PROVINCES = {
 	if = {
 		limit = { exists = "variable_map(mbga_container_of|p:x9C673D)" }
 		"variable_map(mbga_container_of|p:x9C673D)" = {
+			set_variable = mbga_prime
 			add_to_variable_list = { name = mbga_adj target = p:x013159 }
 			add_to_variable_list = { name = mbga_adj target = p:x4B7422 }
 			add_to_variable_list = { name = mbga_adj target = p:x66F24C }
@@ -5138,6 +5153,7 @@ mbga_adj_STATE_CENTRAL_PROVINCES = {
 	if = {
 		limit = { exists = "variable_map(mbga_container_of|p:x9CDEF7)" }
 		"variable_map(mbga_container_of|p:x9CDEF7)" = {
+			set_variable = mbga_prime
 			add_to_variable_list = { name = mbga_adj target = p:x6D9182 }
 			add_to_variable_list = { name = mbga_adj target = p:xA939B9 }
 			add_to_variable_list = { name = mbga_adj target = p:xCC1F79 }
@@ -5171,6 +5187,7 @@ mbga_adj_STATE_CENTRAL_PROVINCES = {
 	if = {
 		limit = { exists = "variable_map(mbga_container_of|p:xA11B88)" }
 		"variable_map(mbga_container_of|p:xA11B88)" = {
+			set_variable = mbga_prime
 			add_to_variable_list = { name = mbga_adj target = p:x013159 }
 			add_to_variable_list = { name = mbga_adj target = p:x4B7422 }
 			add_to_variable_list = { name = mbga_adj target = p:x9473DC }
@@ -5190,6 +5207,7 @@ mbga_adj_STATE_CENTRAL_PROVINCES = {
 	if = {
 		limit = { exists = "variable_map(mbga_container_of|p:xA939B9)" }
 		"variable_map(mbga_container_of|p:xA939B9)" = {
+			set_variable = mbga_prime
 			add_to_variable_list = { name = mbga_adj target = p:x015F11 }
 			add_to_variable_list = { name = mbga_adj target = p:x6D9182 }
 			add_to_variable_list = { name = mbga_adj target = p:x958AC3 }
@@ -5235,6 +5253,7 @@ mbga_adj_STATE_CENTRAL_PROVINCES = {
 	if = {
 		limit = { exists = "variable_map(mbga_container_of|p:xBDB272)" }
 		"variable_map(mbga_container_of|p:xBDB272)" = {
+			set_variable = mbga_prime
 			add_to_variable_list = { name = mbga_adj target = p:x274E94 }
 			add_to_variable_list = { name = mbga_adj target = p:x53D2AE }
 			add_to_variable_list = { name = mbga_adj target = p:x90F020 }
@@ -5246,6 +5265,7 @@ mbga_adj_STATE_CENTRAL_PROVINCES = {
 	if = {
 		limit = { exists = "variable_map(mbga_container_of|p:xBE1F55)" }
 		"variable_map(mbga_container_of|p:xBE1F55)" = {
+			set_variable = mbga_prime
 			add_to_variable_list = { name = mbga_adj target = p:x4B7422 }
 			add_to_variable_list = { name = mbga_adj target = p:x8B8B4D }
 			add_to_variable_list = { name = mbga_adj target = p:x9473DC }
@@ -5267,6 +5287,7 @@ mbga_adj_STATE_CENTRAL_PROVINCES = {
 	if = {
 		limit = { exists = "variable_map(mbga_container_of|p:xCC1F79)" }
 		"variable_map(mbga_container_of|p:xCC1F79)" = {
+			set_variable = mbga_prime
 			add_to_variable_list = { name = mbga_adj target = p:x293762 }
 			add_to_variable_list = { name = mbga_adj target = p:x745647 }
 			add_to_variable_list = { name = mbga_adj target = p:x958AC3 }
@@ -5280,6 +5301,7 @@ mbga_adj_STATE_CENTRAL_PROVINCES = {
 	if = {
 		limit = { exists = "variable_map(mbga_container_of|p:xD03120)" }
 		"variable_map(mbga_container_of|p:xD03120)" = {
+			set_variable = mbga_prime
 			add_to_variable_list = { name = mbga_adj target = p:x01F273 }
 			add_to_variable_list = { name = mbga_adj target = p:x2B94C1 }
 			add_to_variable_list = { name = mbga_adj target = p:x4B7422 }
@@ -5292,6 +5314,7 @@ mbga_adj_STATE_CENTRAL_PROVINCES = {
 	if = {
 		limit = { exists = "variable_map(mbga_container_of|p:xD42EF4)" }
 		"variable_map(mbga_container_of|p:xD42EF4)" = {
+			set_variable = mbga_prime
 			add_to_variable_list = { name = mbga_adj target = p:x745647 }
 			add_to_variable_list = { name = mbga_adj target = p:x9CDEF7 }
 			add_to_variable_list = { name = mbga_adj target = p:xCC1F79 }
@@ -5302,6 +5325,7 @@ mbga_adj_STATE_CENTRAL_PROVINCES = {
 	if = {
 		limit = { exists = "variable_map(mbga_container_of|p:xD51B8A)" }
 		"variable_map(mbga_container_of|p:xD51B8A)" = {
+			set_variable = mbga_prime
 			add_to_variable_list = { name = mbga_adj target = p:x015F11 }
 			add_to_variable_list = { name = mbga_adj target = p:x958AC3 }
 			add_to_variable_list = { name = mbga_adj target = p:x96CDBD }
@@ -5325,6 +5349,7 @@ mbga_adj_STATE_CENTRAL_PROVINCES = {
 	if = {
 		limit = { exists = "variable_map(mbga_container_of|p:xDA84A6)" }
 		"variable_map(mbga_container_of|p:xDA84A6)" = {
+			set_variable = mbga_prime
 			add_to_variable_list = { name = mbga_adj target = p:x10B021 }
 			add_to_variable_list = { name = mbga_adj target = p:x6D9182 }
 			add_to_variable_list = { name = mbga_adj target = p:x9CDEF7 }
@@ -5347,6 +5372,7 @@ mbga_adj_STATE_CENTRAL_PROVINCES = {
 	if = {
 		limit = { exists = "variable_map(mbga_container_of|p:xE167A8)" }
 		"variable_map(mbga_container_of|p:xE167A8)" = {
+			set_variable = mbga_prime
 			add_to_variable_list = { name = mbga_adj target = p:x03614F }
 			add_to_variable_list = { name = mbga_adj target = p:x10B021 }
 			add_to_variable_list = { name = mbga_adj target = p:xDA84A6 }
@@ -5369,6 +5395,7 @@ mbga_adj_STATE_CENTRAL_PROVINCES = {
 	if = {
 		limit = { exists = "variable_map(mbga_container_of|p:xE67BF6)" }
 		"variable_map(mbga_container_of|p:xE67BF6)" = {
+			set_variable = mbga_prime
 			add_to_variable_list = { name = mbga_adj target = p:x03614F }
 			add_to_variable_list = { name = mbga_adj target = p:x6B578E }
 			add_to_variable_list = { name = mbga_adj target = p:x745647 }
@@ -5413,6 +5440,7 @@ mbga_adj_STATE_CENTRAL_PROVINCES = {
 	if = {
 		limit = { exists = "variable_map(mbga_container_of|p:xF036D0)" }
 		"variable_map(mbga_container_of|p:xF036D0)" = {
+			set_variable = mbga_prime
 			add_to_variable_list = { name = mbga_adj target = p:x4B7422 }
 			add_to_variable_list = { name = mbga_adj target = p:x8B8B4D }
 			add_to_variable_list = { name = mbga_adj target = p:x96CDBD }
@@ -5435,6 +5463,7 @@ mbga_adj_STATE_CENTRAL_PROVINCES = {
 	if = {
 		limit = { exists = "variable_map(mbga_container_of|p:xFE794D)" }
 		"variable_map(mbga_container_of|p:xFE794D)" = {
+			set_variable = mbga_prime
 			add_to_variable_list = { name = mbga_adj target = p:x9CDEF7 }
 			add_to_variable_list = { name = mbga_adj target = p:xD42EF4 }
 			add_to_variable_list = { name = mbga_adj target = p:xDA84A6 }
@@ -5790,6 +5819,7 @@ mbga_adj_STATE_CIRCARS = {
 	if = {
 		limit = { exists = "variable_map(mbga_container_of|p:x6B15F1)" }
 		"variable_map(mbga_container_of|p:x6B15F1)" = {
+			set_variable = mbga_prime
 			add_to_variable_list = { name = mbga_adj target = p:x5031A0 }
 			add_to_variable_list = { name = mbga_adj target = p:x7166FA }
 			add_to_variable_list = { name = mbga_adj target = p:x73B187 }
@@ -5801,6 +5831,7 @@ mbga_adj_STATE_CIRCARS = {
 	if = {
 		limit = { exists = "variable_map(mbga_container_of|p:x7166FA)" }
 		"variable_map(mbga_container_of|p:x7166FA)" = {
+			set_variable = mbga_prime
 			add_to_variable_list = { name = mbga_adj target = p:x3EC5D1 }
 			add_to_variable_list = { name = mbga_adj target = p:x5031A0 }
 			add_to_variable_list = { name = mbga_adj target = p:x6B15F1 }
@@ -5871,6 +5902,7 @@ mbga_adj_STATE_CIRCARS = {
 	if = {
 		limit = { exists = "variable_map(mbga_container_of|p:xC744F9)" }
 		"variable_map(mbga_container_of|p:xC744F9)" = {
+			set_variable = mbga_prime
 			add_to_variable_list = { name = mbga_adj target = p:x3EC5D1 }
 			add_to_variable_list = { name = mbga_adj target = p:x477063 }
 			add_to_variable_list = { name = mbga_adj target = p:x6B15F1 }
@@ -6137,6 +6169,7 @@ mbga_adj_STATE_EASTERN_HIMALAYAS = {
 	if = {
 		limit = { exists = "variable_map(mbga_container_of|p:x01C109)" }
 		"variable_map(mbga_container_of|p:x01C109)" = {
+			set_variable = mbga_prime
 			add_to_variable_list = { name = mbga_adj target = p:x12647B }
 			add_to_variable_list = { name = mbga_adj target = p:x388D2C }
 			add_to_variable_list = { name = mbga_adj target = p:x4F99DC }
@@ -6172,6 +6205,7 @@ mbga_adj_STATE_EASTERN_HIMALAYAS = {
 	if = {
 		limit = { exists = "variable_map(mbga_container_of|p:x388D2C)" }
 		"variable_map(mbga_container_of|p:x388D2C)" = {
+			set_variable = mbga_prime
 			add_to_variable_list = { name = mbga_adj target = p:x01C109 }
 			add_to_variable_list = { name = mbga_adj target = p:x216771 }
 			add_to_variable_list = { name = mbga_adj target = p:x4A0FD0 }
@@ -6188,6 +6222,7 @@ mbga_adj_STATE_EASTERN_HIMALAYAS = {
 	if = {
 		limit = { exists = "variable_map(mbga_container_of|p:x4F99DC)" }
 		"variable_map(mbga_container_of|p:x4F99DC)" = {
+			set_variable = mbga_prime
 			add_to_variable_list = { name = mbga_adj target = p:x01C109 }
 			add_to_variable_list = { name = mbga_adj target = p:x70069E }
 			add_to_variable_list = { name = mbga_adj target = p:x84F73C }
@@ -6207,6 +6242,7 @@ mbga_adj_STATE_EASTERN_HIMALAYAS = {
 	if = {
 		limit = { exists = "variable_map(mbga_container_of|p:x60B0DF)" }
 		"variable_map(mbga_container_of|p:x60B0DF)" = {
+			set_variable = mbga_prime
 			add_to_variable_list = { name = mbga_adj target = p:x01C109 }
 			add_to_variable_list = { name = mbga_adj target = p:x12647B }
 			add_to_variable_list = { name = mbga_adj target = p:x388D2C }
@@ -6219,6 +6255,7 @@ mbga_adj_STATE_EASTERN_HIMALAYAS = {
 		limit = { exists = "variable_map(mbga_container_of|p:x665E5B)" }
 		"variable_map(mbga_container_of|p:x665E5B)" = {
 			set_variable = mbga_impassable
+			set_variable = mbga_prime
 			add_to_variable_list = { name = mbga_adj target = p:x4F99DC }
 			add_to_variable_list = { name = mbga_adj target = p:x84F73C }
 		}
@@ -6235,6 +6272,7 @@ mbga_adj_STATE_EASTERN_HIMALAYAS = {
 	if = {
 		limit = { exists = "variable_map(mbga_container_of|p:x84F73C)" }
 		"variable_map(mbga_container_of|p:x84F73C)" = {
+			set_variable = mbga_prime
 			add_to_variable_list = { name = mbga_adj target = p:x4803C7 }
 			add_to_variable_list = { name = mbga_adj target = p:x4F99DC }
 			add_to_variable_list = { name = mbga_adj target = p:xFB1561 }
@@ -6283,6 +6321,7 @@ mbga_adj_STATE_EASTERN_HIMALAYAS = {
 	if = {
 		limit = { exists = "variable_map(mbga_container_of|p:xD10C8F)" }
 		"variable_map(mbga_container_of|p:xD10C8F)" = {
+			set_variable = mbga_prime
 			add_to_variable_list = { name = mbga_adj target = p:x2070E0 }
 			add_to_variable_list = { name = mbga_adj target = p:x388D2C }
 			add_to_variable_list = { name = mbga_adj target = p:x4A0FD0 }
@@ -6316,6 +6355,7 @@ mbga_adj_STATE_EASTERN_HIMALAYAS = {
 	if = {
 		limit = { exists = "variable_map(mbga_container_of|p:xDA7F32)" }
 		"variable_map(mbga_container_of|p:xDA7F32)" = {
+			set_variable = mbga_prime
 			add_to_variable_list = { name = mbga_adj target = p:x2070E0 }
 			add_to_variable_list = { name = mbga_adj target = p:x2FF791 }
 			add_to_variable_list = { name = mbga_adj target = p:x60B0DF }
@@ -6327,6 +6367,7 @@ mbga_adj_STATE_EASTERN_HIMALAYAS = {
 	if = {
 		limit = { exists = "variable_map(mbga_container_of|p:xE0B0E0)" }
 		"variable_map(mbga_container_of|p:xE0B0E0)" = {
+			set_variable = mbga_prime
 			add_to_variable_list = { name = mbga_adj target = p:x2070E0 }
 			add_to_variable_list = { name = mbga_adj target = p:x218FFE }
 			add_to_variable_list = { name = mbga_adj target = p:x2FF791 }
@@ -6338,6 +6379,7 @@ mbga_adj_STATE_EASTERN_HIMALAYAS = {
 		limit = { exists = "variable_map(mbga_container_of|p:xE5D3E0)" }
 		"variable_map(mbga_container_of|p:xE5D3E0)" = {
 			set_variable = mbga_impassable
+			set_variable = mbga_prime
 			add_to_variable_list = { name = mbga_adj target = p:x01C109 }
 			add_to_variable_list = { name = mbga_adj target = p:x388D2C }
 			add_to_variable_list = { name = mbga_adj target = p:x4F99DC }
@@ -10149,6 +10191,7 @@ mbga_adj_STATE_KASHMIR = {
 	if = {
 		limit = { exists = "variable_map(mbga_container_of|p:x217021)" }
 		"variable_map(mbga_container_of|p:x217021)" = {
+			set_variable = mbga_prime
 			add_to_variable_list = { name = mbga_adj target = p:x0EC528 }
 			add_to_variable_list = { name = mbga_adj target = p:x251424 }
 			add_to_variable_list = { name = mbga_adj target = p:xA98EF8 }
@@ -10166,6 +10209,7 @@ mbga_adj_STATE_KASHMIR = {
 	if = {
 		limit = { exists = "variable_map(mbga_container_of|p:x24EF26)" }
 		"variable_map(mbga_container_of|p:x24EF26)" = {
+			set_variable = mbga_prime
 			add_to_variable_list = { name = mbga_adj target = p:x0EC528 }
 			add_to_variable_list = { name = mbga_adj target = p:x7074E3 }
 			add_to_variable_list = { name = mbga_adj target = p:x964219 }
@@ -10243,6 +10287,7 @@ mbga_adj_STATE_KASHMIR = {
 	if = {
 		limit = { exists = "variable_map(mbga_container_of|p:x3FDA5A)" }
 		"variable_map(mbga_container_of|p:x3FDA5A)" = {
+			set_variable = mbga_prime
 			add_to_variable_list = { name = mbga_adj target = p:x808216 }
 			add_to_variable_list = { name = mbga_adj target = p:x874936 }
 			add_to_variable_list = { name = mbga_adj target = p:x964219 }
@@ -10341,6 +10386,7 @@ mbga_adj_STATE_KASHMIR = {
 	if = {
 		limit = { exists = "variable_map(mbga_container_of|p:x808216)" }
 		"variable_map(mbga_container_of|p:x808216)" = {
+			set_variable = mbga_prime
 			add_to_variable_list = { name = mbga_adj target = p:x3FDA5A }
 			add_to_variable_list = { name = mbga_adj target = p:x874936 }
 			add_to_variable_list = { name = mbga_adj target = p:x964219 }
@@ -10351,6 +10397,7 @@ mbga_adj_STATE_KASHMIR = {
 	if = {
 		limit = { exists = "variable_map(mbga_container_of|p:x874936)" }
 		"variable_map(mbga_container_of|p:x874936)" = {
+			set_variable = mbga_prime
 			add_to_variable_list = { name = mbga_adj target = p:x3FDA5A }
 			add_to_variable_list = { name = mbga_adj target = p:x808216 }
 			add_to_variable_list = { name = mbga_adj target = p:xB0FE2D }
@@ -10371,6 +10418,7 @@ mbga_adj_STATE_KASHMIR = {
 	if = {
 		limit = { exists = "variable_map(mbga_container_of|p:x964219)" }
 		"variable_map(mbga_container_of|p:x964219)" = {
+			set_variable = mbga_prime
 			add_to_variable_list = { name = mbga_adj target = p:x24EF26 }
 			add_to_variable_list = { name = mbga_adj target = p:x3FDA5A }
 			add_to_variable_list = { name = mbga_adj target = p:x7074E3 }
@@ -10404,6 +10452,7 @@ mbga_adj_STATE_KASHMIR = {
 	if = {
 		limit = { exists = "variable_map(mbga_container_of|p:xA875F3)" }
 		"variable_map(mbga_container_of|p:xA875F3)" = {
+			set_variable = mbga_prime
 			add_to_variable_list = { name = mbga_adj target = p:x251424 }
 			add_to_variable_list = { name = mbga_adj target = p:x8FF69F }
 			add_to_variable_list = { name = mbga_adj target = p:xCCD333 }
@@ -10490,6 +10539,7 @@ mbga_adj_STATE_KASHMIR = {
 	if = {
 		limit = { exists = "variable_map(mbga_container_of|p:xD107A3)" }
 		"variable_map(mbga_container_of|p:xD107A3)" = {
+			set_variable = mbga_prime
 			add_to_variable_list = { name = mbga_adj target = p:x24EF26 }
 			add_to_variable_list = { name = mbga_adj target = p:x3FDA5A }
 			add_to_variable_list = { name = mbga_adj target = p:x964219 }
@@ -10546,6 +10596,7 @@ mbga_adj_STATE_KASHMIR = {
 	if = {
 		limit = { exists = "variable_map(mbga_container_of|p:xF469BC)" }
 		"variable_map(mbga_container_of|p:xF469BC)" = {
+			set_variable = mbga_prime
 			add_to_variable_list = { name = mbga_adj target = p:x5990A7 }
 			add_to_variable_list = { name = mbga_adj target = p:xCCD333 }
 			add_to_variable_list = { name = mbga_adj target = p:xD107A3 }
@@ -10579,6 +10630,7 @@ mbga_adj_STATE_KASHMIR = {
 	if = {
 		limit = { exists = "variable_map(mbga_container_of|p:xFD692B)" }
 		"variable_map(mbga_container_of|p:xFD692B)" = {
+			set_variable = mbga_prime
 			add_to_variable_list = { name = mbga_adj target = p:x0EC528 }
 			add_to_variable_list = { name = mbga_adj target = p:x217021 }
 			add_to_variable_list = { name = mbga_adj target = p:x24EF26 }
@@ -20937,6 +20989,7 @@ mbga_adj_STATE_MAURITANIA = {
 	if = {
 		limit = { exists = "variable_map(mbga_container_of|p:x313645)" }
 		"variable_map(mbga_container_of|p:x313645)" = {
+			set_variable = mbga_prime
 			add_to_variable_list = { name = mbga_adj target = p:x12B16A }
 			add_to_variable_list = { name = mbga_adj target = p:x21A0F5 }
 			add_to_variable_list = { name = mbga_adj target = p:x3BA23E }
@@ -21178,6 +21231,7 @@ mbga_adj_STATE_MAURITANIA = {
 	if = {
 		limit = { exists = "variable_map(mbga_container_of|p:x8E8C95)" }
 		"variable_map(mbga_container_of|p:x8E8C95)" = {
+			set_variable = mbga_prime
 			add_to_variable_list = { name = mbga_adj target = p:x1EF394 }
 			add_to_variable_list = { name = mbga_adj target = p:x329831 }
 			add_to_variable_list = { name = mbga_adj target = p:xA80844 }
@@ -21254,6 +21308,7 @@ mbga_adj_STATE_MAURITANIA = {
 	if = {
 		limit = { exists = "variable_map(mbga_container_of|p:xB03040)" }
 		"variable_map(mbga_container_of|p:xB03040)" = {
+			set_variable = mbga_prime
 			add_to_variable_list = { name = mbga_adj target = p:x12B16A }
 			add_to_variable_list = { name = mbga_adj target = p:x313645 }
 			add_to_variable_list = { name = mbga_adj target = p:x329831 }
@@ -21266,6 +21321,7 @@ mbga_adj_STATE_MAURITANIA = {
 	if = {
 		limit = { exists = "variable_map(mbga_container_of|p:xB070C0)" }
 		"variable_map(mbga_container_of|p:xB070C0)" = {
+			set_variable = mbga_prime
 			add_to_variable_list = { name = mbga_adj target = p:x4F74DF }
 			add_to_variable_list = { name = mbga_adj target = p:x7030C0 }
 			add_to_variable_list = { name = mbga_adj target = p:x8E8C95 }
@@ -24698,6 +24754,7 @@ mbga_adj_STATE_OROMIA = {
 	if = {
 		limit = { exists = "variable_map(mbga_container_of|p:x0FBF6B)" }
 		"variable_map(mbga_container_of|p:x0FBF6B)" = {
+			set_variable = mbga_prime
 			add_to_variable_list = { name = mbga_adj target = p:x1A441F }
 			add_to_variable_list = { name = mbga_adj target = p:x4CE17E }
 			add_to_variable_list = { name = mbga_adj target = p:x513574 }
@@ -24764,6 +24821,7 @@ mbga_adj_STATE_OROMIA = {
 	if = {
 		limit = { exists = "variable_map(mbga_container_of|p:x1A441F)" }
 		"variable_map(mbga_container_of|p:x1A441F)" = {
+			set_variable = mbga_prime
 			add_to_variable_list = { name = mbga_adj target = p:x0FBF6B }
 			add_to_variable_list = { name = mbga_adj target = p:x5FDD08 }
 			add_to_variable_list = { name = mbga_adj target = p:x98DC27 }
@@ -24849,6 +24907,7 @@ mbga_adj_STATE_OROMIA = {
 	if = {
 		limit = { exists = "variable_map(mbga_container_of|p:x35C9A6)" }
 		"variable_map(mbga_container_of|p:x35C9A6)" = {
+			set_variable = mbga_prime
 			add_to_variable_list = { name = mbga_adj target = p:x98F62E }
 			add_to_variable_list = { name = mbga_adj target = p:xA8A20B }
 			add_to_variable_list = { name = mbga_adj target = p:xBB012E }
@@ -24893,6 +24952,7 @@ mbga_adj_STATE_OROMIA = {
 	if = {
 		limit = { exists = "variable_map(mbga_container_of|p:x41E0D0)" }
 		"variable_map(mbga_container_of|p:x41E0D0)" = {
+			set_variable = mbga_prime
 			add_to_variable_list = { name = mbga_adj target = p:x0FB7D1 }
 			add_to_variable_list = { name = mbga_adj target = p:x573362 }
 			add_to_variable_list = { name = mbga_adj target = p:x62BE5B }
@@ -24905,6 +24965,7 @@ mbga_adj_STATE_OROMIA = {
 	if = {
 		limit = { exists = "variable_map(mbga_container_of|p:x435967)" }
 		"variable_map(mbga_container_of|p:x435967)" = {
+			set_variable = mbga_prime
 			add_to_variable_list = { name = mbga_adj target = p:x4CE17E }
 			add_to_variable_list = { name = mbga_adj target = p:x5FDD08 }
 			add_to_variable_list = { name = mbga_adj target = p:x69B4E9 }
@@ -24938,6 +24999,7 @@ mbga_adj_STATE_OROMIA = {
 	if = {
 		limit = { exists = "variable_map(mbga_container_of|p:x4CE17E)" }
 		"variable_map(mbga_container_of|p:x4CE17E)" = {
+			set_variable = mbga_prime
 			add_to_variable_list = { name = mbga_adj target = p:x0FBF6B }
 			add_to_variable_list = { name = mbga_adj target = p:x435967 }
 			add_to_variable_list = { name = mbga_adj target = p:x5FDD08 }
@@ -25003,6 +25065,7 @@ mbga_adj_STATE_OROMIA = {
 	if = {
 		limit = { exists = "variable_map(mbga_container_of|p:x5FDD08)" }
 		"variable_map(mbga_container_of|p:x5FDD08)" = {
+			set_variable = mbga_prime
 			add_to_variable_list = { name = mbga_adj target = p:x0FBF6B }
 			add_to_variable_list = { name = mbga_adj target = p:x1A441F }
 			add_to_variable_list = { name = mbga_adj target = p:x435967 }
@@ -25172,6 +25235,7 @@ mbga_adj_STATE_OROMIA = {
 	if = {
 		limit = { exists = "variable_map(mbga_container_of|p:x91C70C)" }
 		"variable_map(mbga_container_of|p:x91C70C)" = {
+			set_variable = mbga_prime
 			add_to_variable_list = { name = mbga_adj target = p:x0FBF6B }
 			add_to_variable_list = { name = mbga_adj target = p:x4CE17E }
 			add_to_variable_list = { name = mbga_adj target = p:x513574 }
@@ -25205,6 +25269,7 @@ mbga_adj_STATE_OROMIA = {
 	if = {
 		limit = { exists = "variable_map(mbga_container_of|p:x98F62E)" }
 		"variable_map(mbga_container_of|p:x98F62E)" = {
+			set_variable = mbga_prime
 			add_to_variable_list = { name = mbga_adj target = p:x35C9A6 }
 			add_to_variable_list = { name = mbga_adj target = p:x869C8E }
 			add_to_variable_list = { name = mbga_adj target = p:xC77DDF }
@@ -25237,6 +25302,7 @@ mbga_adj_STATE_OROMIA = {
 	if = {
 		limit = { exists = "variable_map(mbga_container_of|p:x9D5DFC)" }
 		"variable_map(mbga_container_of|p:x9D5DFC)" = {
+			set_variable = mbga_prime
 			add_to_variable_list = { name = mbga_adj target = p:x41E0D0 }
 			add_to_variable_list = { name = mbga_adj target = p:x435967 }
 			add_to_variable_list = { name = mbga_adj target = p:x573362 }
@@ -25259,6 +25325,7 @@ mbga_adj_STATE_OROMIA = {
 	if = {
 		limit = { exists = "variable_map(mbga_container_of|p:xA8A20B)" }
 		"variable_map(mbga_container_of|p:xA8A20B)" = {
+			set_variable = mbga_prime
 			add_to_variable_list = { name = mbga_adj target = p:x35C9A6 }
 			add_to_variable_list = { name = mbga_adj target = p:x7152F3 }
 			add_to_variable_list = { name = mbga_adj target = p:xBB012E }
@@ -25362,6 +25429,7 @@ mbga_adj_STATE_OROMIA = {
 	if = {
 		limit = { exists = "variable_map(mbga_container_of|p:xC77DDF)" }
 		"variable_map(mbga_container_of|p:xC77DDF)" = {
+			set_variable = mbga_prime
 			add_to_variable_list = { name = mbga_adj target = p:x35C9A6 }
 			add_to_variable_list = { name = mbga_adj target = p:x4CE17E }
 			add_to_variable_list = { name = mbga_adj target = p:x869C8E }
@@ -25373,6 +25441,7 @@ mbga_adj_STATE_OROMIA = {
 	if = {
 		limit = { exists = "variable_map(mbga_container_of|p:xC7AA4B)" }
 		"variable_map(mbga_container_of|p:xC7AA4B)" = {
+			set_variable = mbga_prime
 			add_to_variable_list = { name = mbga_adj target = p:x35477F }
 			add_to_variable_list = { name = mbga_adj target = p:x35C9A6 }
 			add_to_variable_list = { name = mbga_adj target = p:x5EF353 }
@@ -25406,6 +25475,7 @@ mbga_adj_STATE_OROMIA = {
 	if = {
 		limit = { exists = "variable_map(mbga_container_of|p:xD033B3)" }
 		"variable_map(mbga_container_of|p:xD033B3)" = {
+			set_variable = mbga_prime
 			add_to_variable_list = { name = mbga_adj target = p:x435967 }
 			add_to_variable_list = { name = mbga_adj target = p:x9D5DFC }
 			add_to_variable_list = { name = mbga_adj target = p:xA8A20B }
@@ -25479,6 +25549,7 @@ mbga_adj_STATE_OROMIA = {
 	if = {
 		limit = { exists = "variable_map(mbga_container_of|p:xD6B588)" }
 		"variable_map(mbga_container_of|p:xD6B588)" = {
+			set_variable = mbga_prime
 			add_to_variable_list = { name = mbga_adj target = p:x35C9A6 }
 			add_to_variable_list = { name = mbga_adj target = p:x435967 }
 			add_to_variable_list = { name = mbga_adj target = p:x4CE17E }
@@ -25512,6 +25583,7 @@ mbga_adj_STATE_OROMIA = {
 	if = {
 		limit = { exists = "variable_map(mbga_container_of|p:xE04093)" }
 		"variable_map(mbga_container_of|p:xE04093)" = {
+			set_variable = mbga_prime
 			add_to_variable_list = { name = mbga_adj target = p:x10D446 }
 			add_to_variable_list = { name = mbga_adj target = p:x1A441F }
 			add_to_variable_list = { name = mbga_adj target = p:x1F0F14 }
@@ -25546,6 +25618,7 @@ mbga_adj_STATE_OROMIA = {
 	if = {
 		limit = { exists = "variable_map(mbga_container_of|p:xE7D29C)" }
 		"variable_map(mbga_container_of|p:xE7D29C)" = {
+			set_variable = mbga_prime
 			add_to_variable_list = { name = mbga_adj target = p:x0FB7D1 }
 			add_to_variable_list = { name = mbga_adj target = p:x41E0D0 }
 			add_to_variable_list = { name = mbga_adj target = p:x7152F3 }
@@ -30650,6 +30723,7 @@ mbga_adj_STATE_RIFT_VALLEY = {
 	if = {
 		limit = { exists = "variable_map(mbga_container_of|p:x787130)" }
 		"variable_map(mbga_container_of|p:x787130)" = {
+			set_variable = mbga_prime
 			add_to_variable_list = { name = mbga_adj target = p:x9130A0 }
 			add_to_variable_list = { name = mbga_adj target = p:x92CECB }
 			add_to_variable_list = { name = mbga_adj target = p:xC2D6DE }
@@ -30705,6 +30779,7 @@ mbga_adj_STATE_RIFT_VALLEY = {
 	if = {
 		limit = { exists = "variable_map(mbga_container_of|p:x935F28)" }
 		"variable_map(mbga_container_of|p:x935F28)" = {
+			set_variable = mbga_prime
 			add_to_variable_list = { name = mbga_adj target = p:xCF4C38 }
 			add_to_variable_list = { name = mbga_adj target = p:xE02111 }
 		}
@@ -34835,6 +34910,7 @@ mbga_adj_STATE_SUNDA_ISLANDS = {
 	if = {
 		limit = { exists = "variable_map(mbga_container_of|p:x100090)" }
 		"variable_map(mbga_container_of|p:x100090)" = {
+			set_variable = mbga_prime
 			add_to_variable_list = { name = mbga_adj target = p:x5ABA94 }
 			add_to_variable_list = { name = mbga_adj target = p:x900090 }
 		}
@@ -34875,6 +34951,7 @@ mbga_adj_STATE_SUNDA_ISLANDS = {
 	if = {
 		limit = { exists = "variable_map(mbga_container_of|p:x5ABA94)" }
 		"variable_map(mbga_container_of|p:x5ABA94)" = {
+			set_variable = mbga_prime
 			add_to_variable_list = { name = mbga_adj target = p:x100090 }
 			add_to_variable_list = { name = mbga_adj target = p:xD91A27 }
 		}
@@ -35620,6 +35697,7 @@ mbga_adj_STATE_TOGO = {
 	if = {
 		limit = { exists = "variable_map(mbga_container_of|p:x406D9B)" }
 		"variable_map(mbga_container_of|p:x406D9B)" = {
+			set_variable = mbga_prime
 			add_to_variable_list = { name = mbga_adj target = p:x40E9E9 }
 			add_to_variable_list = { name = mbga_adj target = p:x51AD34 }
 			add_to_variable_list = { name = mbga_adj target = p:x778011 }
