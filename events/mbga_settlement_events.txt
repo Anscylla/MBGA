@@ -1,10 +1,14 @@
-﻿# The popup that hands a won state over to the border tool.
+﻿# The border commission, and the news it sends.
 #
-# One per state won, raised the moment the goal is enforced. The option is the only way in; it
-# is shown greyed while another state is being settled, since the tool does one state at a
-# time.
+# mbga_settlement.1 hands a state won or bought over to the border tool, one per state, raised
+# the moment the goal is enforced or the treaty enters into force. Its first option is the only
+# way in and is greyed while another state is being settled or while the state cannot be
+# reached; a second option, shown only for a state out of reach, says so and closes it.
 #
-# scope:mbga_settle_state is the state, carried in from the war goal.
+# mbga_settlement.2 tells the country a state was taken from, mbga_settlement.3 tells the
+# country provinces were given to.
+#
+# scope:mbga_settle_state is the state, carried in from the war goal or the treaty.
 
 namespace = mbga_settlement
 
@@ -14,11 +18,11 @@ mbga_settlement.1 = {
 
 	title = mbga_settlement.1.t
 
-	# A state can be won three ways and the room the clerks are standing in is not the same
-	# room in each. scope:mbga_settle_route is set by the war goal: 1 fought over, 2 conceded
-	# once the play had started, 3 granted before there was one. The last is written plainly
-	# rather than behind a trigger, so a state that somehow arrives without an answer still
-	# has something to read.
+	# A state can be won four ways and the room the clerks are standing in is not the same room
+	# in each. scope:mbga_settle_route is set by whatever raised this: 1 fought over, 2 conceded
+	# once the play had started, 3 granted before there was one, 4 bought in a treaty. The third
+	# is written plainly rather than behind a trigger, so a state that somehow arrives without an
+	# answer still has something to read.
 	desc = {
 		first_valid = {
 			triggered_desc = {
@@ -28,6 +32,10 @@ mbga_settlement.1 = {
 			triggered_desc = {
 				desc = mbga_settlement.1.d_conceded
 				trigger = { scope:mbga_settle_route ?= 2 }
+			}
+			triggered_desc = {
+				desc = mbga_settlement.1.d_treaty
+				trigger = { scope:mbga_settle_route ?= 4 }
 			}
 			desc = mbga_settlement.1.d_granted
 		}
@@ -43,11 +51,17 @@ mbga_settlement.1 = {
 				desc = mbga_settlement.1.f_conceded
 				trigger = { scope:mbga_settle_route ?= 2 }
 			}
+			triggered_desc = {
+				desc = mbga_settlement.1.f_treaty
+				trigger = { scope:mbga_settle_route ?= 4 }
+			}
 			desc = mbga_settlement.1.f_granted
 		}
 	}
 
-	duration = 3
+	# No duration. One commission may have to wait for another to finish, and a state that
+	# cannot be drawn on yet may be drawn on once a neighbour of it has been taken, so this
+	# waits in the feed until it is answered rather than expiring with the offer unanswered.
 
 	event_image = {
 		video = "unspecific_signed_contract"
@@ -67,8 +81,16 @@ mbga_settlement.1 = {
 
 		# One state at a time: the tool cannot be pointed at two at once. The others wait,
 		# greyed rather than hidden, so the player can see what is still to come.
+		#
+		# Greyed too where none of the state can be reached from ground we hold, since the
+		# tool would open on a state with nothing to click. Under the rule that lets any
+		# province of a state be demanded there is no such thing as out of reach.
 		trigger = {
 			NOT = { has_variable = mbga_settling }
+			OR = {
+				has_game_rule = mbga_province_access_anywhere
+				is_adjacent_to_state = scope:mbga_settle_state
+			}
 		}
 		show_as_unavailable = {
 			always = yes
@@ -83,6 +105,18 @@ mbga_settlement.1 = {
 		}
 		mbga_begin_settlement = yes
 	}
+
+	# Shown only where the state cannot be reached, and then it is the only way out of the
+	# window. Taking a neighbouring state first can make this one reachable, so the wording
+	# says so rather than leaving the player to work out why the button above is dead.
+	option = {
+		name = mbga_settlement.1.b
+
+		trigger = {
+			NOT = { has_game_rule = mbga_province_access_anywhere }
+			NOT = { is_adjacent_to_state = scope:mbga_settle_state }
+		}
+	}
 }
 
 # What was taken, told to the country it was taken from.
@@ -96,8 +130,28 @@ mbga_settlement.2 = {
 	type = country_event
 
 	title = mbga_settlement.2.t
-	desc = mbga_settlement.2.d
-	flavor = mbga_settlement.2.f
+
+	# Ground lost and ground sold are not the same news. scope:mbga_settle_route comes in with
+	# the event: 4 is a treaty, which the seller signed and was paid for.
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				desc = mbga_settlement.2.d_treaty
+				trigger = { scope:mbga_settle_route ?= 4 }
+			}
+			desc = mbga_settlement.2.d
+		}
+	}
+
+	flavor = {
+		first_valid = {
+			triggered_desc = {
+				desc = mbga_settlement.2.f_treaty
+				trigger = { scope:mbga_settle_route ?= 4 }
+			}
+			desc = mbga_settlement.2.f
+		}
+	}
 
 	duration = 3
 
@@ -118,6 +172,40 @@ mbga_settlement.2 = {
 
 	option = {
 		name = mbga_settlement.2.a
+		default_option = yes
+	}
+}
+
+# Ground given, told to the country it was given to.
+#
+# Raised once, as the giver puts the tool down, and only where something was given. The
+# receiver has nothing to decide, so there is one option and it only acknowledges.
+#
+# scope:mbga_give_giver is the country that gave it, scope:mbga_give_region the region it lies in.
+mbga_settlement.3 = {
+	type = country_event
+
+	title = mbga_settlement.3.t
+	desc = mbga_settlement.3.d
+	flavor = mbga_settlement.3.f
+
+	duration = 3
+
+	event_image = {
+		video = "unspecific_signed_contract"
+	}
+
+	on_created_soundeffect = "event:/SFX/UI/Alerts/event_appear"
+
+	icon = "gfx/interface/icons/diplomatic_action_icons/take_province.dds"
+
+	trigger = {
+		exists = scope:mbga_give_giver
+		exists = scope:mbga_give_region
+	}
+
+	option = {
+		name = mbga_settlement.3.a
 		default_option = yes
 	}
 }

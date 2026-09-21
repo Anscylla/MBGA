@@ -17,6 +17,15 @@ mbga_dp_demand_provinces = {
 		# common/scripted_triggers/zz_mbga_config.txt.
 		mbga_wargoal_enabled = yes
 
+		# The same gate the war goal carries, because the goal's own is never asked here. A
+		# war goal's possible decides whether it is offered in the list of goals that can be
+		# added to a play. This play brings the goal with it, so an AI starting the play never
+		# passes through that list and the rule would go unread.
+		OR = {
+			is_ai = no
+			has_game_rule = mbga_ai_demands_allowed
+		}
+
 		NOT = { is_country_type = decentralized }
 		aggressive_diplomatic_plays_permitted = yes
 		NOT = { is_subject_of = scope:target_country }

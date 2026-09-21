@@ -9,6 +9,7 @@
 
 mbga_open_for_state_effect = {
 	save_scope_as = mbga_opened_state
+	scope:actor = { mbga_save_home = yes }
 	debug_log = "MBGA|dyn|a state was handed in"
 	scope:actor = {
 		set_variable = { name = mbga_active_state value = scope:mbga_opened_state }
@@ -22,7 +23,7 @@ mbga_open_for_state_effect = {
 		clear_variable_list = mbga_own_at_start
 		every_in_list = {
 			variable = mbga_selectable
-			limit = { owner ?= scope:actor }
+			limit = { owner ?= scope:mbga_home }
 			save_scope_as = mbga_already_ours
 			scope:actor = {
 				add_to_variable_list = { name = mbga_own_at_start target = scope:mbga_already_ours }

@@ -1,7 +1,8 @@
-﻿# Take Provinces: pick a country, pick one of its states, then take provinces on the map.
+﻿# Take Provinces and Give Provinces: pick a country, pick a state, then move its provinces
+# one at a time on the map. Taking works on one of theirs, giving on one of ours.
 #
-# Shown under the mbga_province_tool_diplomatic game rule. The chosen state arrives as
-# scope:second_state and is handed to mbga_open_for_state_effect.
+# Both are shown under the mbga_province_tool_diplomatic game rule, and neither is ever
+# used by an AI.
 
 mbga_take_provinces_action = {
 	groups = { general }
@@ -34,17 +35,42 @@ mbga_take_provinces_action = {
 
 	# One state at a time. Opening a second while the first is still being picked over would
 	# rebuild the candidate list under the player's hands and strand whatever was taken.
+	#
+	# Everything that can stop the action is asked here rather than in potential, so the action
+	# stays on the screen greyed out with the reason on it. Hidden, it leaves the player
+	# clicking down a list of countries with no idea why some answer and some do not.
 	possible = {
 		NOT = { this = scope:target_country }
 		custom_tooltip = {
 			text = "MBGA_ALREADY_OPEN"
 			NOT = { has_variable = mbga_target_country }
 		}
+		custom_tooltip = {
+			text = "MBGA_TAKE_NEEDS_BORDER"
+			OR = {
+				has_game_rule = mbga_province_access_anywhere
+				scope:target_country = {
+					any_scope_state = {
+						root = { is_adjacent_to_state = prev }
+					}
+				}
+			}
+		}
 	}
 
-	# Any state the other country actually holds.
+	# A state the other country holds, and one our own land touches. A border is drawn from
+	# ground already held, so a state nothing of ours reaches has nothing to draw from and is
+	# not worth offering - unless the rule says any province of a state may be demanded
+	# wherever it lies, which is the same rule read here as the tool reads deeper down.
+	#
+	# War is the exception and goes its own way: an army can be marched anywhere, so the war
+	# goal asks for nothing of the sort.
 	second_state_trigger = {
 		owner ?= scope:target_country
+		OR = {
+			scope:country = { has_game_rule = mbga_province_access_anywhere }
+			scope:country = { is_adjacent_to_state = prev }
+		}
 	}
 
 	# The game builds this action's tooltip by walking the effect, and what it writes out
@@ -81,6 +107,114 @@ mbga_take_provinces_action = {
 
 	# Never on its own. This moves borders without a war, which is a tool, not a policy, and
 	# an AI reaching for it would be a bug rather than a feature.
+	ai = {
+		evaluation_chance = { value = 0 }
+		will_propose = { always = no }
+	}
+}
+
+# Give Provinces: the same tool the other way round. Pick one of our own states, then hand its
+# provinces over one at a time to a subject or an ally.
+#
+# The chosen state arrives as scope:first_state. The receiver is written down on the country
+# running the tool as mbga_give_to, and from then on reach is worked out from the receiver's
+# ground and a province clicked goes to the receiver: see mbga_give.txt.
+mbga_give_provinces_action = {
+	groups = { general }
+
+	texture = "gfx/interface/icons/diplomatic_action_icons/take_province.dds"
+
+	requires_approval = no
+	should_notify_third_parties = no
+	show_effect_in_tooltip = yes
+	show_confirmation_box = no
+
+	state_selection = first_required
+	first_state_list = first_country
+
+	selectable = {
+		OR = {
+			has_game_rule = mbga_province_tool_diplomatic
+			has_game_rule = mbga_province_tool_debug
+		}
+	}
+
+	potential = {
+		any_scope_state = { always = yes }
+	}
+
+	# Every reason this can be refused is asked here rather than in potential, so the action
+	# is always on the screen and says why it is greyed out. A country you border but cannot
+	# give to looks exactly like one you can until something tells you otherwise.
+	possible = {
+		NOT = { this = scope:target_country }
+		custom_tooltip = {
+			text = "MBGA_ALREADY_OPEN"
+			NOT = { has_variable = mbga_target_country }
+		}
+		# Ours to give to: a subject, or an ally bound by a treaty. Alliances are treaty
+		# articles, so an alliance is asked for the way the base game asks for one.
+		custom_tooltip = {
+			text = "MBGA_GIVE_NEEDS_ALLY"
+			OR = {
+				scope:target_country = { is_subject_of = root }
+				any_scope_treaty = {
+					binds = scope:target_country
+					any_scope_article = { has_type = alliance }
+				}
+			}
+		}
+		custom_tooltip = {
+			text = "MBGA_GIVE_NEEDS_BORDER"
+			any_scope_state = {
+				is_capital = no
+				OR = {
+					root = { has_game_rule = mbga_province_access_anywhere }
+					scope:target_country = { is_adjacent_to_state = prev }
+				}
+			}
+		}
+	}
+
+	# One of our own states, the receiver's land touching it, and never the capital's: the
+	# seat of government is not a thing to be parcelled out. The touching is waived under the
+	# rule that lets any province of a state be demanded wherever it lies.
+	first_state_trigger = {
+		owner ?= scope:country
+		is_capital = no
+		OR = {
+			scope:country = { has_game_rule = mbga_province_access_anywhere }
+			scope:target_country = { is_adjacent_to_state = prev }
+		}
+	}
+
+	accept_effect = {
+		custom_tooltip = MBGA_GIVE_ACTION_EFFECT_TT
+		hidden_effect = {
+			save_scope_as = actor
+			scope:target_country = { save_scope_as = mbga_action_target }
+			save_temporary_scope_as = mbga_action_actor
+
+			scope:mbga_action_actor = {
+				mbga_fill_country_list = yes
+				set_variable = { name = mbga_target_country value = scope:mbga_action_target }
+				set_variable = { name = mbga_give_to value = scope:mbga_action_target }
+				mbga_list_reachable_only = yes
+				if = {
+					limit = { has_game_rule = mbga_province_access_anywhere }
+					mbga_list_every_province = yes
+				}
+			}
+
+			if = {
+				limit = { exists = scope:first_state }
+				scope:first_state = { mbga_open_for_state_effect = yes }
+				debug_log = "MBGA|action|one of our own states was handed in to give away"
+			}
+		}
+	}
+
+	# Never on its own, for the same reason as taking.
 	ai = {
 		evaluation_chance = { value = 0 }
 		will_propose = { always = no }

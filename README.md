@@ -207,9 +207,15 @@ What it does not do is take the state. A demand is met in one of three ways - a 
 end of a war, a play conceded before the fighting starts, or a demand granted outright with no
 play at all - and the game enforces the goal on all three, so one hook covers them: a popup
 comes up for each state won, and its one option puts the province tool on that state. The
-popup reads differently for each of the three, since a border drawn after a war is not the
-same room as one drawn because nobody wanted the fight. You draw the border by hand, close the
-tool, and the next popup is waiting.
+popup reads differently for each route, since a border drawn after a war is not the same room
+as one drawn because nobody wanted the fight. You draw the border by hand, close the tool, and
+the next popup is waiting.
+
+A popup for a state nothing of yours touches offers a second option instead, in red, saying so
+and pointing at the other commissions: there is nothing for the tool to work from until
+something nearer has been taken, and taking it may well bring this state within reach. The
+popup that opens the tool is greyed while that is the case, and none of them expire, so the
+order they are answered in is yours to choose.
 
 Infamy is charged **afterwards, for what was actually taken** - the share of the state you
 kept, out of the state's own price, which is what a conquest would have paid for all of it.
@@ -244,6 +250,44 @@ a player.
 
 Without a lookup table nothing is known past the state's own edge, so an AI takes the border
 ring and no more rather than probing its way inwards during the peace.
+
+### Buying provinces in a treaty
+
+The treaty article **Cede Provinces** names a state the way the base game's State Transfer
+does, and is agreed the same way, but what enters into force is not a transfer: the buyer is
+sent to the same border commission a war ends in and draws the border province by province.
+No infamy is charged for it. It was bought.
+
+**It costs what the whole state costs.** A treaty is signed before the border is drawn, so
+the price cannot depend on what is eventually taken - there is nothing to count yet. The
+acceptance follows State Transfer line for line, down to the counter that makes each further
+sale dearer than the last, so an AI values a state sold this way exactly as it values a state
+sold outright, and cannot be worked by asking for provinces instead. This is the engine's
+limit rather than a choice, and the first thing to change if an article can ever be priced
+after the fact.
+
+Only a state your own land touches can be named, here and in both diplomatic actions. A
+border is drawn from ground already held, so a state nothing of yours reaches has nothing to
+draw from. Two things are exempt. War keeps free choice of target: an army can be marched
+anywhere, and a corridor from one state to the next is a border like any other. And the
+*Province Demands* rule set to **Anywhere in the state** lifts it everywhere, since under it
+there is no reach for a state to be out of.
+
+### Giving provinces away
+
+**Give Provinces** is Take Provinces the other way round: one of your own states, handed over a
+province at a time to a subject or to an ally bound by an alliance treaty. The state has to
+touch the receiver's land and cannot be the capital's. No approval is asked, no infamy is
+charged, and an AI never uses it. The receiver is told what it was given when the tool is put
+down, and only if something was.
+
+Nothing about reach had to be written twice. The tool always had one country playing two
+parts - the one running it, and the one whose ground a province must touch and who holds it
+once it is taken - and giving only pulls those apart. The country running the tool keeps the
+session; the ground that matters is kept as its own scope, `scope:mbga_home`, which is the
+receiver while something is being given and the same country otherwise. Every question of
+reach, of staying connected and of who a province goes to asks that scope, so taking and
+giving run through exactly the same code.
 
 ## Game rules
 
@@ -381,6 +425,7 @@ Clicking a taken province hands it back. The mod keeps the selection connected o
 | `mbga_close_tool` | country | Puts the tool down and clears the session. |
 | `mbga_tool_is_on` | country | Shown when either tool setting is enabled. |
 | `mbga_tool_enabled` | country | Shown under the debug panel setting only. |
+| `mbga_is_giving` | country | Shown while provinces are being given away rather than taken. |
 
 ### Effects worth having on their own
 

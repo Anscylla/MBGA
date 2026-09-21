@@ -107,6 +107,7 @@ mbga_close_tool = {
 	is_valid = { always = yes }
 	effect = {
 		mbga_finish_settlement = yes
+		mbga_finish_giving = yes
 		mbga_clear_candidates = yes
 		remove_variable = mbga_target_country
 		remove_variable = mbga_active_state
@@ -116,10 +117,22 @@ mbga_close_tool = {
 	}
 }
 
-# A war is being settled rather than a demand made, so the bar shows what it will cost.
+# Provinces are being given away rather than taken, so the bar counts what was given.
+mbga_is_giving = {
+	scope = country
+	is_shown = { has_variable = mbga_give_to }
+	is_valid = { always = yes }
+	effect = {}
+}
+
+# Whether a price is running. A state bought in a treaty is settled the same way but was paid
+# for when the treaty was signed, so the bar reads free for it, the same as the tool does.
 mbga_is_settling = {
 	scope = country
-	is_shown = { has_variable = mbga_settling }
+	is_shown = {
+		has_variable = mbga_settling
+		NOT = { has_variable = mbga_settle_bought }
+	}
 	is_valid = { always = yes }
 	effect = {}
 }

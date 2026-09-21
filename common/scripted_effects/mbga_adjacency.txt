@@ -166,6 +166,7 @@ mbga_return_probed_province = {
 # marks mbga_touches_home on those that touch what we already held.
 mbga_build_adjacency_graph = {
 	save_scope_as = mbga_prober
+	mbga_save_home = yes
 	set_variable = { name = mbga_pairs_tried value = 0 }
 	set_variable = { name = mbga_pairs_found value = 0 }
 	set_variable = { name = mbga_holds_right value = 0 }
@@ -203,7 +204,7 @@ mbga_build_adjacency_graph = {
 	if = {
 		limit = {
 			var:mbga_active_state ?= {
-				any_neighbouring_state = { owner ?= scope:mbga_prober }
+				any_neighbouring_state = { owner ?= scope:mbga_home }
 			}
 		}
 		# What touches our own ground.
@@ -223,7 +224,7 @@ mbga_build_adjacency_graph = {
 					limit = {
 						any_in_list = {
 							variable = mbga_adj
-							state.owner ?= scope:mbga_prober
+							state.owner ?= scope:mbga_home
 						}
 					}
 					set_variable = mbga_touches_home
@@ -257,7 +258,7 @@ mbga_build_adjacency_graph = {
 				if = {
 					limit = {
 						scope:mbga_outer_province.state = {
-							any_neighbouring_state = { owner ?= scope:mbga_prober }
+							any_neighbouring_state = { owner ?= scope:mbga_home }
 						}
 					}
 					scope:mbga_outer_container = { set_variable = mbga_touches_home }
@@ -444,6 +445,7 @@ mbga_build_adjacency_graph = {
 # raised, nothing changes hands, so this is free and runs on every click.
 mbga_recompute_takeable = {
 	save_scope_as = mbga_prober
+	mbga_save_home = yes
 
 	every_in_global_list = {
 		variable = mbga_candidates
@@ -488,6 +490,7 @@ mbga_recompute_takeable = {
 
 mbga_enforce_connected_takes = {
 	save_scope_as = mbga_prober
+	mbga_save_home = yes
 	set_variable = { name = mbga_orphans_released value = 0 }
 
 	# Nothing is joined to anything in an unfiltered list, so nothing can be cut off from
@@ -601,6 +604,7 @@ mbga_enforce_connected_takes = {
 # that merely came within reach is still somebody else's and opens nothing further.
 mbga_extend_after_take = {
 	save_scope_as = mbga_prober
+	mbga_save_home = yes
 
 	# Ask about the province just taken rather than about our territory as a whole.
 	#
@@ -661,7 +665,7 @@ mbga_extend_after_take = {
 			mbga_return_probed_province = yes
 		}
 
-		scope:mbga_prober = { save_scope_as = mbga_taker }
+		scope:mbga_home = { save_scope_as = mbga_taker }
 		scope:mbga_taken_province = { mbga_transfer_province_to_taker = yes }
 	}
 
@@ -680,6 +684,7 @@ mbga_extend_after_take = {
 # repeats until it releases nothing, because releasing one can strand the next.
 mbga_release_orphans_lazily = {
 	save_scope_as = mbga_prober
+	mbga_save_home = yes
 	set_variable = { name = mbga_orphans_released value = 0 }
 	set_variable = { name = mbga_lazy_pass value = 1 }
 
@@ -706,7 +711,7 @@ mbga_release_orphans_lazily = {
 				limit = {
 					NOT = {
 						scope:mbga_probe_province.state = {
-							any_neighbouring_state = { owner ?= scope:mbga_prober }
+							any_neighbouring_state = { owner ?= scope:mbga_home }
 						}
 					}
 				}
@@ -723,7 +728,7 @@ mbga_release_orphans_lazily = {
 				}
 			}
 			else = {
-				scope:mbga_prober = { save_scope_as = mbga_taker }
+				scope:mbga_home = { save_scope_as = mbga_taker }
 				scope:mbga_probe_province = { mbga_transfer_province_to_taker = yes }
 			}
 		}
@@ -751,7 +756,7 @@ mbga_verify_one_candidate = {
 	if = {
 		limit = {
 			scope:mbga_probe_province.state = {
-				any_neighbouring_state = { owner ?= scope:mbga_prober }
+				any_neighbouring_state = { owner ?= scope:mbga_home }
 			}
 		}
 		scope:mbga_verify_container = {

@@ -61,6 +61,20 @@ mbga_begin_settlement = {
 	set_variable = mbga_settling
 	set_variable = { name = mbga_settling_state value = scope:mbga_settle_state }
 
+	# Which way the state was won, kept because the country that lost it is told afterwards
+	# and the news reads differently for a sale than for a war. 4 is a treaty, and a treaty
+	# was paid for in the treaty: nothing more is charged when the border is drawn.
+	remove_variable = mbga_settle_bought
+	if = {
+		limit = { scope:mbga_settle_route ?= 4 }
+		set_variable = mbga_settle_bought
+	}
+	set_variable = { name = mbga_settle_route_taken value = 0 }
+	if = {
+		limit = { exists = scope:mbga_settle_route }
+		set_variable = { name = mbga_settle_route_taken value = scope:mbga_settle_route }
+	}
+
 	scope:mbga_settle_state = { owner ?= { save_scope_as = mbga_settle_loser } }
 	if = {
 		limit = { exists = scope:mbga_settle_loser }
@@ -108,6 +122,8 @@ mbga_finish_settlement = {
 		remove_variable = mbga_settling_state
 		remove_variable = mbga_settle_loser_country
 		remove_variable = mbga_settle_region
+		remove_variable = mbga_settle_bought
+		remove_variable = mbga_settle_route_taken
 	}
 }
 
@@ -257,7 +273,13 @@ mbga_charge_for_taken = {
 
 	if = {
 		limit = { has_variable = mbga_settle_shown }
-		change_infamy = var:mbga_settle_shown
+		# A state bought in a treaty was paid for when the treaty was signed, so the border
+		# costs nothing further. The country it came from is still told, and told what it
+		# came to, which is why the number is written down either way.
+		if = {
+			limit = { NOT = { has_variable = mbga_settle_bought } }
+			change_infamy = var:mbga_settle_shown
+		}
 		set_variable = { name = mbga_settle_told value = var:mbga_settle_shown }
 	}
 	remove_variable = mbga_settle_shown
@@ -282,6 +304,9 @@ mbga_tell_the_loser = {
 		var:mbga_settle_region ?= { save_scope_as = mbga_settle_region_scope }
 		if = {
 			limit = { NOT = { scope:mbga_settle_told_country = scope:mbga_settle_winner } }
+			# Carried with the event, since the news reads differently for a sale. A number
+			# travels with a queued event where a variable of ours would not.
+			save_scope_value_as = { name = mbga_settle_route value = var:mbga_settle_route_taken }
 			scope:mbga_settle_told_country = {
 				trigger_event = { id = mbga_settlement.2 days = 0 }
 			}

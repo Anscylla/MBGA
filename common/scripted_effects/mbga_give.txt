@@ -1,0 +1,46 @@
+﻿# PRIVATE. Giving provinces away rather than taking them.
+#
+# The tool was built around one country playing two parts: its provinces are the ones held,
+# and its ground is what a province has to touch to be within reach. Giving splits them. The
+# country running the tool still runs it - the list, the count, the provinces taken and handed
+# back all belong to its session - but the ground that matters is the receiver's, and a
+# province clicked goes to the receiver.
+#
+# So the ground that matters is its own scope, scope:mbga_home, saved beside scope:mbga_prober
+# wherever reach is worked out. When nothing is being given the two are the same country and
+# nothing reads any differently.
+
+# Country scope, the country running the tool. Saves scope:mbga_home: the country whose ground
+# a province has to touch, and who holds a province once it is taken.
+mbga_save_home = {
+	if = {
+		limit = { has_variable = mbga_give_to }
+		var:mbga_give_to = { save_scope_as = mbga_home }
+	}
+	else = {
+		save_scope_as = mbga_home
+	}
+}
+
+# Country scope, the country running the tool, called as it is put down. The receiver is told
+# what it was given, and only where something was: a state opened and closed again without a
+# click has given nothing and is no news.
+mbga_finish_giving = {
+	if = {
+		limit = { has_variable = mbga_give_to }
+		if = {
+			limit = {
+				has_variable = mbga_active_state_region
+				has_variable = mbga_taken_count
+				var:mbga_taken_count > 0
+			}
+			save_scope_as = mbga_give_giver
+			var:mbga_active_state_region = { save_scope_as = mbga_give_region }
+			var:mbga_give_to = {
+				trigger_event = { id = mbga_settlement.3 days = 0 }
+			}
+			debug_log = "MBGA|give|the receiver was told what it was given"
+		}
+		remove_variable = mbga_give_to
+	}
+}

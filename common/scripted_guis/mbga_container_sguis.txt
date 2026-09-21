@@ -30,6 +30,7 @@ mbga_take_container = {
 		}
 	}
 	effect = {
+		scope:actor = { mbga_save_home = yes }
 		if = {
 			limit = {
 				NOT = { has_variable = mbga_taken }
@@ -63,7 +64,7 @@ mbga_take_container = {
 			scope:actor = { mbga_refresh_after_return = yes }
 		}
 		else = {
-			scope:actor = { save_scope_as = mbga_taker }
+			scope:mbga_home = { save_scope_as = mbga_taker }
 			scope:mbga_container_province = { mbga_transfer_province_to_taker = yes }
 			set_variable = mbga_taken
 			scope:actor = {

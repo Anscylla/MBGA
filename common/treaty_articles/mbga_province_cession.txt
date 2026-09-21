@@ -1,0 +1,254 @@
+﻿# Cede Provinces: a state named in a treaty, whose border is drawn once the treaty is in
+# force. Nothing here overwrites the base game's state_transfer article, which stands
+# untouched beside it.
+#
+# The price is the price of the whole state. A treaty is agreed before the border is drawn,
+# so what it costs cannot depend on what is eventually taken - there is nothing to count yet.
+# Asking full price is the only reading that cannot be worked: whatever comes of it, the
+# seller was paid for everything. If the engine ever lets an article be priced after the
+# fact, this is the first thing that changes.
+#
+# The acceptance block follows state_transfer line for line, including the counter that makes
+# each further sale dearer than the last, so this is worth exactly what selling the state
+# outright is worth and no less.
+
+mbga_province_cession = {
+	kind = directed
+	cost = 0
+
+	icon = "gfx/interface/icons/diplomatic_action_icons/take_province.dds"
+
+	flags = {
+		giftable
+		exclude_from_make_this_work
+	}
+
+	usage_limit = once_per_side_with_same_inputs
+
+	maintenance_paid_by = source_country
+
+	required_inputs = {
+		state
+	}
+
+	visible = {
+		is_revolutionary = no
+	}
+
+	can_ratify = {
+		scope:source_country = {
+			num_states >= 2
+		}
+
+		custom_tooltip = {
+			text = DUPLICATE_ARTICLE_SAME_INPUTS
+			scope:treaty ?= {
+				NOT = {
+					any_scope_article_option = {
+						count > 1
+						has_type = mbga_province_cession
+						source_country = scope:source_country
+						input_state = root.input_state
+					}
+				}
+			}
+		}
+
+		custom_tooltip = {
+			text = STATE_TRANSFER_NOT_OWNER
+			scope:article ?= {
+				input_state = {
+					owner = scope:source_country
+				}
+			}
+		}
+	}
+
+	# Only a state the buyer's own land touches. A border is drawn from ground already held,
+	# so a state on the far side of the world has nothing to draw from - and unlike a war,
+	# which can be fought to anywhere, a treaty gives no way of getting there.
+	#
+	# Waived under the rule that lets any province of a state be demanded wherever it lies:
+	# with no reach to speak of there is nothing for a state to be out of.
+	state_valid_trigger = {
+		scope:input = {
+			owner = root
+			is_capital = no
+			is_under_colonization = no
+			OR = {
+				root = { has_game_rule = mbga_province_access_anywhere }
+				scope:other_country = { is_adjacent_to_state = prev }
+			}
+		}
+	}
+
+	# The state does not change hands here. The buyer is sent to the border commission and
+	# draws the border province by province, the same commission a war ends in, and pays no
+	# infamy for it: this was bought.
+	on_entry_into_force = {
+		scope:article_options = {
+			if = {
+				limit = { exists = input_state }
+				input_state = { save_scope_as = mbga_settle_state }
+				target_country = {
+					save_scope_value_as = { name = mbga_settle_route value = 4 }
+					trigger_event = { id = mbga_settlement.1 days = 0 }
+				}
+			}
+		}
+	}
+
+	on_withdrawal = {}
+	on_break = {
+		scope:withdrawing_country = {
+			change_relations = {
+				country = scope:non_withdrawing_country
+				value = {
+					value = -50
+					add = {
+						value = -50
+						multiply = {
+							value = scope:treaty_options.remaining_binding_period
+							min = 365
+							divide = 365
+						}
+					}
+					max = -50
+					min = -100
+				}
+			}
+			change_infamy = {
+				value = {
+					value = 25
+					add = {
+						value = 25
+						multiply = {
+							value = scope:treaty_options.remaining_binding_period
+							min = 365
+							divide = 365
+							divide = 25
+						}
+					}
+					min = 25
+					max = 50
+				}
+			}
+		}
+	}
+
+	ai = {
+
+		treaty_categories = {
+			expansion
+		}
+
+		evaluation_chance = {
+			value = 0.1
+		}
+
+		article_ai_usage = {
+			request
+		}
+
+		inherent_accept_score = {
+			value = 0
+
+			if = {
+				limit = {
+					exists = scope:is_renegotiation
+				}
+
+				add = {
+					desc = "DIPLOMATIC_ACCEPTANCE_ALREADY_TRADED_STATE"
+					value = -1000
+				}
+			}
+			else_if = {
+				limit = {
+					exists = scope:article.input_state
+					scope:source_country ?= this
+					NOT = { exists = scope:is_treaty_active }
+					scope:article.input_state.ai_state_value:root > 0
+				}
+				subtract = {
+					desc = "DIPLOMATIC_ACCEPTANCE_TRADE_STATE_SOURCE"
+					value = scope:article.input_state.ai_state_value:root
+					min = 100
+
+					if = {
+						limit = {
+							scope:article.input_state = {
+								any_neighbouring_state = {
+									owner = scope:source_country
+									OR = {
+										is_incorporated = yes
+										ai_can_incorporate_state = yes
+									}
+								}
+							}
+						}
+						min = 200
+					}
+
+					if = {
+						limit = {
+							scope:source_country.country_rank > scope:target_country.country_rank
+						}
+						multiply = {
+							add = scope:source_country.country_rank
+							subtract = scope:target_country.country_rank
+							divide = 10
+							add = 1
+						}
+					}
+				}
+
+				if = {
+					limit = {
+						scope:article.input_state = {
+							any_scope_strait = {
+								exists = this
+							}
+						}
+					}
+					subtract = {
+						value = 500
+						desc = "concept_strait_controller"
+					}
+				}
+
+				if = {
+					limit = {
+						exists = scope:target_country.var:recently_traded_states_counter
+						scope:target_country.var:recently_traded_states_counter > 0
+					}
+					add = {
+						desc = "DIPLOMATIC_ACCEPTANCE_RECENTLY_TRADED_STATES"
+
+						value = -50
+						multiply = scope:target_country.var:recently_traded_states_counter
+					}
+				}
+			}
+			else_if = {
+				limit = {
+					exists = scope:article.input_state
+					scope:target_country ?= this
+					NOT = { exists = scope:is_treaty_active }
+					scope:article.input_state.ai_state_value:root > 0
+				}
+				add = {
+					value = scope:article.input_state.ai_state_value:root
+					desc = "DIPLOMATIC_ACCEPTANCE_TRADE_STATE_TARGET"
+				}
+			}
+			else_if = {
+				limit = { NOT = { exists = scope:is_treaty_active } }
+				add = {
+					desc = "DIPLOMATIC_ACCEPTANCE_TRADE_STATE_REJECT"
+					value = -300
+				}
+			}
+		}
+	}
+}

@@ -43,7 +43,7 @@ mbga_take_whole_massif = {
 			}
 			save_scope_as = mbga_massif_container
 			var:mbga_province = { save_scope_as = mbga_massif_province }
-			scope:mbga_massif_taker = { save_scope_as = mbga_taker }
+			scope:mbga_home = { save_scope_as = mbga_taker }
 			scope:mbga_massif_province = { mbga_transfer_province_to_taker = yes }
 			set_variable = mbga_taken
 			set_variable = mbga_takeable
